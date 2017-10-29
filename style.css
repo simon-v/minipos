@@ -12,11 +12,14 @@ input {
 	height: 50pt;
 	font-size: 30pt;
 	font-weight: bold;
+	background-color: lightgray;
+	border-radius: 5pt;
 }
 
 input.text {
 	width: 200pt;
 	text-align: center;
+	background-color: white;
 }
 
 input.ok {
