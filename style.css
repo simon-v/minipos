@@ -1,0 +1,36 @@
+body {
+	font-size: 30pt;
+	text-align: center;
+}
+
+table {
+	margin: auto;
+}
+
+input {
+	width: 50pt;
+	height: 50pt;
+	font-size: 30pt;
+	font-weight: bold;
+}
+
+input.text {
+	width: 200pt;
+	text-align: center;
+}
+
+input.ok {
+	color: white;
+	background-color: darkgreen;
+}
+
+input.clear {
+	color: white;
+	background-color: red;
+}
+
+input.back {
+	color: white;
+	background-color: blue;
+}
+
