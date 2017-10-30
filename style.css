@@ -37,3 +37,7 @@ input.back {
 	background-color: blue;
 }
 
+input.tax {
+	color: white;
+	background-color: darkcyan;
+}
