@@ -3,6 +3,20 @@
 <head>
 <link rel="stylesheet" href="/style.css">
 <script>
+function loadHTTP(url, callback) {
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4) {
+			callback(xmlhttp.responseText.trim());
+		}
+	};
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+}
+function setTaxRate(rate) {
+	rate *= 1;
+	document.getElementById("tax").title = rate + "%";
+}
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
 }
@@ -20,7 +34,7 @@ function addTax() {
 </script>
 </head>
 
-<body>
+<body onload="loadHTTP('taxrate.txt', setTaxRate)">
 <form method="post" name="" action="">
 <table>
 <tr>
@@ -46,7 +60,7 @@ function addTax() {
 <tr>
 <td><input type="button" value="00" onclick="textAppend(0);textAppend(0)"></td>
 <td><input type="button" value="0" onclick="textAppend(0)"></td>
-<td><input type="button" id="tax" title="10%" value="%" onclick="addTax()"></td>
+<td><input type="button" id="tax" value="%" onclick="addTax()"></td>
 <td><input type="submit" class="ok" value="&#10003;"></td>
 </tr>
 </table>
