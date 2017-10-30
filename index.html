@@ -13,8 +13,9 @@ function textRemove() {
 }
 function addTax() {
 	var field = document.getElementById("amountbox"),
-	value = field.value;
-	field.value = (value * 1.10).toFixed(0);
+	title = document.getElementById("tax").title,
+	tax = title.substring(0, title.length - 1) / 100 + 1;
+	field.value = (field.value * tax).toFixed(0);
 }
 </script>
 </head>
@@ -45,7 +46,7 @@ function addTax() {
 <tr>
 <td><input type="button" value="00" onclick="textAppend(0);textAppend(0)"></td>
 <td><input type="button" value="0" onclick="textAppend(0)"></td>
-<td><input type="button" class="tax" title="10%" value="%" onclick="addTax()"></td>
+<td><input type="button" id="tax" title="10%" value="%" onclick="addTax()"></td>
 <td><input type="submit" class="ok" value="&#10003;"></td>
 </tr>
 </table>
