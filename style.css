@@ -1,5 +1,5 @@
 body {
-	font-size: 30pt;
+	font-size: 10vmin;
 	text-align: center;
 }
 
@@ -8,16 +8,16 @@ table {
 }
 
 input {
-	width: 50pt;
-	height: 50pt;
-	font-size: 30pt;
+	width: 16.67vmin;
+	height: 16.67vmin;
+	font-size: 10vmin;
 	font-weight: bold;
 	background-color: lightgray;
-	border-radius: 5pt;
+	border-radius: 1.67vmin;
 }
 
 input.text {
-	width: 200pt;
+	width: 66.68vmin;
 	text-align: center;
 	background-color: white;
 }
