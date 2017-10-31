@@ -17,7 +17,7 @@ input {
 }
 
 input.text {
-	width: 66.68vmin;
+	width: 50vmin;
 	text-align: center;
 	background-color: white;
 }

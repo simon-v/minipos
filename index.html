@@ -17,6 +17,9 @@ function setTaxRate(rate) {
 	rate *= 1;
 	document.getElementById("tax").title = rate + "%";
 }
+function setCurrencySign(sign) {
+	document.getElementById("sign").value = sign;
+}
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
 }
@@ -34,12 +37,12 @@ function addTax() {
 </script>
 </head>
 
-<body onload="loadHTTP('taxrate.txt', setTaxRate)">
+<body onload="loadHTTP('taxrate.txt', setTaxRate);loadHTTP('currencysign.txt', setCurrencySign)">
 <form method="post" name="" action="">
 <table>
 <tr>
-<td colspan="4">
-<input type="number" class="text" id="amountbox" name="amount" min="0"></td>
+<td colspan="3"><input type="number" class="text" id="amountbox" name="amount" min="0"></td>
+<td><input type="button" disabled id="sign"></td>
 <tr>
 <td><input type="button" value="1" onclick="textAppend(1)"></td>
 <td><input type="button" value="2" onclick="textAppend(2)"></td>
