@@ -1,0 +1,21 @@
+# minipos configuration file
+
+# The factor by which the amount entered in the payment request form will be
+# modified.
+# If all your prices are whole currency units (i.e., rounded to the dollar),
+# set this to 1
+# If all your prices are rounded to the 1000, set this to 1000
+# If you have cent prices, set this to 0.01 and enter the amount ignoring the
+# decimal point, e.g., "100" for $1.00
+multiplier = 0.01
+
+# Comma-separated list of currencies you accept in ISO 4217 format
+currencies=USD
+#currencies=USD,EUR
+
+# The sales or value added tax in your jurisdiction, that you want to be able to
+# quickly add to the entered amount
+taxrate=10
+
+# Comma-separated list of bitcoin addresses to which you wish to receive funds
+addresses=1ADDReSs00000000000000000000000000

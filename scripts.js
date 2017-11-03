@@ -10,17 +10,6 @@ function loadHTTP(url, callback) {
 	xmlhttp.send();
 }
 
-// Set tax rate for tax button
-function setTaxRate(rate) {
-	rate *= 1;
-	document.getElementById("tax").title = rate + "%";
-}
-
-// Set currency sign on currency button
-function setCurrencySign(sign) {
-	document.getElementById("sign").value = sign;
-}
-
 // Form button controls
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
