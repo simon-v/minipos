@@ -41,3 +41,7 @@ input#tax {
 	color: white;
 	background-color: darkcyan;
 }
+
+input#sign {
+	font-size: 4vmin;
+}
