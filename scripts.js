@@ -27,3 +27,10 @@ function addTax() {
 	tax = title.substring(0, title.length - 1) / 100 + 1;
 	field.value = (field.value * tax).toFixed(0);
 }
+
+// Cycle currency sign
+var currencies = %s,
+cur = 1;
+function cycleCurrency() {
+	document.getElementById("currency").value = currencies[cur++ %% currencies.length]
+}

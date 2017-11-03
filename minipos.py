@@ -49,16 +49,21 @@ def load_file(filename):
 def minipos(environ, start_response):
 	filler = ()
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
-	if request.endswith('.css'):
+	if request == 'style.css':
 		headers = [('Content-type', 'text/css')]
-	elif request.endswith('.js'):
+	elif request == 'scripts.js':
 		headers = [('Content-type', 'text/javascript')]
+		filler = (repr(config['currencies']))
 	elif request.endswith('.txt'):
 		headers = [('Content-type', 'text/plain')]
 	else:
 		headers = [('Content-type', 'text/html')]
 		request = 'request.html'
-		filler = (config['currencies'][0], config['taxrate'])
+		if len(config['currencies']) == 1:
+			disabled = 'disabled'
+		else:
+			disabled = ''
+		filler = (disabled, config['currencies'][0], config['taxrate'])
 	try:
 		page = load_file(request) % filler
 	except:
