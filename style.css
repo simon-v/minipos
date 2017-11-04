@@ -47,9 +47,15 @@ input#currency {
 }
 
 p {
-	font-size: 4vmin;
+	font-size: 3.34vmin;
 }
 
 input#finish, input#cancel {
 	width: 50vmin;
+}
+
+img {
+	width: 80vmin;
+	height: 80vmin;
+	image-rendering: optimizespeed;
 }

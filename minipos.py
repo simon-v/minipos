@@ -2,6 +2,9 @@
 import sys
 from wsgiref.simple_server import make_server
 import urlparse
+import qrcode
+import qrcode.image.svg
+import StringIO
 
 # Load and parse the config file
 config = {}
@@ -47,13 +50,21 @@ def load_file(filename):
 	src.close()
 	return data
 
+# Create a payment request QR page
 def create_invoice(parameters):
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
 	amount = float(parameters['amount'][0]) * config['multiplier']
-	filler = ('0.00000000', amount, currency,
-		config['addresses'][0],
+	address = config['addresses'][0]
+	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, '0.00000000', 'MiniPOS')
+	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
+	output = StringIO.StringIO()
+	image.save(output)
+	output = output.getvalue().encode('base64').replace('\n', '')
+	filler = (output, data,
+		'0.00000000', amount, currency,
+		address,
 		'650', currency)
 	page = load_file('invoice.html') % filler
 	return page
