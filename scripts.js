@@ -32,5 +32,13 @@ function addTax() {
 var currencies = %s,
 cur = 1;
 function cycleCurrency() {
-	document.getElementById("currency").value = currencies[cur++ %% currencies.length]
+	var button = document.getElementById("currency");
+	button.value = currencies[cur++ %% currencies.length];
+	document.getElementById("currencybox").value = button.value;
+}
+
+// Turn cancel button into confirm button
+function showConfirmButton() {
+	document.getElementById("cancel").style.display = "none";
+	document.getElementById("finish").style.display = "inline";
 }

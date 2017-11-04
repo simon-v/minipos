@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 import sys
 from wsgiref.simple_server import make_server
+import urlparse
 
 # Load and parse the config file
 config = {}
@@ -46,16 +47,32 @@ def load_file(filename):
 	src.close()
 	return data
 
+def create_invoice(parameters):
+	if 'currency' not in parameters:
+		parameters['currency'] = config['currencies']
+	currency = parameters['currency'][0]
+	amount = float(parameters['amount'][0]) * config['multiplier']
+	filler = ('0.00000000', amount, currency,
+		config['addresses'][0],
+		'650', currency)
+	page = load_file('invoice.html') % filler
+	return page
+
+# Main webapp function
 def minipos(environ, start_response):
+	internal = False
 	filler = ()
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
+	parameters = urlparse.parse_qs(environ['QUERY_STRING'])
 	if request == 'style.css':
 		headers = [('Content-type', 'text/css')]
 	elif request == 'scripts.js':
 		headers = [('Content-type', 'text/javascript')]
 		filler = (repr(config['currencies']))
-	elif request.endswith('.txt'):
-		headers = [('Content-type', 'text/plain')]
+	elif request == 'invoice':
+		headers = [('Content-type', 'text/html')]
+		page = create_invoice(parameters)
+		internal = True
 	else:
 		headers = [('Content-type', 'text/html')]
 		request = 'request.html'
@@ -63,13 +80,15 @@ def minipos(environ, start_response):
 			disabled = 'disabled'
 		else:
 			disabled = ''
-		filler = (disabled, config['currencies'][0], config['taxrate'])
+		filler = (disabled, config['currencies'][0], config['currencies'][0], config['taxrate'])
 	try:
-		page = load_file(request) % filler
+		if not internal:
+			page = load_file(request) % filler
 	except:
 		status = '404 NOT FOUND'
 		headers = []
 		page = ''
+		raise
 	else:
 		status = '200 OK'
 	start_response(status, headers)

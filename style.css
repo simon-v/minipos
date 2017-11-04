@@ -45,3 +45,11 @@ input#tax {
 input#currency {
 	font-size: 4vmin;
 }
+
+p {
+	font-size: 4vmin;
+}
+
+input#finish, input#cancel {
+	width: 50vmin;
+}
