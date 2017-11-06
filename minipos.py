@@ -6,6 +6,8 @@ import qrcode
 import qrcode.image.svg
 import StringIO
 
+import bch # Local library file
+
 # Load and parse the config file
 config = {}
 try:
@@ -56,16 +58,18 @@ def create_invoice(parameters):
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
 	amount = float(parameters['amount'][0]) * config['multiplier']
+	price = bch.get_price(currency)
+	btc_amount = bch.btc(amount / price)
 	address = config['addresses'][0]
-	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, '0.00000000', 'MiniPOS')
+	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS')
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)
 	output = output.getvalue().encode('base64').replace('\n', '')
 	filler = (output, data,
-		'0.00000000', amount, currency,
+		btc_amount, bch.fiat(amount), currency,
 		address,
-		'650', currency)
+		bch.fiat(price), currency)
 	page = load_file('invoice.html') % filler
 	return page
 
