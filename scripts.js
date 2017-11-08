@@ -38,7 +38,16 @@ function cycleCurrency() {
 }
 
 // Turn cancel button into confirm button
-function showConfirmButton() {
-	document.getElementById("cancel").style.display = "none";
-	document.getElementById("finish").style.display = "inline";
+function showConfirmButton(response) {
+	if (response == 1) {
+		document.getElementById("cancel").style.display = "none";
+		document.getElementById("finish").style.display = "inline";
+	}
+}
+
+// Check whether or not payment was made
+function checkPayment() {
+	if (document.getElementById("finish").style.display == "none") {
+		loadHTTP("check?" + request_string, showConfirmButton);
+	}
 }

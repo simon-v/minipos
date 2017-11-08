@@ -3,9 +3,12 @@
 <head>
 <link rel="stylesheet" href="style.css">
 <script src="scripts.js"></script>
+<script>
+var request_string = "address=%s&amount=%s&initial=%s";
+</script>
 </head>
 
-<body onload="" onclick="showConfirmButton()">
+<body onload="setInterval(checkPayment, 5000)">
 <img src="data:image/png;base64,%s" alt="" title="%s">
 <p>Please send <strong>%s BCH</strong> (total %s %s)</p>
 <p>To address <strong>%s</strong></p>

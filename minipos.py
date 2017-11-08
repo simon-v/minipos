@@ -61,17 +61,30 @@ def create_invoice(parameters):
 	price = bch.get_price(currency)
 	btc_amount = bch.btc(amount / price)
 	address = config['addresses'][0]
+	balance, unconfirmed = bch.get_balance(address)
+	balance += unconfirmed
 	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS')
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)
 	output = output.getvalue().encode('base64').replace('\n', '')
-	filler = (output, data,
+	filler = (address, btc_amount, balance,
+		output, data,
 		btc_amount, bch.fiat(amount), currency,
 		address,
 		bch.fiat(price), currency)
 	page = load_file('invoice.html') % filler
 	return page
+
+def check_payment(parameters):
+	#return '1' # TODO DEBUG
+	amount = parameters['amount'][0]
+	initial = parameters['initial'][0]
+	balance, unconfirmed = bch.get_balance(parameters['address'][0])
+	if balance + unconfirmed >= initial + amount:
+		return '1'
+	else:
+		return '0'
 
 # Main webapp function
 def minipos(environ, start_response):
@@ -87,6 +100,10 @@ def minipos(environ, start_response):
 	elif request == 'invoice':
 		headers = [('Content-type', 'text/html')]
 		page = create_invoice(parameters)
+		internal = True
+	elif request == 'check':
+		page = check_payment(parameters)
+		headers = [('Content-type', 'text/plain')]
 		internal = True
 	else:
 		headers = [('Content-type', 'text/html')]
