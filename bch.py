@@ -8,6 +8,7 @@ currency_url = 'http://api.fixer.io/latest?base=USD&symbols=%s'
 block_explorers = [
 	'https://cashexplorer.bitcoin.com/insight-api/addr/%s',
 ]
+bitpay_url = 'https://bch-insight.bitpay.com/api/addr/%s'
 test_explorers = [
 ]
 
@@ -41,7 +42,11 @@ def get_price(currency):
 
 # Get the address balance
 def get_balance(address):
-	block_url = random.choice(block_explorers)
+	# BitPay's address scheme is non-standard and only recognized by its own software
+	if address.startswith('C') or address.startswith('H'):
+		block_url = bitpay_url
+	else:
+		block_url = random.choice(block_explorers)
 	data = jsonload(block_url % address)
 	balance = data['balance']
 	unconfirmed = data['unconfirmedBalance']
