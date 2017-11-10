@@ -13,9 +13,15 @@ var request_string = "address=%s&amount=%s&initial=%s";
 <p>Please send <strong>%s BCH</strong> (total %s %s)</p>
 <p>To address <strong>%s</strong></p>
 <p><em>(1 BCH = %s %s)</em></p>
-<form method="get" name="" action=".">
+<form method="get" name="" action="request">
 <input type="submit" id="cancel" class="clear" value="&#10007; Cancel">
+</form>
+<form method="get" name="" action="record">
 <input style="display: none;" type="submit" id="finish" class="ok" value="&#10003; Finish">
+<input type="hidden" name="amount" value="%s">
+<input type="hidden" name="currency" value="%s">
+<input type="hidden" name="btc_amount" value="%s">
+<input type="hidden" name="address" value="%s">
 </form>
 </body>
 </html>

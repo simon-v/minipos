@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
+import os
 import sys
 from wsgiref.simple_server import make_server
 import urlparse
+import datetime
 import qrcode
 import qrcode.image.svg
 import StringIO
@@ -72,10 +74,12 @@ def create_invoice(parameters):
 		output, data,
 		btc_amount, bch.fiat(amount), currency,
 		address,
-		bch.fiat(price), currency)
+		bch.fiat(price), currency,
+		bch.fiat(amount), currency, btc_amount, address)
 	page = load_file('invoice.html') % filler
 	return page
 
+# API check if a payment was received
 def check_payment(parameters):
 	#return '1' # TODO DEBUG
 	amount = parameters['amount'][0]
@@ -90,12 +94,28 @@ def check_payment(parameters):
 	else:
 		return '0'
 
+# Write the details of the payment to a log file
+def record_payment(parameters):
+	amount = parameters['amount'][0]
+	currency = parameters['currency'][0]
+	btc_amount = parameters['btc_amount'][0]
+	address = parameters['address'][0]
+	if not os.path.isdir('logs'):
+		os.mkdir('logs')
+	logfile = os.path.join('logs', '%s.log' % datetime.date.today().isoformat())
+	log = open(logfile, 'a')
+	log.write('%s	%s	%s	%s %s\n' % (datetime.datetime.now().isoformat(), address, btc_amount, amount, currency))
+	log.close()
+
 # Main webapp function
 def minipos(environ, start_response):
-	internal = False
 	filler = ()
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urlparse.parse_qs(environ['QUERY_STRING'])
+	status = '200 OK'
+	headers = []
+	page = ''
+	# Prepare individual app pages
 	if request == 'style.css':
 		headers = [('Content-type', 'text/css')]
 	elif request == 'scripts.js':
@@ -104,12 +124,14 @@ def minipos(environ, start_response):
 	elif request == 'invoice':
 		headers = [('Content-type', 'text/html')]
 		page = create_invoice(parameters)
-		internal = True
 	elif request == 'check':
 		page = check_payment(parameters)
 		headers = [('Content-type', 'text/plain')]
-		internal = True
-	else:
+	elif request == 'record':
+		record_payment(parameters)
+		status = '303 See Other\nLocation: request'
+		page = 'Redirecting...'
+	elif request == 'request':
 		headers = [('Content-type', 'text/html')]
 		request = 'request.html'
 		if len(config['currencies']) == 1:
@@ -117,18 +139,18 @@ def minipos(environ, start_response):
 		else:
 			disabled = ''
 		filler = (disabled, config['currencies'][0], config['currencies'][0], config['taxrate'])
-	try:
-		if not internal:
+	elif request == '':
+		status = '303 See Other \nLocation: request'
+		page = 'Redirecting...'
+	if page == '':
+		try:
 			page = load_file(request) % filler
-	except:
-		status = '404 NOT FOUND'
-		headers = []
-		page = ''
-		raise
-	else:
-		status = '200 OK'
+		except:
+			status = '404 Not Found'
+			page = '<!doctype html><body><h1>404 Not Found</h1></body></html>'
+			print(sys.exc_info()[1])
+	# Serve the page
 	start_response(status, headers)
-
 	return [page]
 
 # Start the web server
