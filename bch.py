@@ -7,7 +7,7 @@ price_url = 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/'
 currency_url = 'http://api.fixer.io/latest?base=USD&symbols=%s'
 block_explorers = [
 	'https://cashexplorer.bitcoin.com/insight-api/addr/%s',
-	'https://api.explorer.cash/%s/balance',
+#	'https://api.explorer.cash/%s/balance', # bogus data provided
 	'https://blockdozer.com/insight-api/addr/%s',
 	'https://bccblock.info/api/addr/%s',
 	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s',
