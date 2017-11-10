@@ -43,6 +43,9 @@ function showConfirmButton(response) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
 	}
+	else {
+		setTimeout(checkPayment, 5000);
+	}
 }
 
 // Check whether or not payment was made

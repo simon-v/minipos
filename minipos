@@ -80,7 +80,11 @@ def check_payment(parameters):
 	#return '1' # TODO DEBUG
 	amount = parameters['amount'][0]
 	initial = parameters['initial'][0]
-	balance, unconfirmed = bch.get_balance(parameters['address'][0])
+	try:
+		balance, unconfirmed = bch.get_balance(parameters['address'][0])
+	except:
+		print('Could not fetch balance: %s' % sys.exc_info()[1])
+		return '0'
 	if balance + unconfirmed >= initial + amount:
 		return '1'
 	else:
