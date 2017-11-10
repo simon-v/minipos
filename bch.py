@@ -7,6 +7,13 @@ price_url = 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/'
 currency_url = 'http://api.fixer.io/latest?base=USD&symbols=%s'
 block_explorers = [
 	'https://cashexplorer.bitcoin.com/insight-api/addr/%s',
+	'https://api.explorer.cash/%s/balance',
+	'https://blockdozer.com/insight-api/addr/%s',
+	'https://bccblock.info/api/addr/%s',
+	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s',
+	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY',
+#	'https://bch-bitcore2.trezor.io/api/addr/%s', # scripts not allowed
+#	'https://bitcoincash.blockexplorer.com/api/addr/%s', # scripts not allowed
 ]
 bitpay_url = 'https://bch-insight.bitpay.com/api/addr/%s'
 test_explorers = [
@@ -27,7 +34,7 @@ def fiat(amount):
 # str URL -> str JSON data from the URL
 def jsonload(url):
 	webpage = urllib.urlopen(url)
-	data = json.loads(''.join(webpage.readlines()))
+	data = json.load(webpage)
 	webpage.close()
 	return data
 
@@ -47,7 +54,19 @@ def get_balance(address):
 		block_url = bitpay_url
 	else:
 		block_url = random.choice(block_explorers)
+	#print('Using %s as data source' % block_url.split('/')[2])
 	data = jsonload(block_url % address)
-	balance = data['balance']
-	unconfirmed = data['unconfirmedBalance']
+	try:
+		balance = data['balance']
+		# BlockTrail requires special handling
+		if 'balanceSat' not in data:
+			balance /= 100000000.0
+	except KeyError:
+		# BlockChair requires special handling
+		balance = float(data['data'][0]['sum_value_unspent']) / 100000000
+	try:
+		# Explorer.Cash does not provide the unconfirmed balance field; Getting it would require an extra query and some calculation
+		unconfirmed = data['unconfirmedBalance']
+	except KeyError:
+		unconfirmed = 0
 	return balance, unconfirmed
