@@ -1,5 +1,5 @@
 body {
-	font-size: 10vmin;
+	font-size: 3.34vmin;
 	text-align: center;
 }
 
@@ -42,12 +42,13 @@ input#tax {
 	background-color: darkcyan;
 }
 
-input#currency {
-	font-size: 4vmin;
+input.ctrl {
+	color: white;
+	background-color: #333333;
 }
 
-p {
-	font-size: 3.34vmin;
+input#currency {
+	font-size: 4vmin;
 }
 
 input#finish, input#cancel {
