@@ -138,7 +138,11 @@ def minipos(environ, start_response):
 			disabled = 'disabled'
 		else:
 			disabled = ''
-		filler = (disabled, config['currencies'][0], config['currencies'][0], config['taxrate'])
+		if config['taxrate'] < 0:
+			tax = 'Discount'
+		else:
+			tax = 'Tax'
+		filler = (disabled, config['currencies'][0], config['currencies'][0], tax, config['taxrate'], config['multiplier'])
 	elif request == '':
 		status = '303 See Other \nLocation: request'
 		page = 'Redirecting...'

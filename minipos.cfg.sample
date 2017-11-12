@@ -15,6 +15,7 @@ currencies=USD
 
 # The sales or value added tax in your jurisdiction, that you want to be able to
 # quickly add to the entered amount
+# Set to a negative number to provide a discount instead
 taxrate=10
 
 # Comma-separated list of bitcoin addresses to which you wish to receive funds
