@@ -81,7 +81,7 @@ def create_invoice(parameters):
 
 # API check if a payment was received
 def check_payment(parameters):
-	#return '1' # TODO DEBUG
+	return '1' # TODO DEBUG
 	amount = parameters['amount'][0]
 	initial = parameters['initial'][0]
 	try:
@@ -107,6 +107,47 @@ def record_payment(parameters):
 	log.write('%s	%s	%s	%s %s\n' % (datetime.datetime.now().isoformat(), address, btc_amount, amount, currency))
 	log.close()
 
+# Parse a log file and add its contents to the table
+def read_log_file(filename):
+	table = ''
+	report = ''
+	totals = {}
+	for currency in config['currencies']:
+		totals[currency] = 0
+	try:
+		logfile = open(filename, 'r')
+	except:
+		print(sys.exc_info()[1])
+		return '<p>No transactions.</p>', ''
+	try:
+		for line in logfile.readlines():
+			date, address, btc_amount, amount = line.strip().split('	')
+			amount, currency = amount.split(' ')
+			totals[currency] += float(amount)
+			date = date.split('.')[0].replace('T', ' ')
+			table += '<tr><td>%s</td><td>%s...</td><td>%s</td><td>%s %s</td></tr>\n' % (date, address[0:10], btc_amount, amount, currency)
+	except:
+		print(sys.exc_info()[1])
+		table += '<tr><td colspan="4" class="error">The log file is corrupted!</td></tr>'
+	logfile.close()
+	for symbol in totals.keys():
+		if totals[symbol] != 0:
+			report += '<p>%s %s</p>\n' % (bch.fiat(totals[symbol]), symbol)
+	return report, table
+
+
+# Display a log of recent transactions
+def show_logs(parameters):
+	page = load_file('logs.html')
+	table_head = ''
+	table_foot = ''
+	date = datetime.date.today().isoformat()
+	summary, table = read_log_file(os.path.join('logs', '%s.log' % date))
+	if table != '':
+		table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
+		table_foot = '</table>\n'
+	return page % (date, summary, table_head + table + table_foot)
+
 # Main webapp function
 def minipos(environ, start_response):
 	filler = ()
@@ -131,6 +172,9 @@ def minipos(environ, start_response):
 		record_payment(parameters)
 		status = '303 See Other\nLocation: request'
 		page = 'Redirecting...'
+	elif request == 'logs':
+		headers = [('Content-type', 'text/html')]
+		page = show_logs(parameters)
 	elif request == 'request':
 		headers = [('Content-type', 'text/html')]
 		request = 'request.html'

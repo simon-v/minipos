@@ -7,6 +7,21 @@ table {
 	margin: auto;
 }
 
+table.listing td {
+	padding-left: 1vmin;
+	padding-right: 1vmin;
+}
+table.listing tr:nth-child(even) {
+	background-color: lightgray;
+}
+table td.error {
+	animation: blinker 0.75s linear infinite;
+	font-weight: bold;
+}
+@keyframes blinker {
+	50%% { opacity: 0; }
+}
+
 input {
 	width: 16.67vmin;
 	height: 16.67vmin;
@@ -55,8 +70,18 @@ input#finish, input#cancel {
 	width: 50vmin;
 }
 
+input.wide {
+	width: 33.34vmin;
+}
+
 img {
 	width: 80vmin;
 	height: 80vmin;
 	image-rendering: optimizespeed;
+}
+
+@media print {
+	input {
+		display: none !important;
+	}
 }

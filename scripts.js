@@ -54,3 +54,8 @@ function checkPayment() {
 		loadHTTP("check?" + request_string, showConfirmButton);
 	}
 }
+
+// Open the log page
+function openLogs() {
+	window.open("logs", "_self", true);
+}
