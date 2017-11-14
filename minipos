@@ -11,7 +11,9 @@ import StringIO
 import bch # Local library file
 
 # Load and parse the config file
-config = {}
+config = {
+	'addresses': [],
+}
 try:
 	f = open('minipos.cfg', 'r')
 	lines = f.readlines()
@@ -27,7 +29,11 @@ for line in lines:
 	words = line.strip().split('=')
 	key = words[0].strip()
 	value = '='.join(words[1:]).strip()
-	config[key] = value
+	if key == 'addresses':
+		for addr in value.split(','):
+			config['addresses'].append(addr)
+	else:
+		config[key] = value
 # Sanitize config file
 try:
 	config['taxrate'] = float(config['taxrate'])
@@ -41,11 +47,9 @@ try:
 	config['multiplier'] = float(config['multiplier'])
 except:
 	config['multiplier'] = 1
-if 'addresses' not in config.keys():
+if config['addresses'] == []:
 	print('Required key `addresses` is missing from configuration file')
 	sys.exit(2)
-else:
-	config['addresses'] = config['addresses'].split(',')
 
 # Utility wrapper function
 def load_file(filename):
@@ -62,7 +66,9 @@ def create_invoice(parameters):
 	amount = float(parameters['amount'][0]) * config['multiplier']
 	price = bch.get_price(currency)
 	btc_amount = bch.btc(amount / price)
-	address = config['addresses'][0]
+	# Use the next available address
+	address = config['addresses'].pop(0)
+	config['addresses'].append(address)
 	balance, unconfirmed = bch.get_balance(address)
 	balance += unconfirmed
 	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS')
