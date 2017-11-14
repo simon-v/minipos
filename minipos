@@ -110,15 +110,15 @@ def record_payment(parameters):
 # Parse a log file and add its contents to the table
 def read_log_file(filename):
 	table = ''
-	report = ''
 	totals = {}
 	for currency in config['currencies']:
 		totals[currency] = 0
 	try:
 		logfile = open(filename, 'r')
 	except:
-		print(sys.exc_info()[1])
-		return '<p>No transactions.</p>', ''
+		if sys.exc_info()[0] is not IOError:
+			print(sys.exc_info()[1])
+		return {}, ''
 	try:
 		for line in logfile.readlines():
 			date, address, btc_amount, amount = line.strip().split('	')
@@ -130,10 +130,7 @@ def read_log_file(filename):
 		print(sys.exc_info()[1])
 		table += '<tr><td colspan="4" class="error">The log file is corrupted!</td></tr>'
 	logfile.close()
-	for symbol in totals.keys():
-		if totals[symbol] != 0:
-			report += '<p>%s %s</p>\n' % (bch.fiat(totals[symbol]), symbol)
-	return report, table
+	return totals, table
 
 
 # Display a log of recent transactions
@@ -175,12 +172,46 @@ def show_logs(parameters):
 			res_month = '%s-06' % (d.year)
 	res_year = str(d.year)
 	page = load_file('logs.html')
+	table = ''
 	table_head = ''
 	table_foot = ''
-	summary, table = read_log_file(os.path.join('logs', '%s.log' % date))
+	summary = ''
+	totals = {}
+	days = []
+	# Compile a date list to process
+	# Day resolution
+	if len(date) == 10:
+		days = [date]
+	# Month resolution
+	elif len(date) == 7:
+		_date = datetime.date(d.year, d.month, 1)
+		while _date.month < d.month + 1:
+			days.append(_date.isoformat())
+			_date += datetime.timedelta(1)
+	# Year resolution
+	elif len(date) == 4:
+		_date = datetime.date(d.year, 1, 1)
+		while _date.year < d.year + 1:
+			days.append(_date.isoformat())
+			_date += datetime.timedelta(1)
+	# Create a transaction table and calculate totals
+	for _date in days:
+		_totals, _table = read_log_file(os.path.join('logs', '%s.log' % _date))
+		table += _table
+		for k in _totals.keys():
+			if k in totals:
+				totals[k] += _totals[k]
+			else:
+				totals[k] = _totals[k]
+	for sign in totals.keys():
+		if totals[sign] != 0:
+			summary += '<p>%s %s</p>\n' % (bch.fiat(totals[sign]), sign)
+	# Format and return the logs page
 	if table != '':
 		table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
 		table_foot = '</table>\n'
+	else:
+		summary = '<p>No transactions.</p>'
 	return page % (prev_date, res_day, res_month, res_year, next_date,
 		date, summary, table_head + table + table_foot)
 
