@@ -9,7 +9,7 @@
 <form method="get" action="invoice">
 <table>
 <tr>
-<td colspan="3"><input type="number" class="text" id="amountbox" name="amount" min="0"></td>
+<td colspan="3"><input type="number" class="text" id="amountbox" name="amount" min="1" required></td>
 <td><input type="button" %s value="%s" id="currency" onclick="cycleCurrency()">
 <input type="hidden" value="%s" id="currencybox" name="currency"></td>
 <tr>
