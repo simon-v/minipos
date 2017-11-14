@@ -56,6 +56,11 @@ function checkPayment() {
 }
 
 // Open the log page
-function openLogs() {
-	window.open("logs", "_self", true);
+function openLogs(date) {
+	if ( date )  {
+		window.open("logs?date=" + date, true);
+	}
+	else {
+		window.open("logs", "_self", true);
+	}
 }

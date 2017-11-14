@@ -138,15 +138,51 @@ def read_log_file(filename):
 
 # Display a log of recent transactions
 def show_logs(parameters):
+	if 'date' not in parameters:
+		date = datetime.date.today().isoformat()
+	else:
+		date = parameters['date'][0]
+	# Process the current and calculate next and previous date
+	# Day resolution
+	try:
+		d = datetime.datetime.strptime(date, '%Y-%m-%d')
+		next_date = datetime.datetime.strftime(d + datetime.timedelta(1), '%Y-%m-%d')
+		prev_date = datetime.datetime.strftime(d - datetime.timedelta(1), '%Y-%m-%d')
+		res_day = date
+		res_month = '%s-%s' % (d.year, str(d.month).zfill(2))
+	except ValueError:
+		# Month resolution
+		try:
+			d = datetime.datetime.strptime(date, '%Y-%m')
+			if d.month == 12:
+				year, month = d.year + 1, 1
+			else:
+				year, month = d.year, d.month + 1
+			next_date = '%s-%s' % (year, str(month).zfill(2))
+			if d.month == 1:
+				year, month = d.year - 1, 12
+			else:
+				year, month = d.year, d.month - 1
+			prev_date = '%s-%s' % (year, str(month).zfill(2))
+			res_day = '%s-%s-15' % (d.year, str(d.month).zfill(2))
+			res_month = '%s-%s' % (d.year, str(d.month).zfill(2))
+		except ValueError:
+			# Year resolution
+			d = datetime.datetime.strptime(date, '%Y')
+			next_date = str(d.year + 1)
+			prev_date = str(d.year - 1)
+			res_day = '%s-06-15' % (d.year)
+			res_month = '%s-06' % (d.year)
+	res_year = str(d.year)
 	page = load_file('logs.html')
 	table_head = ''
 	table_foot = ''
-	date = datetime.date.today().isoformat()
 	summary, table = read_log_file(os.path.join('logs', '%s.log' % date))
 	if table != '':
 		table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
 		table_foot = '</table>\n'
-	return page % (date, summary, table_head + table + table_foot)
+	return page % (prev_date, res_day, res_month, res_year, next_date,
+		date, summary, table_head + table + table_foot)
 
 # Main webapp function
 def minipos(environ, start_response):
