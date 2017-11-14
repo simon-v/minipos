@@ -5,7 +5,6 @@ from wsgiref.simple_server import make_server
 import urlparse
 import datetime
 import qrcode
-import qrcode.image.svg
 import StringIO
 
 import bch # Local library file
