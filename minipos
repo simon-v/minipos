@@ -132,7 +132,7 @@ def read_log_file(filename):
 			date = date.split('.')[0].replace('T', ' ')
 			table += '<tr><td>%s</td><td>%s...</td><td>%s</td><td>%s %s</td></tr>\n' % (date, address[0:10], btc_amount, amount, currency)
 	except:
-		print(sys.exc_info()[1])
+		print('Log file is corrupted: %s (%s)' % (filename, sys.exc_info()[1]))
 		table += '<tr><td colspan="4" class="error">The log file is corrupted!</td></tr>'
 	logfile.close()
 	return totals, table
