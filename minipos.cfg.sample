@@ -7,7 +7,7 @@
 # If all your prices are rounded to the 1000, set this to 1000
 # If you have cent prices, set this to 0.01 and enter the amount ignoring the
 # decimal point, e.g., "100" for $1.00
-multiplier = 0.01
+multiplier=0.01
 
 # Comma-separated list of currencies you accept in ISO 4217 format
 currencies=USD
@@ -17,6 +17,10 @@ currencies=USD
 # quickly add to the entered amount
 # Set to a negative number to provide a discount instead
 taxrate=10
+
+# First day of the week for the purposes of week log display, according to your
+# locale. Possible values are "sunday" and "monday"
+week_start=monday
 
 # Comma-separated list of bitcoin addresses to which you wish to receive funds
 # You can have as many "addresses" keys as you need

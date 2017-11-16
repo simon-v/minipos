@@ -49,6 +49,12 @@ except:
 if config['addresses'] == []:
 	print('Required key `addresses` is missing from configuration file')
 	sys.exit(2)
+if 'week_start' not in config or config['week_start'] == 'monday':
+	config['week_start'] = 0
+elif config['week_start'] == 'sunday':
+	config['week_start'] = 1
+else:
+	print("Invalid 'week_start' value, falling back to 'monday'")
 
 # Utility wrapper function
 def load_file(filename):
@@ -145,61 +151,92 @@ def show_logs(parameters):
 	else:
 		date = parameters['date'][0]
 	# Process the current and calculate next and previous date
-	# Day resolution
-	try:
+	days = []
+	# Day scope
+	if len(date) == 10:
 		d = datetime.datetime.strptime(date, '%Y-%m-%d')
-		next_date = datetime.datetime.strftime(d + datetime.timedelta(1), '%Y-%m-%d')
-		prev_date = datetime.datetime.strftime(d - datetime.timedelta(1), '%Y-%m-%d')
-		res_day = date
-		res_month = '%s-%s' % (d.year, str(d.month).zfill(2))
-	except ValueError:
-		# Month resolution
-		try:
-			d = datetime.datetime.strptime(date, '%Y-%m')
-			if d.month == 12:
-				year, month = d.year + 1, 1
-			else:
-				year, month = d.year, d.month + 1
-			next_date = '%s-%s' % (year, str(month).zfill(2))
-			if d.month == 1:
-				year, month = d.year - 1, 12
-			else:
-				year, month = d.year, d.month - 1
-			prev_date = '%s-%s' % (year, str(month).zfill(2))
-			res_day = '%s-%s-15' % (d.year, str(d.month).zfill(2))
-			res_month = '%s-%s' % (d.year, str(d.month).zfill(2))
-		except ValueError:
-			# Year resolution
-			d = datetime.datetime.strptime(date, '%Y')
-			next_date = str(d.year + 1)
-			prev_date = str(d.year - 1)
-			res_day = '%s-06-15' % (d.year)
-			res_month = '%s-06' % (d.year)
-	res_year = str(d.year)
+		delta = datetime.timedelta(1)
+		next_date = (d + delta).date().isoformat()
+		prev_date = (d - delta).date().isoformat()
+		tag_s = 'W'
+		scope_s = '%s-W%s' % d.isocalendar()[0:2]
+		tag_m = 'M'
+		scope_m = '%s-%s' % (d.year, str(d.month).zfill(2))
+		tag_l = 'Y'
+		scope_l = str(d.year)
+		days = [date]
+	# Week scope
+	elif len(date) == 8:
+		# Convert ISO week to Python date
+		_year = int(date[0:4])
+		_week = int(date[6:8])
+		ref_date = datetime.date(_year, 1, 4)
+		ref_week, ref_day = ref_date.isocalendar()[1:3]
+		d = (ref_date + datetime.timedelta(days=1-ref_day, weeks=_week-ref_week))
+		# Calculate offsets
+		delta = datetime.timedelta(7)
+		next_date = '%s-W%02d' % (d + delta).isocalendar()[0:2]
+		prev_date = '%s-W%02d' % (d - delta).isocalendar()[0:2]
+		tag_s = 'D'
+		scope_s = (d + datetime.timedelta(3)).isoformat()
+		tag_m = 'M'
+		scope_m = '%s-%s' % (d.year, str(d.month).zfill(2))
+		tag_l = 'Y'
+		scope_l = str(d.year)
+		# Populate date list
+		for i in range(7):
+			days.append((d + datetime.timedelta(i - config['week_start'])).isoformat())
+		print('range %s to %s' % (days[0], days[6]))
+	# Month scope
+	elif len(date) == 7:
+		d = datetime.datetime.strptime(date, '%Y-%m')
+		if d.month == 12:
+			year, month = d.year + 1, 1
+		else:
+			year, month = d.year, d.month + 1
+		next_date = '%s-%s' % (year, str(month).zfill(2))
+		if d.month == 1:
+			year, month = d.year - 1, 12
+		else:
+			year, month = d.year, d.month - 1
+		prev_date = '%s-%s' % (year, str(month).zfill(2))
+		tag_s = 'D'
+		scope_s = '%s-%s-15' % (d.year, str(d.month).zfill(2))
+		tag_m = 'W'
+		scope_m = '%s-W%02d' % (d + datetime.timedelta(15)).isocalendar()[0:2]
+		tag_l = 'Y'
+		scope_l = str(d.year)
+		# Populate date list
+		_date = datetime.date(d.year, d.month, 1)
+		while _date.month == d.month:
+			days.append(_date.isoformat())
+			_date += datetime.timedelta(1)
+	# Year scope
+	elif len(date) == 4:
+		d = datetime.datetime.strptime(date, '%Y')
+		next_date = str(d.year + 1)
+		prev_date = str(d.year - 1)
+		tag_s = 'D'
+		scope_s = '%s-06-15' % d.year
+		tag_m = 'W'
+		scope_m = '%s-W26' % d.year
+		tag_l = 'M'
+		scope_l = '%s-06' % d.year
+		# Populate date list
+		_date = datetime.date(d.year, 1, 1)
+		while _date.year == d.year:
+			days.append(_date.isoformat())
+			_date += datetime.timedelta(1)
+	else:
+		raise ValueError
+	# Create a transaction table and calculate totals
 	page = load_file('logs.html')
 	table = ''
 	table_head = ''
 	table_foot = ''
 	summary = ''
 	totals = {}
-	days = []
-	# Compile a date list to process
-	# Day resolution
-	if len(date) == 10:
-		days = [date]
-	# Month resolution
-	elif len(date) == 7:
-		_date = datetime.date(d.year, d.month, 1)
-		while _date.month < d.month + 1:
-			days.append(_date.isoformat())
-			_date += datetime.timedelta(1)
-	# Year resolution
-	elif len(date) == 4:
-		_date = datetime.date(d.year, 1, 1)
-		while _date.year < d.year + 1:
-			days.append(_date.isoformat())
-			_date += datetime.timedelta(1)
-	# Create a transaction table and calculate totals
+	# Compile transaction table and calculate date totals
 	for _date in days:
 		_totals, _table = read_log_file(os.path.join('logs', '%s.log' % _date))
 		table += _table
@@ -217,7 +254,7 @@ def show_logs(parameters):
 		table_foot = '</table>\n'
 	else:
 		summary = '<p>No transactions.</p>'
-	return page % (prev_date, res_day, res_month, res_year, next_date,
+	return page % (prev_date, tag_s, scope_s, tag_m, scope_m, tag_l, scope_l, next_date,
 		date, summary, table_head + table + table_foot)
 
 # Main webapp function
@@ -246,7 +283,11 @@ def minipos(environ, start_response):
 		page = 'Redirecting...'
 	elif request == 'logs':
 		headers = [('Content-type', 'text/html')]
-		page = show_logs(parameters)
+		try:
+			page = show_logs(parameters)
+		except ValueError:
+			status = '400 Bad Request'
+			page = '<!doctype html><body><h1>400 Bad Request</h1></body></html>'
 	elif request == 'request':
 		headers = [('Content-type', 'text/html')]
 		request = 'request.html'
