@@ -25,6 +25,14 @@ week_start=monday
 # The port number minipos will listen on
 port=8080
 
+# A comma-separated list of IP addresses that are allowed to connect
+# Set to "0.0.0.0" to allow all connections
+# Set to "127.0.0.1" to allow local connections only.
+# To allow connections from a specific subnet, e.g. a LAN, set the last digit of
+# the IP address to "0", e.g., 192.168.1.0
+allowed_ips=0.0.0.0
+#allowed_ips=127.0.0.1,192.168.1.0
+
 # Comma-separated list of bitcoin addresses to which you wish to receive funds
 # You can have as many "addresses" keys as you need
 addresses=1ADDReSs00000000000000000000000000

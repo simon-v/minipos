@@ -60,6 +60,10 @@ try:
 except:
 	print(sys.exc_info()[1])
 	config['port'] = 8080
+if 'allowed_ips' not in config:
+	config['allowed_ips'] = ['0.0.0.0']
+else:
+	config['allowed_ips'] = config['allowed_ips'].split(',')
 
 
 # Utility wrapper function
@@ -266,6 +270,13 @@ def show_logs(parameters):
 # Main webapp function
 def minipos(environ, start_response):
 	filler = ()
+	ip_addr = environ['REMOTE_ADDR']
+	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
+	if '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
+		status = '403 Not Allowed'
+		page = '<!doctype html><body><h1>403 Not Allowed</h1></body></html>'
+		start_response(status, [])
+		return [page]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urlparse.parse_qs(environ['QUERY_STRING'])
 	status = '200 OK'
