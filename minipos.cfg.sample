@@ -22,6 +22,9 @@ taxrate=10
 # locale. Possible values are "sunday" and "monday"
 week_start=monday
 
+# The port number minipos will listen on
+port=8080
+
 # Comma-separated list of bitcoin addresses to which you wish to receive funds
 # You can have as many "addresses" keys as you need
 addresses=1ADDReSs00000000000000000000000000

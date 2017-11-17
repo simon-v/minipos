@@ -55,6 +55,12 @@ elif config['week_start'] == 'sunday':
 	config['week_start'] = 1
 else:
 	print("Invalid 'week_start' value, falling back to 'monday'")
+try:
+	config['port'] = int(config['port'])
+except:
+	print(sys.exc_info()[1])
+	config['port'] = 8080
+
 
 # Utility wrapper function
 def load_file(filename):
@@ -315,8 +321,8 @@ def minipos(environ, start_response):
 	return [page]
 
 # Start the web server
-httpd = make_server('', 8080, minipos)
-print('Serving minipos on port 8080...')
+httpd = make_server('', config['port'], minipos)
+print('Serving minipos on port %s...' % config['port'])
 try:
 	httpd.serve_forever()
 except:
