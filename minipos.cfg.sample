@@ -41,6 +41,5 @@ email=
 #login=
 #passwd=
 
-# Comma-separated list of bitcoin addresses to which you wish to receive funds
-# You can have as many "addresses" keys as you need
-addresses=1ADDReSs00000000000000000000000000
+# Create a file named "address.list" and put your receiving addresses there, one
+# per line. At least one receiving address is needed to be able to use minipos.

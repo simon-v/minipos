@@ -29,11 +29,19 @@ for line in lines:
 	words = line.strip().split('=')
 	key = words[0].strip()
 	value = '='.join(words[1:]).strip()
-	if key == 'addresses':
-		for addr in value.split(','):
-			config['addresses'].append(addr)
-	else:
-		config[key] = value
+	config[key] = value
+# Read the address list
+try:
+	f = open('address.list', 'r')
+	for line in f.readlines():
+		config['addresses'].append(line.strip())
+	f.close()
+except:
+	print('Could not open addresses.list. Exiting.')
+	sys.exit(2)
+if config['addresses'] == []:
+	print('No receiving addresses available. Exiting.')
+	sys.exit(2)
 # Sanitize config file
 try:
 	config['taxrate'] = float(config['taxrate'])
@@ -47,9 +55,6 @@ try:
 	config['multiplier'] = float(config['multiplier'])
 except:
 	config['multiplier'] = 1
-if config['addresses'] == []:
-	print('Required key `addresses` is missing from configuration file')
-	sys.exit(2)
 if 'week_start' not in config or config['week_start'] == 'monday':
 	config['week_start'] = 0
 elif config['week_start'] == 'sunday':
