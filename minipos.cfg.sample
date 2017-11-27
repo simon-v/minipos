@@ -33,6 +33,14 @@ port=8080
 allowed_ips=0.0.0.0
 #allowed_ips=127.0.0.1,192.168.1.0
 
+# Set this to your email address if you want to enable log mailing capabilities
+email=
+# By default, the "sendmail" program will be used to send emails.
+# Uncomment and set the following to use SMTP instead
+#server=
+#login=
+#passwd=
+
 # Comma-separated list of bitcoin addresses to which you wish to receive funds
 # You can have as many "addresses" keys as you need
 addresses=1ADDReSs00000000000000000000000000

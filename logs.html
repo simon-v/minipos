@@ -10,7 +10,7 @@
 <table>
 <tr>
 <td><input type="submit" value="&larr;" class="clear"></td>
-<td colspan="2"><input type="button" value="Email" class="ctrl wide" onclick="emailPage()"></td>
+<td colspan="2"><input type="button" value="Email" class="ctrl wide" onclick="sendEmail('%s')"></td>
 <td colspan="2"><input type="button" value="Print" class="ctrl wide" onclick="window.print()"></td>
 </tr><tr>
 <td><input type="button" value="&lt;" onclick="openLogs('%s')"></td>
@@ -21,6 +21,9 @@
 </tr>
 </table>
 </form>
+<div id="popup"><p id="popup_text"></p>
+<form><input type="button" class="ctrl wide" value="OK" onclick="dismissPopup()"></form>
+</div>
 <h1>%s</h1>
 <h2>Total received:</h2>
 %s

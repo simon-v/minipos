@@ -58,9 +58,30 @@ function checkPayment() {
 // Open the log page
 function openLogs(date) {
 	if ( date )  {
-		window.open("logs?date=" + date, true);
+		window.open("logs?date=" + date, "_self", true);
 	}
 	else {
 		window.open("logs", "_self", true);
 	}
+}
+function sendEmail(date) {
+	if ( date ) {
+		loadHTTP("email?date=" + date, emailSent);
+	}
+	else {
+		loadHTTP("email", emailSent);
+	}
+}
+function emailSent(response) {
+	if ( response == 1 ) {
+		document.getElementById("popup_text").innerHTML = "The email was sent to the configured address.";
+	}
+	else {
+		document.getElementById("popup_text").innerHTML = "There was an error sending the email.";
+	}
+	document.getElementById("popup").style.display = "block";
+}
+function dismissPopup() {
+	document.getElementById("popup_text").innerHTML = "";
+	document.getElementById("popup").style.display = "none";
 }

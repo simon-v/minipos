@@ -80,6 +80,18 @@ img {
 	image-rendering: optimizespeed;
 }
 
+#popup {
+	width: 80vmin;
+	position: absolute;
+	top: 40vmin;
+	left: 65vmin;
+	display: none;
+	color: white;
+	background-color: #262626;
+	padding: 4vmin;
+	border-radius: 1.67vmin;
+}
+
 @media print {
 	input {
 		display: none !important;

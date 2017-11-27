@@ -8,6 +8,7 @@ import qrcode
 import StringIO
 
 import bch # Local library file
+import sendmail # Local library file
 
 # Load and parse the config file
 config = {
@@ -129,7 +130,7 @@ def record_payment(parameters):
 	log.close()
 
 # Parse a log file and add its contents to the table
-def read_log_file(filename):
+def read_log_file(filename, plaintext=False):
 	table = ''
 	totals = {}
 	for currency in config['currencies']:
@@ -146,16 +147,22 @@ def read_log_file(filename):
 			amount, currency = amount.split(' ')
 			totals[currency] += float(amount)
 			date = date.split('.')[0].replace('T', ' ')
-			table += '<tr><td>%s</td><td>%s...</td><td>%s</td><td>%s %s</td></tr>\n' % (date, address[0:10], btc_amount, amount, currency)
+			if plaintext:
+				table += '%s  %s...  %s  %s %s\n' % (date, address[0:10], str(btc_amount).ljust(12), str(amount).rjust(15), currency)
+			else:
+				table += '<tr><td>%s</td><td>%s...</td><td>%s</td><td>%s %s</td></tr>\n' % (date, address[0:10], btc_amount, amount, currency)
 	except:
 		print('Log file is corrupted: %s (%s)' % (filename, sys.exc_info()[1]))
-		table += '<tr><td colspan="4" class="error">The log file is corrupted!</td></tr>'
+		msg = 'The log file for %s is corrupted!' % filename
+		if plaintext:
+			table += msg
+		else:
+			table += '<tr><td colspan="4" class="error">' + msg + '</td></tr>'
 	logfile.close()
 	return totals, table
 
-
 # Display a log of recent transactions
-def show_logs(parameters):
+def show_logs(parameters, plaintext=False):
 	if 'date' not in parameters:
 		date = datetime.date.today().isoformat()
 	else:
@@ -240,7 +247,10 @@ def show_logs(parameters):
 	else:
 		raise ValueError
 	# Create a transaction table and calculate totals
-	page = load_file('logs.html')
+	if plaintext:
+		page = '===== Summary for %s =====' % date
+	else:
+		page = load_file('logs.html')
 	table = ''
 	table_head = ''
 	table_foot = ''
@@ -248,7 +258,7 @@ def show_logs(parameters):
 	totals = {}
 	# Compile transaction table and calculate date totals
 	for _date in days:
-		_totals, _table = read_log_file(os.path.join('logs', '%s.log' % _date))
+		_totals, _table = read_log_file(os.path.join('logs', '%s.log' % _date), plaintext)
 		table += _table
 		for k in _totals.keys():
 			if k in totals:
@@ -257,14 +267,24 @@ def show_logs(parameters):
 				totals[k] = _totals[k]
 	for sign in totals.keys():
 		if totals[sign] != 0:
-			summary += '<p>%s %s</p>\n' % (bch.fiat(totals[sign]), sign)
+			if plaintext:
+				chunk = '%s %s\n'
+			else:
+				chunk = '<p>%s %s</p>\n'
+			summary += chunk % (bch.fiat(totals[sign]), sign)
 	# Format and return the logs page
 	if table != '':
-		table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
-		table_foot = '</table>\n'
+		if plaintext:
+			table_head = '====== Date =======||== Address ==||== Amount ==||== Amount (fiat) =='
+		else:
+			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
+			table_foot = '</table>\n'
 	else:
 		summary = '<p>No transactions.</p>'
-	return page % (prev_date, tag_s, scope_s, tag_m, scope_m, tag_l, scope_l, next_date,
+	if plaintext:
+		return '\n'.join([page, summary, table_head, table])
+	else:
+		return page % (date, prev_date, tag_s, scope_s, tag_m, scope_m, tag_l, scope_l, next_date,
 		date, summary, table_head + table + table_foot)
 
 # Main webapp function
@@ -305,6 +325,14 @@ def minipos(environ, start_response):
 		except ValueError:
 			status = '400 Bad Request'
 			page = '<!doctype html><body><h1>400 Bad Request</h1></body></html>'
+	elif request == 'email':
+		if 'email' not in config:
+			print('Email not configured.')
+			page = '0'
+		elif sendmail.send(config, config['email'], '[minipos] Transaction listing for %s' % parameters['date'][0], show_logs(parameters, plaintext=True)):
+			page = '1'
+		else:
+			page = '0'
 	elif request == 'request':
 		headers = [('Content-type', 'text/html')]
 		request = 'request.html'
