@@ -40,6 +40,3 @@ email=
 #server=
 #login=
 #passwd=
-
-# Create a file named "address.list" and put your receiving addresses there, one
-# per line. At least one receiving address is needed to be able to use minipos.

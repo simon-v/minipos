@@ -26,8 +26,8 @@ try:
 	lines = f.readlines()
 	f.close()
 except:
-	print('No configuration file found')
-	sys.exit(1)
+	print('No configuration file found, using defaults')
+	lines = []
 for line in lines:
 	# Skip blank lines and comments
 	if line.strip() == '' or line.startswith('#'):
@@ -47,7 +47,7 @@ except:
 	print('Could not open addresses.list')
 	sys.exit(2)
 if config['addresses'] == []:
-	print('No receiving addresses available')
+	print('No receiving addresses in addresses.list')
 	sys.exit(2)
 # Sanitize config file
 try:
@@ -71,7 +71,6 @@ else:
 try:
 	config['port'] = int(config['port'])
 except:
-	print(sys.exc_info()[1])
 	config['port'] = 8080
 if 'allowed_ips' not in config:
 	config['allowed_ips'] = ['0.0.0.0']
