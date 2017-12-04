@@ -348,6 +348,10 @@ def minipos(environ, start_response):
 	elif request == 'scripts.js':
 		headers = [('Content-type', 'text/javascript')]
 		filler = (repr(config['currencies']))
+	elif request.endswith('.png'):
+		headers = [('Content-type', 'image/png')]
+	elif request.endswith('.svg'):
+		headers = [('Content-type', 'image/svg+xml')]
 	elif request == 'invoice':
 		try:
 			page = create_invoice(parameters)

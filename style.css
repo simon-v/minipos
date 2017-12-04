@@ -80,6 +80,13 @@ img {
 	image-rendering: optimizespeed;
 }
 
+img.icon {
+	height: 3.34vmin;
+	width: auto;
+	position: relative;
+	top: 0.34vmin;
+}
+
 #popup {
 	width: 80vmin;
 	position: absolute;
