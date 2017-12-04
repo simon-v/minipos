@@ -17,6 +17,7 @@ import bch # Local library file
 import sendmail # Local library file
 
 # Load and parse the config file
+os.chdir(os.path.dirname(__file__))
 config = {
 	'addresses': [],
 }
@@ -43,10 +44,10 @@ try:
 		config['addresses'].append(line.strip())
 	f.close()
 except:
-	print('Could not open addresses.list. Exiting.')
+	print('Could not open addresses.list')
 	sys.exit(2)
 if config['addresses'] == []:
-	print('No receiving addresses available. Exiting.')
+	print('No receiving addresses available')
 	sys.exit(2)
 # Sanitize config file
 try:
@@ -87,18 +88,37 @@ def load_file(filename):
 
 # Create a payment request QR page
 def create_invoice(parameters):
+	error = '''<!doctype html>
+<head>
+<meta http-equiv="refresh" content="5">
+<title>Request Timed Out</title>
+</head>
+<body>
+<h1>Request Timed Out</h1>
+<p>Check the Internet connection of the MiniPOS server.</p>
+<p>Trying again in 5 seconds...</p>
+</body>
+</html>'''
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
 	amount = float(parameters['amount'][0]) * config['multiplier']
-	price = bch.get_price(currency)
+	try:
+		price = bch.get_price(currency)
+	except:
+		print(sys.exc_info()[1])
+		return error
 	btc_amount = bch.btc(amount / price)
 	# Use the next available address
 	address = config['addresses'].pop(0)
 	config['addresses'].append(address)
-	balance, unconfirmed = bch.get_balance(address)
+	try:
+		balance, unconfirmed = bch.get_balance(address)
+	except:
+		print(sys.exc_info()[1])
+		return error
 	balance += unconfirmed
-	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS')
+	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS') # TODO add custom label handling
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)
@@ -120,6 +140,7 @@ def check_payment(parameters):
 	try:
 		balance, unconfirmed = bch.get_balance(parameters['address'][0])
 	except:
+		print(sys.exc_info()[1])
 		print('Could not fetch balance: %s' % sys.exc_info()[1])
 		return '0'
 	if balance + unconfirmed >= initial + amount:
@@ -300,12 +321,20 @@ def show_logs(parameters, plaintext=False):
 
 # Main webapp function
 def minipos(environ, start_response):
+	error = '''<!doctype html>
+<head>
+<title>%s</title>
+</head>
+<body>
+<h1>%s</h1>
+</body>
+</html>'''
 	filler = ()
 	ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	if '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
 		status = '403 Not Allowed'
-		page = '<!doctype html><body><h1>403 Not Allowed</h1></body></html>'
+		page = error % (status, status)
 		start_response(status, [])
 		return [page]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
@@ -326,7 +355,7 @@ def minipos(environ, start_response):
 		except:
 			print(sys.exc_info()[1])
 			status = '400 Bad Request'
-			page = '<!doctype html><body><h1>400 Bad Request</h1></body></html>'
+			page = error % (status, status)
 	elif request == 'check':
 		page = check_payment(parameters)
 		headers = [('Content-type', 'text/plain')]
@@ -336,7 +365,7 @@ def minipos(environ, start_response):
 		except:
 			print(sys.exc_info()[1])
 			status = '400 Bad Request'
-			page = '<!doctype html><body><h1>400 Bad Request</h1></body></html>'
+			page = error % (status, status)
 		else:
 			status = '303 See Other\nLocation: request'
 			page = 'Redirecting...'
@@ -344,9 +373,9 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'text/html')]
 		try:
 			page = show_logs(parameters)
-		except ValueError:
+		except:
 			status = '400 Bad Request'
-			page = '<!doctype html><body><h1>400 Bad Request</h1></body></html>'
+			page = error % (status, status)
 	elif request == 'email':
 		if 'email' not in config:
 			print('Email not configured.')
@@ -375,7 +404,7 @@ def minipos(environ, start_response):
 			page = load_file(request) % filler
 		except:
 			status = '404 Not Found'
-			page = '<!doctype html><body><h1>404 Not Found</h1></body></html>'
+			page = error % (status, status)
 			print(sys.exc_info()[1])
 	# Serve the page
 	start_response(status, headers)
