@@ -329,19 +329,19 @@ def minipos(environ, start_response):
 <h1>%s</h1>
 </body>
 </html>'''
+	headers = [('Content-type', 'text/html; charset=UTF-8')]
+	status = '200 OK'
+	page = ''
 	filler = ()
 	ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	if '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
 		status = '403 Not Allowed'
 		page = error % (status, status)
-		start_response(status, [])
+		start_response(status, headers)
 		return [page]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urlparse.parse_qs(environ['QUERY_STRING'])
-	status = '200 OK'
-	headers = []
-	page = ''
 	# Prepare individual app pages
 	if request == 'style.css':
 		headers = [('Content-type', 'text/css')]
@@ -349,7 +349,6 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'text/javascript')]
 		filler = (repr(config['currencies']))
 	elif request == 'invoice':
-		headers = [('Content-type', 'text/html')]
 		try:
 			page = create_invoice(parameters)
 		except:
@@ -370,7 +369,6 @@ def minipos(environ, start_response):
 			status = '303 See Other\nLocation: request'
 			page = 'Redirecting...'
 	elif request == 'logs':
-		headers = [('Content-type', 'text/html')]
 		try:
 			page = show_logs(parameters)
 		except:
@@ -385,7 +383,6 @@ def minipos(environ, start_response):
 		else:
 			page = '0'
 	elif request == 'request':
-		headers = [('Content-type', 'text/html')]
 		request = 'request.html'
 		if len(config['currencies']) == 1:
 			disabled = 'disabled'
