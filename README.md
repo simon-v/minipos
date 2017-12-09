@@ -7,12 +7,14 @@ With `minipos` you can set up receiving Bitcoin Cash payments without exposing y
 
 __Setup__
 
-You will need an Internet-connected computer with Python 2 and `python-qrcode` installed as the server. It does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
+You will need an Internet-connected computer with Python 2 and `python-qrcode` installed, as the server. It does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
 
 Place the executable, the accompanying library and configuration files in a convenient location. Copy `minipos.cfg.sample` to `minipos.cfg` and edit it to your liking.
 Place the distribution files in a convenient location. Copy `minipos.cfg.sample` to `minipos.cfg` and edit it to your liking.
 
 Next, create a file named `address.list` and put your receiving addresses there, one address per line. You will need at least one address, and at least as many as the number of simultaneous payments you expect to receive (if at no point do you expect to process more than one customer at once, then one receiving address is enough).
+
+If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files. If you wish to include images in that HTML, place your files files in the same directory.
 
 Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the `minipos` server.
 
