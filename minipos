@@ -315,8 +315,21 @@ def show_logs(parameters, plaintext=False):
 	if plaintext:
 		return '\n'.join([page, summary, table_head, table])
 	else:
+		# Load print header and footer
+		try:
+			f = open('log_header.html', 'r')
+			header = f.read()
+			f.close()
+		except:
+			header = ''
+		try:
+			f = open('log_footer.html', 'r')
+			footer = f.read()
+			f.close()
+		except:
+			footer = ''
 		return page % (date, prev_date, tag_s, scope_s, tag_m, scope_m, tag_l, scope_l, next_date,
-		date, summary, table_head + table + table_foot)
+		header, date, summary, table_head + table + table_foot, footer)
 
 # Main webapp function
 def minipos(environ, start_response):
