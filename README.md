@@ -38,7 +38,7 @@ __Customization__
 
 If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files.
 
-Any file placed in the data directory overrides its counterpart in the library directory. Any file placed in the `assets` subdirectory is made directly accessible to the web browser.
+Any file placed in the data directory overrides its counterpart in the library directory. Images and other files that you want to be directly accessible to the web browser should be placed in the `assets` subdirectory.
 
 __Other Notes__
 
