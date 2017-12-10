@@ -20,6 +20,7 @@ import sendmail # Local library file
 os.chdir(os.path.dirname(__file__))
 config = {
 	'addresses': [],
+	'lock': [],
 }
 try:
 	f = open('minipos.cfg', 'r')
@@ -41,7 +42,8 @@ for line in lines:
 try:
 	f = open('address.list', 'r')
 	for line in f.readlines():
-		config['addresses'].append(line.strip())
+		if line.strip() != '':
+			config['addresses'].append(line.strip())
 	f.close()
 except:
 	print('Could not open addresses.list')
@@ -98,10 +100,23 @@ def create_invoice(parameters):
 <p>Trying again in 5 seconds...</p>
 </body>
 </html>'''
+	noaddrs = '''<!doctype html>
+<head>
+<meta http-equiv="refresh" content="5">
+<title>No Addresses Available</title>
+</head>
+<body>
+<h1>No Addresses Available</h1>
+<p>There are no free receiving addresses to process the request.</p>
+<p>Trying again in 5 seconds...</p>
+</body>
+</html>'''
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
 	amount = float(parameters['amount'][0]) * config['multiplier']
+	if len(config['addresses']) == 0:
+		return noaddrs
 	try:
 		price = bch.get_price(currency)
 	except:
@@ -110,7 +125,7 @@ def create_invoice(parameters):
 	btc_amount = bch.btc(amount / price)
 	# Use the next available address
 	address = config['addresses'].pop(0)
-	config['addresses'].append(address)
+	config['lock'].append(address)
 	try:
 		balance, unconfirmed = bch.get_balance(address)
 	except:
@@ -159,6 +174,10 @@ def record_payment(parameters):
 	log = open(logfile, 'a')
 	log.write('%s	%s	%s	%s %s\n' % (datetime.datetime.now().isoformat(), address, btc_amount, amount, currency))
 	log.close()
+	# Free address lock
+	config['addresses'].append(address)
+	del(config['lock'][config['lock'].index(address)])
+
 
 # Parse a log file and add its contents to the table
 def read_log_file(filename, plaintext=False):
