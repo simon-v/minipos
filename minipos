@@ -16,17 +16,54 @@ import StringIO
 import bch # Local library file
 import sendmail # Local library file
 
-# Load and parse the config file
-os.chdir(os.path.dirname(__file__))
+usage = '''Usage: minipos [DATA_DIRECTORY]
+See the README file for more information.'''
 config = {
 	'addresses': [],
 	'lock': [],
 }
+
+# Look for the directory containing the configuration files
+lib_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir_locations = [
+	os.path.join(os.path.expanduser('~'), '.minipos'),
+	os.path.join(os.path.expanduser('~'), '.config', 'minipos'),
+	lib_dir,
+	os.getcwd()
+]
+if len(sys.argv) > 1:
+	if sys.argv[1] == '-h' or sys.argv[1] == '--help':
+		print(usage)
+		sys.exit(0)
+	else:
+		data_dir_locations.insert(0, sys.argv[1])
+for data_dir in data_dir_locations:
+	try:
+		os.chdir(data_dir)
+	except OSError:
+		continue
+	if os.path.isfile('address.list'):
+		print('Using %s as data directory' % data_dir)
+		break
+# Read the address list
+try:
+	f = open('address.list', 'r')
+	for line in f.readlines():
+		if line.strip() != '':
+			config['addresses'].append(line.strip())
+	f.close()
+except IOError:
+	print('Could not open addresses.list')
+	sys.exit(2)
+if config['addresses'] == []:
+	print('No receiving addresses in addresses.list')
+	sys.exit(2)
+# Load the config file
 try:
 	f = open('minipos.cfg', 'r')
 	lines = f.readlines()
 	f.close()
-except:
+except IOError:
 	print('No configuration file found, using defaults')
 	lines = []
 for line in lines:
@@ -38,23 +75,10 @@ for line in lines:
 	key = words[0].strip()
 	value = '='.join(words[1:]).strip()
 	config[key] = value
-# Read the address list
-try:
-	f = open('address.list', 'r')
-	for line in f.readlines():
-		if line.strip() != '':
-			config['addresses'].append(line.strip())
-	f.close()
-except:
-	print('Could not open addresses.list')
-	sys.exit(2)
-if config['addresses'] == []:
-	print('No receiving addresses in addresses.list')
-	sys.exit(2)
-# Sanitize config file
+# Sanitize the config file
 try:
 	config['taxrate'] = float(config['taxrate'])
-except:
+except (KeyError, ValueError):
 	config['taxrate'] = 0
 if 'currencies' not in config.keys():
 	config['currencies'] = ['USD']
@@ -62,7 +86,7 @@ else:
 	config['currencies'] = config['currencies'].split(',')
 try:
 	config['multiplier'] = float(config['multiplier'])
-except:
+except (KeyError, ValueError):
 	config['multiplier'] = 1
 if 'week_start' not in config or config['week_start'] == 'monday':
 	config['week_start'] = 0
@@ -72,18 +96,20 @@ else:
 	print("Invalid 'week_start' value, falling back to 'monday'")
 try:
 	config['port'] = int(config['port'])
-except:
+except (KeyError, ValueError):
 	config['port'] = 8080
 if 'allowed_ips' not in config:
 	config['allowed_ips'] = ['0.0.0.0']
 else:
 	config['allowed_ips'] = config['allowed_ips'].split(',')
 
-
 # Utility wrapper function
 def load_file(filename):
-	src = open(filename, 'r')
-	data = ''.join(src.readlines())
+	try:
+		src = open(os.path.join(data_dir, filename), 'r')
+	except IOError:
+		src = open(os.path.join(lib_dir, filename), 'r')
+	data = src.read()
 	src.close()
 	return data
 
@@ -172,7 +198,7 @@ def record_payment(parameters):
 	if not os.path.isdir('logs'):
 		os.mkdir('logs')
 	logfile = os.path.join('logs', '%s.log' % datetime.date.today().isoformat())
-	log = open(logfile, 'a')
+	log = open(os.path.join(data_dir, logfile), 'a')
 	log.write('%s	%s	%s	%s %s\n' % (datetime.datetime.now().isoformat(), address, btc_amount, amount, currency))
 	log.close()
 	unlock_address(address)
@@ -189,7 +215,7 @@ def read_log_file(filename, plaintext=False):
 	for currency in config['currencies']:
 		totals[currency] = 0
 	try:
-		logfile = open(filename, 'r')
+		logfile = open(os.path.join(data_dir, filename), 'r')
 	except:
 		if sys.exc_info()[0] is not IOError:
 			print(sys.exc_info()[1])
@@ -339,16 +365,12 @@ def show_logs(parameters, plaintext=False):
 	else:
 		# Load print header and footer
 		try:
-			f = open('log_header.html', 'r')
-			header = f.read()
-			f.close()
-		except:
+			header = load_file('log_header.html')
+		except IOError:
 			header = ''
 		try:
-			f = open('log_footer.html', 'r')
-			footer = f.read()
-			f.close()
-		except:
+			footer = load_file('log_footer.html')
+		except IOError:
 			footer = ''
 		return page % (date, prev_date, tag_s, scope_s, tag_m, scope_m, tag_l, scope_l, next_date,
 		header, date, summary, table_head + table + table_foot, footer)
@@ -466,5 +488,5 @@ httpd = make_server('', config['port'], minipos)
 print('Serving minipos on port %s...' % config['port'])
 try:
 	httpd.serve_forever()
-except:
+except KeyboardInterrupt:
 	print('Server stopped.')
