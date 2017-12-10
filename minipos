@@ -17,7 +17,8 @@ import bch # Local library file
 import sendmail # Local library file
 
 # Load and parse the config file
-os.chdir(os.path.dirname(__file__))
+#os.chdir(os.path.dirname(__file__))
+os.getcwd()
 config = {
 	'addresses': [],
 	'lock': [],
