@@ -142,6 +142,7 @@ def create_invoice(parameters):
 		btc_amount, bch.fiat(amount), currency,
 		address,
 		bch.fiat(price), currency,
+		address,
 		bch.fiat(amount), currency, btc_amount, address)
 	page = load_file('invoice.html') % filler
 	return page
@@ -174,10 +175,12 @@ def record_payment(parameters):
 	log = open(logfile, 'a')
 	log.write('%s	%s	%s	%s %s\n' % (datetime.datetime.now().isoformat(), address, btc_amount, amount, currency))
 	log.close()
-	# Free address lock
+	unlock_address(address)
+
+# Free address lock
+def unlock_address(address):
 	config['addresses'].append(address)
 	del(config['lock'][config['lock'].index(address)])
-
 
 # Parse a log file and add its contents to the table
 def read_log_file(filename, plaintext=False):
@@ -387,7 +390,10 @@ def minipos(environ, start_response):
 		try:
 			page = create_invoice(parameters)
 		except:
-			print(sys.exc_info()[1])
+			if sys.exc_info()[0] is KeyError:
+				print('Missing required GET argument: %s' % sys.exc_info()[1])
+			else:
+				print(sys.exc_info()[1])
 			status = '400 Bad Request'
 			page = error % (status, status)
 	elif request == 'check':
@@ -397,12 +403,25 @@ def minipos(environ, start_response):
 		try:
 			record_payment(parameters)
 		except:
-			print(sys.exc_info()[1])
+			if sys.exc_info()[0] is KeyError:
+				print('Missing required GET argument: %s' % sys.exc_info()[1])
+			else:
+				print(sys.exc_info()[1])
 			status = '400 Bad Request'
 			page = error % (status, status)
 		else:
 			status = '303 See Other\nLocation: request'
 			page = 'Redirecting...'
+	elif request == 'cancel':
+		try:
+			unlock_address(parameters['address'][0])
+		except:
+			if sys.exc_info()[0] is KeyError:
+				print('Missing required GET argument: %s' % sys.exc_info()[1])
+			else:
+				print(sys.exc_info()[1])
+		status = '303 See Other\nLocation: request'
+		page = 'Redirecting...'
 	elif request == 'logs':
 		try:
 			page = show_logs(parameters)
