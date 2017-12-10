@@ -20,7 +20,7 @@ Copy `minipos.cfg.sample` to `minipos.cfg` in your data directory and edit it to
 
 Next, create a file in your data directory named `address.list` and put your receiving addresses there, one address per line. You will need at least one address, and at least as many as the number of simultaneous payments you expect to receive (if at no point do you expect to process more than one customer at once, then one receiving address is enough).
 
-If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files. If you wish to include images in that HTML, place your image files in the data directory as well. In case of those template files, anything that is placed in the data directory takes precedence over the defaults in the library directory.
+If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files. If you wish to include images in that HTML, place the image files in an `assets` subdirectory in your data directory. Anything that is placed in the data directory takes precedence over the defaults in the library directory.
 
 Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the `minipos` server.
 
