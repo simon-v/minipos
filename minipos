@@ -36,7 +36,9 @@ if len(sys.argv) > 1:
 		print(usage)
 		sys.exit(0)
 	else:
-		data_dir_locations.insert(0, sys.argv[1])
+		data_dir_locations.insert(0, os.path.abspath(sys.argv[1]))
+		if not os.path.isdir(data_dir_locations[0]):
+			print('No such directory: %s' % data_dir_locations[0])
 for data_dir in data_dir_locations:
 	try:
 		os.chdir(data_dir)
