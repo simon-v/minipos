@@ -51,8 +51,9 @@ for data_dir in data_dir_locations:
 try:
 	f = open('address.list', 'r')
 	for line in f.readlines():
-		if line.strip() != '':
-			config['addresses'].append(line.strip())
+		_addr = line.strip()
+		if _addr != '' and not _addr in config['addresses']:
+			config['addresses'].append(_addr)
 	f.close()
 except IOError:
 	print('Could not open addresses.list')
