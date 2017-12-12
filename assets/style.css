@@ -76,8 +76,12 @@ input.wide {
 
 img {
 	width: 80vmin;
-	height: 80vmin;
+	height: auto;
 	image-rendering: optimizespeed;
+}
+
+strong.address {
+	white-space: nowrap;
 }
 
 img.icon {

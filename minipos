@@ -464,6 +464,8 @@ def minipos(environ, start_response):
 			page = '1'
 		else:
 			page = '0'
+	elif request == 'welcome':
+		page = load_file('welcome.html')
 	elif request == 'request':
 		if len(config['currencies']) == 1:
 			disabled = 'disabled'
@@ -477,7 +479,7 @@ def minipos(environ, start_response):
 		page = load_file('request.html') % filler
 	# Redirect blank request to main page
 	elif request == '':
-		status = '303 See Other \nLocation: request'
+		status = '303 See Other \nLocation: welcome'
 		page = 'Redirecting...'
 	# Load non-generated files from disk
 	if page == '':
