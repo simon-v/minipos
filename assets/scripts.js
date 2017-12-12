@@ -23,8 +23,8 @@ function textRemove() {
 // Add the tax to the entered amount
 function addTax() {
 	var field = document.getElementById("amountbox"),
-	title = document.getElementById("tax").title,
-	tax = title.substring(0, title.length - 1) / 100 + 1;
+	percents = document.getElementById("percents").innerHTML,
+	tax = percents.substring(0, percents.length - 1) / 100 + 1;
 	field.value = (field.value * tax).toFixed(0);
 }
 
