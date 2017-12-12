@@ -159,6 +159,7 @@ def create_invoice(parameters):
 		balance, unconfirmed = bch.get_balance(address)
 	except:
 		print(sys.exc_info()[1])
+		unlock_address(address)
 		return error
 	balance += unconfirmed
 	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS') # TODO add custom label handling
