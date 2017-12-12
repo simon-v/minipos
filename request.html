@@ -6,7 +6,7 @@
 <script src="scripts.js"></script>
 </head>
 
-<body onload="">
+<body onload="setTimeout(returnTimer, 1000)">
 <form method="get" action="invoice">
 <table>
 <tr>
@@ -23,7 +23,7 @@
 <td><input type="button" value="4" onclick="textAppend(4)"></td>
 <td><input type="button" value="5" onclick="textAppend(5)"></td>
 <td><input type="button" value="6" onclick="textAppend(6)"></td>
-<td><input type="reset" class="clear" value="C"></td>
+<td><input type="reset" class="clear" value="C" onclick="return_timer = 0"></td>
 </tr>
 <tr>
 <td><input type="button" value="7" onclick="textAppend(7)"></td>

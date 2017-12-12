@@ -105,6 +105,10 @@ if 'allowed_ips' not in config:
 	config['allowed_ips'] = ['0.0.0.0']
 else:
 	config['allowed_ips'] = config['allowed_ips'].split(',')
+try:
+	config['welcome_timeout'] = int(config['welcome_timeout'])
+except (KeyError, ValueError):
+	config['welcome_timeout'] = 120
 
 # Utility wrapper function
 def load_file(filename):
@@ -407,7 +411,7 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'text/css')]
 	elif request == 'scripts.js':
 		headers = [('Content-type', 'text/javascript')]
-		filler = (repr(config['currencies']))
+		filler = (repr(config['currencies']), config['welcome_timeout'])
 	elif request.endswith('.png'):
 		headers = [('Content-type', 'image/png')]
 	elif request.endswith('.svg'):

@@ -13,11 +13,13 @@ function loadHTTP(url, callback) {
 // Form button controls
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
+	return_timer = 0;
 }
 function textRemove() {
 	var field = document.getElementById("amountbox"),
 	value = field.value;
 	field.value = value.substring(0, value.length - 1);
+	return_timer = 0;
 }
 
 // Add the tax to the entered amount
@@ -26,6 +28,7 @@ function addTax() {
 	percents = document.getElementById("percents").innerHTML,
 	tax = percents.substring(0, percents.length - 1) / 100 + 1;
 	field.value = (field.value * tax).toFixed(0);
+	return_timer = 0;
 }
 
 // Cycle currency sign
@@ -35,6 +38,7 @@ function cycleCurrency() {
 	var button = document.getElementById("currency");
 	button.value = currencies[cur++ %% currencies.length];
 	document.getElementById("currencybox").value = button.value;
+	return_timer = 0;
 }
 
 // Turn cancel button into confirm button
@@ -84,4 +88,20 @@ function emailSent(response) {
 function dismissPopup() {
 	document.getElementById("popup_text").innerHTML = "";
 	document.getElementById("popup").style.display = "none";
+}
+
+// Automatically return to the welcome page after a timeout
+var welcome_timeout = %s,
+return_timer = 0;
+function returnTimer() {
+	if ( welcome_timeout > 0 ) {
+		return_timer++;
+		document.getElementById("test").innerHTML = return_timer;
+		if ( return_timer == welcome_timeout ) {
+			window.open("welcome", "_self");
+		}
+		else {
+			setTimeout(returnTimer, 1000);
+		}
+	}
 }

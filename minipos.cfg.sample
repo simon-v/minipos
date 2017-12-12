@@ -40,3 +40,7 @@ email=
 #server=
 #login=
 #passwd=
+
+# Set to the time of inactivity in seconds after which MiniPOS will return from
+# the payment request page to the welcome page, or set to 0 to disable
+welcome_timeout=120
