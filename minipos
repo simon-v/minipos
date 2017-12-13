@@ -157,8 +157,8 @@ def create_invoice(parameters):
 		return error
 	btc_amount = bch.btc(amount / price)
 	# Use the next available address
-	address = config['addresses'].pop(0)
-	config['lock'].append(address)
+	address = config['addresses'][0]
+	lock_address(address)
 	try:
 		balance, unconfirmed = bch.get_balance(address)
 	except:
@@ -186,6 +186,7 @@ def check_payment(parameters):
 	#return '1' # TODO DEBUG
 	amount = parameters['amount'][0]
 	initial = parameters['initial'][0]
+	lock_address(parameters['address'][0])
 	try:
 		balance, unconfirmed = bch.get_balance(parameters['address'][0])
 	except:
@@ -211,10 +212,17 @@ def record_payment(parameters):
 	log.close()
 	unlock_address(address)
 
+# Lock an address to prevent concurrent access
+def lock_address(address):
+	if address in config['addresses']:
+		config['lock'].append(address)
+		del(config['addresses'][config['addresses'].index(address)])
+
 # Free address lock
 def unlock_address(address):
-	config['addresses'].append(address)
-	del(config['lock'][config['lock'].index(address)])
+	if address in config['lock']:
+		config['addresses'].append(address)
+		del(config['lock'][config['lock'].index(address)])
 
 # Parse a log file and add its contents to the table
 def read_log_file(filename, plaintext=False):
