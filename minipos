@@ -56,10 +56,10 @@ try:
 			config['addresses'].append(_addr)
 	f.close()
 except IOError:
-	print('Could not open addresses.list')
+	print('Could not open address.list')
 	sys.exit(2)
 if config['addresses'] == []:
-	print('No receiving addresses in addresses.list')
+	print('No receiving addresses in address.list')
 	sys.exit(2)
 # Load the config file
 try:
