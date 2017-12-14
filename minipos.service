@@ -1,0 +1,25 @@
+# MiniPOS systemctl unit file
+#
+# To use as a system unit:
+# 1. Place this file in /etc/systemd/system/
+# 2. Add the path to your data directory to the end of "ExecStart="
+#
+# To use as a user unit:
+# 1. Place this file in $HOME/.config/systemd/user/
+# 2. Add the path to your data directory to the end of "ExecStart="
+# --OR--
+# 2. Create your data directory in $HOME/.minipos or in $HOME/.config/minipos
+#
+# Once you are done, run "systemctl daemon-reload", "systemctl enable" and
+# "systemctl start" as usual.
+
+[Unit]
+Description=MiniPOS
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/PATH/TO/minipos
+
+[Install]
+WantedBy=multi-user.target
