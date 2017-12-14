@@ -12,6 +12,7 @@ block_explorers = [
 	'https://bccblock.info/api/addr/%s',
 	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s',
 	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY',
+	'https://bch-chain.api.btc.com/v3/address/%s',
 #	'https://bch-bitcore2.trezor.io/api/addr/%s', # scripts not allowed
 #	'https://bitcoincash.blockexplorer.com/api/addr/%s', # scripts not allowed
 ]
@@ -33,9 +34,13 @@ def fiat(amount):
 
 # str URL -> str JSON data from the URL
 def jsonload(url):
-	webpage = urllib.urlopen(url)
-	data = json.load(webpage)
-	webpage.close()
+	try:
+		webpage = urllib.urlopen(url)
+		data = json.load(webpage)
+		webpage.close()
+	except:
+		print('Error loading ' % url.split('/')[2])
+		raise
 	return data
 
 # Get the conversion rate
@@ -56,17 +61,29 @@ def get_balance(address):
 		block_url = random.choice(block_explorers)
 	#print('Using %s as data source' % block_url.split('/')[2])
 	data = jsonload(block_url % address)
-	try:
-		balance = data['balance']
+	if 'data' in data:
+		data = data['data']
+	if type(data) is list:
+		data = data[0]
+	# Particular block explorer quirks
+	if 'balance' in data:
+		balance = float(data['balance'])
 		# BlockTrail requires special handling
 		if 'balanceSat' not in data:
-			balance /= 100000000.0
-	except KeyError:
+			balance /= 100000000
+	elif 'sum_value_unspent' in data:
 		# BlockChair requires special handling
-		balance = float(data['data'][0]['sum_value_unspent']) / 100000000
-	try:
+		balance = float(data['sum_value_unspent']) / 100000000
+	else:
+		print('Could not decode balance in API response from %s' % block_url.split('/')[2])
+		raise ValueError
+	if 'unconfirmedBalance' in data:
+		unconfirmed = float(data['unconfirmedBalance'])
+	elif 'unconfirmed_received' in data:
+		# BTC.com has its own unconfirmed balance scheme
+		unconfirmed = float(data['unconfirmed_received']) / 100000000
+	else:
 		# Explorer.Cash does not provide the unconfirmed balance field; Getting it would require an extra query and some calculation
-		unconfirmed = data['unconfirmedBalance']
-	except KeyError:
-		unconfirmed = 0
+		print('No unconfirmed balance field in API response from %s' % block_url.split('/')[2])
+		unconfirmed = 0.0
 	return balance, unconfirmed
