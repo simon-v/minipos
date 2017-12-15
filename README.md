@@ -22,6 +22,8 @@ Next, create a file in your data directory named `address.list` and put your rec
 
 Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the `minipos` server.
 
+A systemd service file is provided to ease this process.
+
 __Usage__
 
 Navigate to the server's address and port from any device with a relatively modern browser.
@@ -39,6 +41,29 @@ __Customization__
 If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files.
 
 Any file placed in the data directory overrides its counterpart in the library directory. Images and other files that you want to be directly accessible to the web browser should be placed in the `assets` subdirectory.
+
+__Setting up with a web server__
+
+MiniPOS doesn't need a web server to run, as it provides its own. It also doesn't care what the URL used to access it looks like, and will happily serve its content on a bare IP address, a subdomain or a directory. However, if you wish it to be accessible on port 80, you will need to set up a reverse proxy. An example Nginx configuration, similar to the one used by the live demo installation is provided below:
+
+    upstream miniposdemo {
+        server 127.0.0.1:8888 max_fails=3;
+    }
+    
+    server {
+    #
+    # Some server configuration
+    #
+        location ~ /minipos-demo/ {
+            proxy_pass http://miniposdemo;
+            proxy_cache off;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_pass_header Server;
+        }
+    #
+    # More server configuration
+    #
 
 __Other Notes__
 
