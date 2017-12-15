@@ -10,8 +10,8 @@ block_explorers = [
 #	'https://api.explorer.cash/%s/balance', # bogus data provided
 	'https://blockdozer.com/insight-api/addr/%s',
 	'https://bccblock.info/api/addr/%s',
-	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s',
-	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY',
+#	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s', # high error rates
+#	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY', # high error rates
 	'https://bch-chain.api.btc.com/v3/address/%s',
 #	'https://bch-bitcore2.trezor.io/api/addr/%s', # scripts not allowed
 #	'https://bitcoincash.blockexplorer.com/api/addr/%s', # scripts not allowed
@@ -39,7 +39,7 @@ def jsonload(url):
 		data = json.load(webpage)
 		webpage.close()
 	except:
-		print('Error loading ' % url.split('/')[2])
+		print('Using %s as data source' % url.split('/')[2])
 		raise
 	return data
 
@@ -68,19 +68,18 @@ def get_balance(address):
 	# Particular block explorer quirks
 	if 'balance' in data:
 		balance = float(data['balance'])
-		# BlockTrail requires special handling
+		# BTC.com/BlockTrail
 		if 'balanceSat' not in data:
 			balance /= 100000000
 	elif 'sum_value_unspent' in data:
 		# BlockChair requires special handling
 		balance = float(data['sum_value_unspent']) / 100000000
 	else:
-		print('Could not decode balance in API response from %s' % block_url.split('/')[2])
-		raise ValueError
+		raise ValueError('Could not figure out balance in API response from %s' % block_url.split('/')[2])
 	if 'unconfirmedBalance' in data:
 		unconfirmed = float(data['unconfirmedBalance'])
 	elif 'unconfirmed_received' in data:
-		# BTC.com has its own unconfirmed balance scheme
+		# BTC.com/BlockTrail
 		unconfirmed = float(data['unconfirmed_received']) / 100000000
 	else:
 		# Explorer.Cash does not provide the unconfirmed balance field; Getting it would require an extra query and some calculation
