@@ -375,7 +375,10 @@ def show_logs(parameters, plaintext=False):
 			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
 			table_foot = '</table>\n'
 	else:
-		summary = '<p>No transactions.</p>'
+		if plaintext:
+			summary = 'No transactions.'
+		else:
+			summary = '<p>No transactions.</p>'
 	if plaintext:
 		return '\n'.join([page, summary, table_head, table])
 	else:
