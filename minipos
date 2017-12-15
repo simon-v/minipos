@@ -431,6 +431,8 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'image/png')]
 	elif request.endswith('.svg'):
 		headers = [('Content-type', 'image/svg+xml')]
+	elif request.endswith('.txt'):
+		headers = [('Content-type', 'text/plain')]
 	# Handle specific app pages
 	elif request == 'invoice':
 		try:
@@ -505,6 +507,7 @@ def minipos(environ, start_response):
 		try:
 			page = load_file(os.path.join('assets', request)) % filler
 		except:
+			headers = [('Content-type', 'text/html; charset=UTF-8')]
 			status = '404 Not Found'
 			page = error % (status, status)
 			print(sys.exc_info()[1])
