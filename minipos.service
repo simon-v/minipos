@@ -20,6 +20,7 @@ After=network.target
 [Service]
 Type=simple
 ExecStart=/PATH/TO/minipos
+StandardError=null
 
 [Install]
 WantedBy=multi-user.target
