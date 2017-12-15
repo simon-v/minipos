@@ -408,6 +408,10 @@ def minipos(environ, start_response):
 	status = '200 OK'
 	page = ''
 	filler = ()
+	if 'HTTP_X_REAL_IP' in environ:
+		environ['REMOTE_ADDR'] = environ['HTTP_X_REAL_IP']
+	#elif 'X-Forwarded-For' in environ:
+	#	environ['REMOTE_ADDR'] = environ['X-Forwarded-For']
 	ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	if '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
