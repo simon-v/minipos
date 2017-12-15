@@ -96,7 +96,6 @@ return_timer = 0;
 function returnTimer() {
 	if ( welcome_timeout > 0 ) {
 		return_timer++;
-		document.getElementById("test").innerHTML = return_timer;
 		if ( return_timer == welcome_timeout ) {
 			window.open("welcome", "_self");
 		}
