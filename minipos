@@ -107,6 +107,8 @@ else:
 	config['allowed_ips'] = config['allowed_ips'].split(',')
 try:
 	config['welcome_timeout'] = int(config['welcome_timeout'])
+	if config['welcome_timeout'] < 0:
+		raise ValueError
 except (KeyError, ValueError):
 	config['welcome_timeout'] = 120
 
@@ -500,7 +502,10 @@ def minipos(environ, start_response):
 		page = load_file('request.html') % filler
 	# Redirect blank request to main page
 	elif request == '':
-		status = '303 See Other \nLocation: welcome'
+		if config['welcome_timeout'] > 0:
+			status = '303 See Other \nLocation: welcome'
+		else:
+			status = '303 See Other \nLocation: request'
 		page = 'Redirecting...'
 	# Load non-generated files from disk
 	if page == '':
