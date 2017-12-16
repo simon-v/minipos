@@ -32,11 +32,10 @@ function addTax() {
 }
 
 // Cycle currency sign
-var currencies = %s,
-cur = 1;
+var cur = 1;
 function cycleCurrency() {
 	var button = document.getElementById("currency");
-	button.value = currencies[cur++ %% currencies.length];
+	button.value = currencies[cur++ % currencies.length];
 	document.getElementById("currencybox").value = button.value;
 	return_timer = 0;
 }
@@ -91,8 +90,7 @@ function dismissPopup() {
 }
 
 // Automatically return to the welcome page after a timeout
-var welcome_timeout = %s,
-return_timer = 0;
+var return_timer = 0;
 function returnTimer() {
 	if ( welcome_timeout > 0 ) {
 		return_timer++;

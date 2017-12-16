@@ -425,7 +425,6 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'text/css')]
 	elif request == 'scripts.js':
 		headers = [('Content-type', 'text/javascript')]
-		page = load_file(os.path.join('assets', 'scripts.js')) % (repr(config['currencies']), config['welcome_timeout'])
 	elif request.endswith('.png'):
 		headers = [('Content-type', 'image/png')]
 	elif request.endswith('.svg'):
@@ -496,7 +495,7 @@ def minipos(environ, start_response):
 		else:
 			tax = 'Tax'
 		filler = (disabled, config['currencies'][0], config['currencies'][0], tax, config['taxrate'], config['multiplier'])
-		page = load_file('request.html') % filler
+		page = load_file('request.html').format(currencies=repr(config['currencies']), timeout=config['welcome_timeout']) % filler
 	# Redirect blank request to main page
 	elif request == '':
 		if config['welcome_timeout'] > 0:
