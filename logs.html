@@ -11,25 +11,25 @@
 <table>
 <tr>
 <td><input type="submit" value="&larr;" class="clear"></td>
-<td colspan="2"><input type="button" value="Email" class="ctrl wide" onclick="sendEmail('%s')"></td>
+<td colspan="2"><input type="button" value="Email" class="ctrl wide" onclick="sendEmail('{date}')"></td>
 <td colspan="2"><input type="button" value="Print" class="ctrl wide" onclick="window.print()"></td>
 </tr><tr>
-<td><input type="button" value="&lt;" onclick="openLogs('%s')"></td>
-<td><input type="button" value="%s" onclick="openLogs('%s')"></td>
-<td><input type="button" value="%s" onclick="openLogs('%s')"></td>
-<td><input type="button" value="%s" onclick="openLogs('%s')"></td>
-<td><input type="button" value="&gt;" onclick="openLogs('%s')"></td>
+<td><input type="button" value="&lt;" onclick="openLogs('{prev_date}')"></td>
+<td><input type="button" value="{tag_s}" onclick="openLogs('{scope_s}')"></td>
+<td><input type="button" value="{tag_m}" onclick="openLogs('{scope_m}')"></td>
+<td><input type="button" value="{tag_l}" onclick="openLogs('{scope_l}')"></td>
+<td><input type="button" value="&gt;" onclick="openLogs('{next_date}')"></td>
 </tr>
 </table>
 </form>
 <div id="popup"><p id="popup_text"></p>
 <form><input type="button" class="ctrl wide" value="OK" onclick="dismissPopup()"></form>
 </div>
-%s
-<h1>%s</h1>
+{header}
+<h1>{date}</h1>
 <h2>Total received:</h2>
-%s
-%s
-%s
+{summary}
+{table}
+{footer}
 </body>
 </html>

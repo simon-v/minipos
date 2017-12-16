@@ -397,8 +397,13 @@ def show_logs(parameters, plaintext=False):
 			footer = load_file('log_footer.html')
 		except IOError:
 			footer = ''
-		return page % (date, prev_date, tag_s, scope_s, tag_m, scope_m, tag_l, scope_l, next_date,
-		header, date, summary, table_head + table + table_foot, footer)
+		table = table_head + table + table_foot
+		# Pack the above variables into a filler dict
+		params = {}
+		_names = ['date', 'prev_date', 'tag_s', 'scope_s', 'tag_m', 'scope_m', 'tag_l', 'scope_l', 'next_date', 'header', 'summary', 'table', 'footer']
+		for n in _names:
+			params[n] = locals()[n]
+		return page.format(**params)
 
 # Main webapp function
 def minipos(environ, start_response):
