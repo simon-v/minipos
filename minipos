@@ -191,15 +191,17 @@ def check_payment(parameters):
 	#return '1' # TODO DEBUG
 	amount = parameters['amount'][0]
 	initial = parameters['initial'][0]
-	lock_address(parameters['address'][0])
+	address = parameters['address'][0]
+	lock_address(address)
 	try:
-		balance, unconfirmed = bch.get_balance(parameters['address'][0])
+		balance, unconfirmed = bch.get_balance(address)
 	except KeyboardInterrupt:
 		raise
 	except:
 		print('Could not fetch balance: ' + str(sys.exc_info()[1]))
 		return '0'
 	if balance + unconfirmed >= initial + amount:
+		unlock_address(address)
 		return '1'
 	else:
 		return '0'
@@ -216,7 +218,6 @@ def record_payment(parameters):
 	log = open(os.path.join(data_dir, logfile), 'a')
 	log.write('{date}	{addr}	{amt}	{fiat} {cur}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=btc_amount, fiat=amount, cur=currency))
 	log.close()
-	unlock_address(address)
 
 # Lock an address to prevent concurrent access
 def lock_address(address):
