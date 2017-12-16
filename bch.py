@@ -20,7 +20,10 @@ bitpay_url = 'https://bch-insight.bitpay.com/api/addr/%s'
 test_explorers = [
 ]
 
-import urllib, json, random
+import urllib
+import json
+import random
+import sys
 
 # float amount -> str formatted amount
 def btc(amount):
@@ -39,8 +42,7 @@ def jsonload(url):
 		data = json.load(webpage)
 		webpage.close()
 	except:
-		print('Using %s as data source' % url.split('/')[2])
-		raise
+		raise sys.exc_info()[0]('{exception} ({explorer})'.format(exception=sys.exc_info()[1], explorer=url.split('/')[2]))
 	return data
 
 # Get the conversion rate
@@ -59,12 +61,15 @@ def get_balance(address):
 		block_url = bitpay_url
 	else:
 		block_url = random.choice(block_explorers)
-	#print('Using %s as data source' % block_url.split('/')[2])
+	explorer = block_url.split('/')[2]
 	data = jsonload(block_url % address)
+	#print(data)
 	if 'data' in data:
 		data = data['data']
 	if type(data) is list:
 		data = data[0]
+	elif data is None:
+		raise ValueError(explorer + ' returned empty data')
 	# Particular block explorer quirks
 	if 'balance' in data:
 		balance = float(data['balance'])
@@ -75,7 +80,7 @@ def get_balance(address):
 		# BlockChair requires special handling
 		balance = float(data['sum_value_unspent']) / 100000000
 	else:
-		raise ValueError('Could not figure out balance in API response from %s' % block_url.split('/')[2])
+		raise ValueError('Could not figure out balance in API response from ' + explorer)
 	if 'unconfirmedBalance' in data:
 		unconfirmed = float(data['unconfirmedBalance'])
 	elif 'unconfirmed_received' in data:
@@ -83,6 +88,6 @@ def get_balance(address):
 		unconfirmed = float(data['unconfirmed_received']) / 100000000
 	else:
 		# Explorer.Cash does not provide the unconfirmed balance field; Getting it would require an extra query and some calculation
-		print('No unconfirmed balance field in API response from %s' % block_url.split('/')[2])
+		print('No unconfirmed balance field in API response from ' + explorer)
 		unconfirmed = 0.0
 	return balance, unconfirmed

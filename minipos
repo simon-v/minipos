@@ -194,8 +194,10 @@ def check_payment(parameters):
 	lock_address(parameters['address'][0])
 	try:
 		balance, unconfirmed = bch.get_balance(parameters['address'][0])
+	except KeyboardInterrupt:
+		raise
 	except:
-		print('Could not fetch balance: ' + sys.exc_info()[1])
+		print('Could not fetch balance: ' + str(sys.exc_info()[1]))
 		return '0'
 	if balance + unconfirmed >= initial + amount:
 		return '1'
@@ -440,7 +442,7 @@ def minipos(environ, start_response):
 			page = create_invoice(parameters)
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: ' + sys.exc_info()[1])
+				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
 			else:
 				print(sys.exc_info()[1])
 			status = '400 Bad Request'
@@ -453,7 +455,7 @@ def minipos(environ, start_response):
 			record_payment(parameters)
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: ' + sys.exc_info()[1])
+				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
 			else:
 				print(sys.exc_info()[1])
 			status = '400 Bad Request'
@@ -466,7 +468,7 @@ def minipos(environ, start_response):
 			unlock_address(parameters['address'][0])
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: ' + sys.exc_info()[1])
+				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
 			else:
 				print(sys.exc_info()[1])
 		status = '303 See Other\nLocation: request'
@@ -475,6 +477,7 @@ def minipos(environ, start_response):
 		try:
 			page = show_logs(parameters)
 		except:
+			print(sys.exc_info()[1])
 			status = '400 Bad Request'
 			page = error.format(err=status)
 	elif request == 'email':
