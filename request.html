@@ -15,8 +15,8 @@
 <table>
 <tr>
 <td colspan="3"><input type="number" class="text" id="amountbox" name="amount" min="1" required></td>
-<td><input type="button" %s value="%s" id="currency" onclick="cycleCurrency()">
-<input type="hidden" value="%s" id="currencybox" name="currency"></td>
+<td><input type="button" {disabled} value="{cur}" id="currency" onclick="cycleCurrency()">
+<input type="hidden" value="{cur}" id="currencybox" name="currency"></td>
 <tr>
 <td><input type="button" value="1" onclick="textAppend(1)"></td>
 <td><input type="button" value="2" onclick="textAppend(2)"></td>
@@ -38,11 +38,11 @@
 <tr>
 <td><input type="button" value="00" onclick="textAppend(0);textAppend(0)"></td>
 <td><input type="button" value="0" onclick="textAppend(0)"></td>
-<td><input type="button" id="tax" value="%%" onclick="addTax()"></td>
+<td><input type="button" id="tax" value="%" onclick="addTax()"></td>
 <td><input type="submit" class="ok" value="&#10003;"></td>
 </tr>
 </table>
 </form>
-<p>%s: <span id="percents">%s%%</span> &mdash; Multiplier: x%s</p>
+<p>{tax}: <span id="percents">{taxrate}%</span> &mdash; Multiplier: x{multiplier}</p>
 </body>
 </html>

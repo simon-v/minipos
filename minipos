@@ -494,8 +494,16 @@ def minipos(environ, start_response):
 			tax = 'Discount'
 		else:
 			tax = 'Tax'
-		filler = (disabled, config['currencies'][0], config['currencies'][0], tax, config['taxrate'], config['multiplier'])
-		page = load_file('request.html').format(currencies=repr(config['currencies']), timeout=config['welcome_timeout']) % filler
+		filler = {
+			'currencies': repr(config['currencies']),
+			'timeout': config['welcome_timeout'],
+			'disabled': disabled,
+			'cur': config['currencies'][0],
+			'tax': tax,
+			'taxrate': config['taxrate'],
+			'multiplier': config['multiplier']
+		}
+		page = load_file('request.html').format(**filler)
 	# Redirect blank request to main page
 	elif request == '':
 		if config['welcome_timeout'] > 0:
