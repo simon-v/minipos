@@ -36,6 +36,8 @@ Wait for the transaction to be detected by the system. Press the `Confirm` butto
 
 To review your sales, use the built-in log browser, accessible from the triple bar button. You can view a daily, weekly, monthly and yearly summary, print it, or email it to yourself at the configured email address.
 
+A [live demo installation](https://simonvolpert.com/minipos-demo/) with an exposed configuration file is available for demonstrative purposes.
+
 __Customization__
 
 If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files.
