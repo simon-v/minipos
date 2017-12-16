@@ -173,14 +173,17 @@ def create_invoice(parameters):
 	output = StringIO.StringIO()
 	image.save(output)
 	output = output.getvalue().encode('base64').replace('\n', '')
-	filler = (address, btc_amount, balance,
-		output, data,
-		btc_amount, bch.fiat(amount), currency,
-		address,
-		bch.fiat(price), currency,
-		address,
-		bch.fiat(amount), currency, btc_amount, address)
-	page = load_file('invoice.html') % filler
+	filler = {
+		'addr': address,
+		'amt': btc_amount,
+		'balance': balance,
+		'qr': output,
+		'request': data,
+		'fiat': bch.fiat(amount),
+		'cur': currency,
+		'price': bch.fiat(price),
+	}
+	page = load_file('invoice.html').format(**filler)
 	return page
 
 # API check if a payment was received

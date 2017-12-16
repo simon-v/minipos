@@ -5,25 +5,25 @@
 <link rel="stylesheet" href="style.css">
 <script src="scripts.js"></script>
 <script>
-var request_string = "address=%s&amount=%s&initial=%s";
+var request_string = "address={addr}&amount={amt}&initial={balance}";
 </script>
 </head>
 
 <body onload="setTimeout(checkPayment, 5000)">
-<img src="data:image/png;base64,%s" alt="" title="%s">
-<p>Please send <strong>%s BCH</strong> (total %s %s)</p>
-<p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">%s</strong></p>
-<p><em>(1 BCH = %s %s)</em></p>
+<img src="data:image/png;base64,{qr}" alt="" title="{request}">
+<p>Please send <strong>{amt} BCH</strong> (total {fiat} {cur})</p>
+<p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</strong></p>
+<p><em>(1 BCH = {price} {cur})</em></p>
 <form method="get" name="" action="cancel">
 <input type="submit" id="cancel" class="clear" value="&#10007; Cancel">
-<input type="hidden" name="address" value="%s">
+<input type="hidden" name="address" value="{addr}">
 </form>
 <form method="get" name="" action="record">
 <input style="display: none;" type="submit" id="finish" class="ok" value="&#10003; Finish">
-<input type="hidden" name="amount" value="%s">
-<input type="hidden" name="currency" value="%s">
-<input type="hidden" name="btc_amount" value="%s">
-<input type="hidden" name="address" value="%s">
+<input type="hidden" name="amount" value="{fiat}">
+<input type="hidden" name="currency" value="{cur}">
+<input type="hidden" name="btc_amount" value="{amt}">
+<input type="hidden" name="address" value="{addr}">
 </form>
 </body>
 </html>
