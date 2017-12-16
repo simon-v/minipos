@@ -19,7 +19,7 @@ table td.error {
 	font-weight: bold;
 }
 @keyframes blinker {
-	50%% { opacity: 0; }
+	50% { opacity: 0; }
 }
 
 input {
@@ -94,8 +94,8 @@ img.icon {
 #popup {
 	width: 80vmin;
 	position: absolute;
-	top: 40%%;
-	left: 35.7%%;
+	top: 40%;
+	left: 35.7%;
 	display: none;
 	color: white;
 	background-color: #262626;

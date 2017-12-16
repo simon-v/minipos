@@ -425,7 +425,7 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'text/css')]
 	elif request == 'scripts.js':
 		headers = [('Content-type', 'text/javascript')]
-		filler = (repr(config['currencies']), config['welcome_timeout'])
+		page = load_file(os.path.join('assets', 'scripts.js')) % (repr(config['currencies']), config['welcome_timeout'])
 	elif request.endswith('.png'):
 		headers = [('Content-type', 'image/png')]
 	elif request.endswith('.svg'):
@@ -507,7 +507,7 @@ def minipos(environ, start_response):
 	# Load non-generated files from disk
 	if page == '':
 		try:
-			page = load_file(os.path.join('assets', request)) % filler
+			page = load_file(os.path.join('assets', request))
 		except:
 			headers = [('Content-type', 'text/html; charset=UTF-8')]
 			status = '404 Not Found'
