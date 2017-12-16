@@ -38,14 +38,14 @@ if len(sys.argv) > 1:
 	else:
 		data_dir_locations.insert(0, os.path.abspath(sys.argv[1]))
 		if not os.path.isdir(data_dir_locations[0]):
-			print('No such directory: %s' % data_dir_locations[0])
+			print('No such directory: ' + data_dir_locations[0])
 for data_dir in data_dir_locations:
 	try:
 		os.chdir(data_dir)
 	except OSError:
 		continue
 	if os.path.isfile('address.list'):
-		print('Using %s as data directory' % data_dir)
+		print('Using {dir} as data directory'.format(dir=data_dir))
 		break
 # Read the address list
 try:
@@ -168,7 +168,7 @@ def create_invoice(parameters):
 		unlock_address(address)
 		return error
 	balance += unconfirmed
-	data = 'bitcoincash:%s?amount=%s&label=%s' % (address, btc_amount, 'MiniPOS') # TODO add custom label handling
+	data = 'bitcoincash:{addr}?amount={amt}&label={label}'.format(addr=address, amt=btc_amount, label='MiniPOS') # TODO add custom label handling
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)
@@ -192,8 +192,7 @@ def check_payment(parameters):
 	try:
 		balance, unconfirmed = bch.get_balance(parameters['address'][0])
 	except:
-		print(sys.exc_info()[1])
-		print('Could not fetch balance: %s' % sys.exc_info()[1])
+		print('Could not fetch balance: ' + sys.exc_info()[1])
 		return '0'
 	if balance + unconfirmed >= initial + amount:
 		return '1'
@@ -208,9 +207,9 @@ def record_payment(parameters):
 	address = parameters['address'][0]
 	if not os.path.isdir('logs'):
 		os.mkdir('logs')
-	logfile = os.path.join('logs', '%s.log' % datetime.date.today().isoformat())
+	logfile = os.path.join('logs', datetime.date.today().isoformat() + '.log')
 	log = open(os.path.join(data_dir, logfile), 'a')
-	log.write('%s	%s	%s	%s %s\n' % (datetime.datetime.now().isoformat(), address, btc_amount, amount, currency))
+	log.write('{date}	{addr}	{amt}	{fiat} {cur}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=btc_amount, fiat=amount, cur=currency))
 	log.close()
 	unlock_address(address)
 
@@ -245,12 +244,12 @@ def read_log_file(filename, plaintext=False):
 			totals[currency] += float(amount)
 			date = date.split('.')[0].replace('T', ' ')
 			if plaintext:
-				table += '%s  %s...  %s  %s %s\n' % (date, address[0:10], str(btc_amount).ljust(12), str(amount).rjust(15), currency)
+				table += '{date}  {addr}...  {amt}  {fiat} {cur}\n'.format(date=date, addr=address[0:10], amt=str(btc_amount).ljust(12), fiat=str(amount).rjust(15), cur=currency)
 			else:
-				table += '<tr><td>%s</td><td>%s...</td><td>%s</td><td>%s %s</td></tr>\n' % (date, address[0:10], btc_amount, amount, currency)
+				table += '<tr><td>{date}</td><td>{addr}...</td><td>{amt}</td><td>{fiat} {cur}</td></tr>\n'.format(date=date, addr=address[0:10], amt=btc_amount, fiat=amount, cur=currency)
 	except:
-		print('Log file is corrupted: %s (%s)' % (filename, sys.exc_info()[1]))
-		msg = 'The log file for %s is corrupted!' % filename
+		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
+		msg = 'The log file for {file} is corrupted!'.format(file=filename)
 		if plaintext:
 			table += msg
 		else:
@@ -300,7 +299,7 @@ def show_logs(parameters, plaintext=False):
 		# Populate date list
 		for i in range(7):
 			days.append((d + datetime.timedelta(i - config['week_start'])).isoformat())
-		print('range %s to %s' % (days[0], days[6]))
+		print('range {start} to {end}'.format(start=days[0], end=days[6]))
 	# Month scope
 	elif len(date) == 7:
 		d = datetime.datetime.strptime(date, '%Y-%m')
@@ -345,7 +344,7 @@ def show_logs(parameters, plaintext=False):
 		raise ValueError
 	# Create a transaction table and calculate totals
 	if plaintext:
-		page = '===== Summary for %s =====' % date
+		page = '===== Summary for {date} ====='.format(date=date)
 	else:
 		page = load_file('logs.html')
 	table = ''
@@ -355,7 +354,7 @@ def show_logs(parameters, plaintext=False):
 	totals = {}
 	# Compile transaction table and calculate date totals
 	for _date in days:
-		_totals, _table = read_log_file(os.path.join('logs', '%s.log' % _date), plaintext)
+		_totals, _table = read_log_file(os.path.join('logs', _date + '.log'), plaintext)
 		table += _table
 		for k in _totals.keys():
 			if k in totals:
@@ -365,10 +364,10 @@ def show_logs(parameters, plaintext=False):
 	for sign in totals.keys():
 		if totals[sign] != 0:
 			if plaintext:
-				chunk = '%s %s\n'
+				chunk = '{fiat} {cur}\n'
 			else:
-				chunk = '<p>%s %s</p>\n'
-			summary += chunk % (bch.fiat(totals[sign]), sign)
+				chunk = '<p>{fiat} {cur}</p>\n'
+			summary += chunk.format(fiat=bch.fiat(totals[sign]), cur=sign)
 	# Format and return the logs page
 	if table != '':
 		if plaintext:
@@ -400,10 +399,10 @@ def show_logs(parameters, plaintext=False):
 def minipos(environ, start_response):
 	error = '''<!doctype html>
 <head>
-<title>%s</title>
+<title>{err}</title>
 </head>
 <body>
-<h1>%s</h1>
+<h1>{err}</h1>
 </body>
 </html>'''
 	headers = [('Content-type', 'text/html; charset=UTF-8')]
@@ -412,13 +411,11 @@ def minipos(environ, start_response):
 	filler = ()
 	if 'HTTP_X_REAL_IP' in environ:
 		environ['REMOTE_ADDR'] = environ['HTTP_X_REAL_IP']
-	#elif 'X-Forwarded-For' in environ:
-	#	environ['REMOTE_ADDR'] = environ['X-Forwarded-For']
 	ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	if '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
 		status = '403 Not Allowed'
-		page = error % (status, status)
+		page = error.format(err=status)
 		start_response(status, headers)
 		return [page]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
@@ -441,11 +438,11 @@ def minipos(environ, start_response):
 			page = create_invoice(parameters)
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: %s' % sys.exc_info()[1])
+				print('Missing required GET argument: ' + sys.exc_info()[1])
 			else:
 				print(sys.exc_info()[1])
 			status = '400 Bad Request'
-			page = error % (status, status)
+			page = error.format(err=status)
 	elif request == 'check':
 		page = check_payment(parameters)
 		headers = [('Content-type', 'text/plain')]
@@ -454,11 +451,11 @@ def minipos(environ, start_response):
 			record_payment(parameters)
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: %s' % sys.exc_info()[1])
+				print('Missing required GET argument: ' + sys.exc_info()[1])
 			else:
 				print(sys.exc_info()[1])
 			status = '400 Bad Request'
-			page = error % (status, status)
+			page = error.format(err=status)
 		else:
 			status = '303 See Other\nLocation: request'
 			page = 'Redirecting...'
@@ -467,7 +464,7 @@ def minipos(environ, start_response):
 			unlock_address(parameters['address'][0])
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: %s' % sys.exc_info()[1])
+				print('Missing required GET argument: ' + sys.exc_info()[1])
 			else:
 				print(sys.exc_info()[1])
 		status = '303 See Other\nLocation: request'
@@ -477,13 +474,13 @@ def minipos(environ, start_response):
 			page = show_logs(parameters)
 		except:
 			status = '400 Bad Request'
-			page = error % (status, status)
+			page = error.format(err=status)
 	elif request == 'email':
 		headers = [('Content-type', 'text/plain')]
 		if 'email' not in config:
 			print('Email not configured.')
 			page = '0'
-		elif sendmail.send(config, config['email'], '[minipos] Transaction listing for %s' % parameters['date'][0], show_logs(parameters, plaintext=True)):
+		elif sendmail.send(config, config['email'], '[MiniPOS] Transaction listing for ' + parameters['date'][0], show_logs(parameters, plaintext=True)):
 			page = '1'
 		else:
 			page = '0'
@@ -514,7 +511,7 @@ def minipos(environ, start_response):
 		except:
 			headers = [('Content-type', 'text/html; charset=UTF-8')]
 			status = '404 Not Found'
-			page = error % (status, status)
+			page = error.format(err=status)
 			print(sys.exc_info()[1])
 	# Serve the page
 	start_response(status, headers)
@@ -522,7 +519,7 @@ def minipos(environ, start_response):
 
 # Start the web server
 httpd = make_server('', config['port'], minipos)
-print('Serving minipos on port %s...' % config['port'])
+print('Serving minipos on port {port}...'.format(**config))
 try:
 	httpd.serve_forever()
 except KeyboardInterrupt:
