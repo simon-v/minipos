@@ -6,6 +6,7 @@
 <script src="scripts.js"></script>
 <script>
 var request_string = "address={addr}&amount={amt}&initial={balance}";
+var confirm_string = "address={addr}&amount={fiat}&currency={cur}&btc_amount={amt}";
 </script>
 </head>
 
@@ -21,12 +22,8 @@ var request_string = "address={addr}&amount={amt}&initial={balance}";
 <input type="submit" id="cancel" class="clear" value="&#10007; Cancel">
 <input type="hidden" name="address" value="{addr}">
 </form>
-<form method="get" name="" action="record">
+<form method="get" name="" action="request">
 <input style="display: none;" type="submit" id="finish" class="ok" value="&#10003; Finish">
-<input type="hidden" name="amount" value="{fiat}">
-<input type="hidden" name="currency" value="{cur}">
-<input type="hidden" name="btc_amount" value="{amt}">
-<input type="hidden" name="address" value="{addr}">
 </form>
 </body>
 </html>

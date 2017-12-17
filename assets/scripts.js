@@ -43,6 +43,7 @@ function cycleCurrency() {
 // Turn cancel button into confirm button
 function showConfirmButton(response) {
 	if (response == 1) {
+		loadHTTP("record?" + confirm_string, function(){});
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
 	}
