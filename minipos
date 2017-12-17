@@ -20,7 +20,7 @@ usage = '''Usage: minipos [DATA_DIRECTORY]
 See the README file for more information.'''
 config = {
 	'addresses': [],
-	'lock': [],
+	'lock': {},
 }
 
 # Look for the directory containing the configuration files
@@ -150,8 +150,14 @@ def create_invoice(parameters):
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
 	amount = float(parameters['amount'][0]) * config['multiplier']
+	# Check for address lock timeout
+	for k in config['lock'].keys():
+		delta = datetime.datetime.now() - config['lock'][k]
+		if delta >= datetime.timedelta(seconds=30):
+			unlock_address(k)
 	if len(config['addresses']) == 0:
 		return noaddrs
+	# Get the exchange rate
 	try:
 		price = bch.get_price(currency)
 	except:
@@ -226,14 +232,14 @@ def record_payment(parameters):
 # Lock an address to prevent concurrent access
 def lock_address(address):
 	if address in config['addresses']:
-		config['lock'].append(address)
+		config['lock'][address] = datetime.datetime.now()
 		del(config['addresses'][config['addresses'].index(address)])
 
 # Free address lock
 def unlock_address(address):
 	if address in config['lock']:
 		config['addresses'].append(address)
-		del(config['lock'][config['lock'].index(address)])
+		del(config['lock'][address])
 
 # Parse a log file and add its contents to the table
 def read_log_file(filename, plaintext=False):
