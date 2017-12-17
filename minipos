@@ -152,8 +152,7 @@ def create_invoice(parameters):
 	amount = float(parameters['amount'][0]) * config['multiplier']
 	# Check for address lock timeout
 	for k in config['lock'].keys():
-		delta = datetime.datetime.now() - config['lock'][k]
-		if delta >= datetime.timedelta(seconds=30):
+		if check_lock_timeout(k):
 			unlock_address(k)
 	if len(config['addresses']) == 0:
 		return noaddrs
@@ -201,6 +200,8 @@ def check_payment(parameters):
 	#unlock_address(address)
 	#return '1'
 	# END DEBUG
+	if check_lock_timeout(address):
+		return '-1'
 	lock_address(address)
 	try:
 		balance, unconfirmed = bch.get_balance(address)
@@ -231,8 +232,8 @@ def record_payment(parameters):
 
 # Lock an address to prevent concurrent access
 def lock_address(address):
+	config['lock'][address] = datetime.datetime.now()
 	if address in config['addresses']:
-		config['lock'][address] = datetime.datetime.now()
 		del(config['addresses'][config['addresses'].index(address)])
 
 # Free address lock
@@ -240,6 +241,15 @@ def unlock_address(address):
 	if address in config['lock']:
 		config['addresses'].append(address)
 		del(config['lock'][address])
+
+# Check address lock timeout
+def check_lock_timeout(address):
+	if address not in config['lock']:
+		return True
+	delta = datetime.datetime.now() - config['lock'][address]
+	if delta >= datetime.timedelta(seconds=30):
+		return True
+	return False
 
 # Parse a log file and add its contents to the table
 def read_log_file(filename, plaintext=False):

@@ -80,6 +80,10 @@ img {
 	image-rendering: optimizespeed;
 }
 
+#noqr {
+	height: 80vmin;
+}
+
 strong.address {
 	white-space: nowrap;
 }
