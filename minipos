@@ -188,10 +188,13 @@ def create_invoice(parameters):
 
 # API check if a payment was received
 def check_payment(parameters):
-	#return '1' # TODO DEBUG
 	amount = parameters['amount'][0]
 	initial = parameters['initial'][0]
 	address = parameters['address'][0]
+	# BEGIN DEBUG
+	#unlock_address(address)
+	#return '1'
+	# END DEBUG
 	lock_address(address)
 	try:
 		balance, unconfirmed = bch.get_balance(address)
@@ -212,10 +215,11 @@ def record_payment(parameters):
 	currency = parameters['currency'][0]
 	btc_amount = parameters['btc_amount'][0]
 	address = parameters['address'][0]
-	if not os.path.isdir('logs'):
-		os.mkdir('logs')
-	logfile = os.path.join('logs', datetime.date.today().isoformat() + '.log')
-	log = open(os.path.join(data_dir, logfile), 'a')
+	log_dir = os.path.join(data_dir, 'logs')
+	if not os.path.isdir(log_dir):
+		os.mkdir(log_dir)
+	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
+	log = open(logfile, 'a')
 	log.write('{date}	{addr}	{amt}	{fiat} {cur}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=btc_amount, fiat=amount, cur=currency))
 	log.close()
 
