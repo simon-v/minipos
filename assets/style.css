@@ -98,8 +98,10 @@ img.icon {
 #popup {
 	width: 80vmin;
 	position: absolute;
-	top: 40%;
-	left: 35.7%;
+	margin: auto;
+	top: 40vmin;
+	left: 0;
+	right: 0;
 	display: none;
 	color: white;
 	background-color: #262626;
