@@ -12,7 +12,7 @@ block_explorers = [
 	'https://bccblock.info/api/addr/%s',
 #	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s', # high error rates
 #	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY', # high error rates
-	'https://bch-chain.api.btc.com/v3/address/%s',
+#	'https://bch-chain.api.btc.com/v3/address/%s', # high error rates
 #	'https://bch-bitcore2.trezor.io/api/addr/%s', # scripts not allowed
 #	'https://bitcoincash.blockexplorer.com/api/addr/%s', # scripts not allowed
 ]
