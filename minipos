@@ -324,7 +324,7 @@ def show_logs(parameters, plaintext=False):
 		# Populate date list
 		for i in range(7):
 			days.append((d + datetime.timedelta(i - config['week_start'])).isoformat())
-		print('range {start} to {end}'.format(start=days[0], end=days[6]))
+		#print('range {start} to {end}'.format(start=days[0], end=days[6]))
 	# Month scope
 	elif len(date) == 7:
 		d = datetime.datetime.strptime(date, '%Y-%m')
