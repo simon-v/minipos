@@ -48,7 +48,6 @@ function showConfirmButton(response) {
 		document.getElementById("finish").style.display = "inline";
 	}
 	else if (response == -1) {
-		document.getElementById("qr").style.display = "none";
 		document.getElementById("popup").style.display = "block";
 	}
 	else {

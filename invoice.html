@@ -11,9 +11,7 @@ var confirm_string = "address={addr}&amount={fiat}&currency={cur}&btc_amount={am
 </head>
 
 <body onload="setTimeout(checkPayment, 5000)">
-<div id="noqr">
 <img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}">
-</div>
 <p>Please send <strong>{amt} BCH</strong> (total {fiat} {cur})</p>
 <p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</strong></p>
 <p><em>(1 BCH = {price} {cur})</em></p>
