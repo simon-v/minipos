@@ -246,7 +246,7 @@ def check_lock_timeout(address):
 	if address not in config['lock']:
 		return True
 	delta = datetime.datetime.now() - config['lock'][address]
-	if delta >= datetime.timedelta(seconds=30):
+	if delta >= datetime.timedelta(seconds=60):
 		return True
 	return False
 
