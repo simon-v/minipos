@@ -173,6 +173,9 @@ def create_invoice(parameters):
 		unlock_address(address)
 		return error
 	balance += unconfirmed
+	# BEGIN DEBUG
+	#balance -= float(btc_amount)
+	# END DEBUG
 	data = 'bitcoincash:{addr}?amount={amt}&label={label}'.format(addr=address, amt=btc_amount, label='MiniPOS') # TODO add custom label handling
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
@@ -193,13 +196,9 @@ def create_invoice(parameters):
 
 # API check if a payment was received
 def check_payment(parameters):
-	amount = parameters['amount'][0]
-	initial = parameters['initial'][0]
+	amount = float(parameters['amount'][0])
+	initial = float(parameters['initial'][0])
 	address = parameters['address'][0]
-	# BEGIN DEBUG
-	#unlock_address(address)
-	#return '1'
-	# END DEBUG
 	if check_lock_timeout(address):
 		return '-1'
 	lock_address(address)
