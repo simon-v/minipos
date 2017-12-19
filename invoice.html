@@ -16,11 +16,11 @@ var confirm_string = "address={addr}&amount={fiat}&currency={cur}&btc_amount={am
 <p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</strong></p>
 <p><em>(1 BCH = {price} {cur})</em></p>
 <div id="popup"><p>The payment request has timed out.</p></div>
-<form method="get" name="" action="cancel">
+<form method="get" name="cancel" action="cancel">
 <input type="submit" id="cancel" class="clear" value="&#10007; Cancel">
 <input type="hidden" name="address" value="{addr}">
 </form>
-<form method="get" name="" action="request">
+<form method="get" name="finish" action="request">
 <input style="display: none;" type="submit" id="finish" class="ok" value="&#10003; Finish">
 </form>
 </body>
