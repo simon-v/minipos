@@ -1,0 +1,5 @@
+address.list*
+*.pyc
+logs/
+minipos.cfg
+Makefile
