@@ -2,12 +2,21 @@
 <head>
 <title>Welcome to MiniPOS</title>
 <link rel="stylesheet" href="style.css">
+<script>
+function jsCheck() {
+	document.getElementById("begin").style.display = "block";
+}
+</script>
 </head>
 
-<body onclick="window.open('request', '_self')">
+<body onload="jsCheck()" onclick="window.open('request', '_self')">
 <h1>Welcome to MiniPOS</h1>
 <img src="bitcoin-cash-logo.svg" alt="Bitcoin Cash Logo">
-<p>Click to begin.</p>
+<noscript>
+<p>JavaScript is required to make use of MiniPOS.<br>
+Please enable it in your browser to continue.</p>
+</noscript>
+<p id="begin" style="display: none">Click to begin.</p>
 <!-- Add any other HTML you would like to appear on the welcome screen here -->
 </body>
 </html>
