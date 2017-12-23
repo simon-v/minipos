@@ -8,6 +8,7 @@
 import os
 import sys
 from wsgiref.simple_server import make_server
+import urllib
 import urlparse
 import datetime
 import qrcode
@@ -111,6 +112,8 @@ try:
 		raise ValueError
 except (KeyError, ValueError):
 	config['welcome_timeout'] = 120
+if 'label' not in config or config['label'] == '':
+	config['label'] = 'MiniPOS'
 
 # Utility wrapper function
 def load_file(filename):
@@ -176,7 +179,7 @@ def create_invoice(parameters):
 	# BEGIN DEBUG
 	#balance -= float(btc_amount)
 	# END DEBUG
-	data = 'bitcoincash:{addr}?amount={amt}&label={label}'.format(addr=address, amt=btc_amount, label='MiniPOS') # TODO add custom label handling
+	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=btc_amount, label=urllib.quote(config['label']))
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)

@@ -25,6 +25,10 @@ week_start=monday
 # The port number minipos will listen on
 port=8080
 
+# The label which will be added to the transaction's description or memo in the
+# payment request QR code. Set this to the short version of your shop name
+label=MiniPOS
+
 # A comma-separated list of IP addresses that are allowed to connect
 # Set to "0.0.0.0" to allow all connections
 # Set to "127.0.0.1" to allow local connections only.
