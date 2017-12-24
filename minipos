@@ -13,6 +13,7 @@ import urlparse
 import datetime
 import qrcode
 import StringIO
+import random
 
 import bch # Local library file
 import sendmail # Local library file
@@ -179,7 +180,11 @@ def create_invoice(parameters):
 	# BEGIN DEBUG
 	#balance -= float(btc_amount)
 	# END DEBUG
-	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=btc_amount, label=urllib.quote(config['label']))
+	tag = ''
+	for i in range(7):
+		tag += random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+	label = urllib.quote('%s ID:%s' % (config['label'], tag))
+	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=btc_amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)
@@ -193,6 +198,7 @@ def create_invoice(parameters):
 		'fiat': bch.fiat(amount),
 		'cur': currency,
 		'price': bch.fiat(price),
+		'tag': tag,
 	}
 	page = load_file('invoice.html').format(**filler)
 	return page
@@ -224,12 +230,13 @@ def record_payment(parameters):
 	currency = parameters['currency'][0]
 	btc_amount = parameters['btc_amount'][0]
 	address = parameters['address'][0]
+	tag = parameters['tag'][0]
 	log_dir = os.path.join(data_dir, 'logs')
 	if not os.path.isdir(log_dir):
 		os.mkdir(log_dir)
 	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
 	log = open(logfile, 'a')
-	log.write('{date}	{addr}	{amt}	{fiat} {cur}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=btc_amount, fiat=amount, cur=currency))
+	log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=btc_amount, fiat=amount, cur=currency, tag=tag))
 	log.close()
 
 # Lock an address to prevent concurrent access
@@ -267,14 +274,19 @@ def read_log_file(filename, plaintext=False):
 		return {}, ''
 	try:
 		for line in logfile.readlines():
-			date, address, btc_amount, amount = line.strip().split('	')
+			line = line.strip().split('	')
+			if len(line) == 4:
+				line.append('')
+			elif not len(line) == 5:
+				raise ValueError
+			date, address, btc_amount, amount, tag = line
 			amount, currency = amount.split(' ')
 			totals[currency] += float(amount)
 			date = date.split('.')[0].replace('T', ' ')
 			if plaintext:
-				table += '{date}  {addr}...  {amt}  {fiat} {cur}\n'.format(date=date, addr=address[0:10], amt=str(btc_amount).ljust(12), fiat=str(amount).rjust(15), cur=currency)
+				table += '{date}  {addr}...  {amt}  {fiat} {cur}  {tag}\n'.format(date=date, addr=address[0:10], amt=str(btc_amount).rjust(12), fiat=str(amount).rjust(15), cur=currency, tag=tag)
 			else:
-				table += '<tr><td>{date}</td><td>{addr}...</td><td>{amt}</td><td>{fiat} {cur}</td></tr>\n'.format(date=date, addr=address[0:10], amt=btc_amount, fiat=amount, cur=currency)
+				table += '<tr><td>{date}</td><td>{addr}...</td><td>{amt}</td><td>{fiat} {cur}</td><td>{tag}</td></tr>\n'.format(date=date, addr=address[0:10], amt=btc_amount, fiat=amount, cur=currency, tag=tag)
 	except:
 		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
 		msg = 'The log file for {file} is corrupted!'.format(file=filename.split('/')[1].split('.')[0])
@@ -399,9 +411,9 @@ def show_logs(parameters, plaintext=False):
 	# Format and return the logs page
 	if table != '':
 		if plaintext:
-			table_head = '====== Date =======||== Address ==||== Amount ==||== Amount (fiat) =='
+			table_head = '====== Date =======||== Address ==||== Amount ==||== Amount (fiat) ==||== ID =='
 		else:
-			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th></tr>\n'
+			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th><th>ID</th></tr>\n'
 			table_foot = '</table>\n'
 	else:
 		if plaintext:
@@ -559,6 +571,7 @@ def minipos(environ, start_response):
 	return [page]
 
 # Start the web server
+random.seed()
 httpd = make_server('', config['port'], minipos)
 print('Serving minipos on port {port}...'.format(**config))
 try:

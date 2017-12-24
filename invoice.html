@@ -6,7 +6,7 @@
 <script src="scripts.js"></script>
 <script>
 var request_string = "address={addr}&amount={amt}&initial={balance}";
-var confirm_string = "address={addr}&amount={fiat}&currency={cur}&btc_amount={amt}";
+var confirm_string = "address={addr}&amount={fiat}&currency={cur}&btc_amount={amt}&tag={tag}";
 </script>
 </head>
 
@@ -14,7 +14,7 @@ var confirm_string = "address={addr}&amount={fiat}&currency={cur}&btc_amount={am
 <img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}">
 <p>Please send <strong>{amt} BCH</strong> (total {fiat} {cur})</p>
 <p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</strong></p>
-<p><em>(1 BCH = {price} {cur})</em></p>
+<p><em>1 BCH = {price} {cur}</em>. Payment ID: <strong>{tag}</strong></p>
 <div id="popup"><p>The payment request has timed out.</p></div>
 <form method="get" name="cancel" action="cancel">
 <input type="submit" id="cancel" class="clear" value="&#10007; Cancel">
