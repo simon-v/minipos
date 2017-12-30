@@ -30,7 +30,7 @@ Navigate to the server's address and port from any device with a relatively mode
 
 In the request creation page, enter the amount, taking the multiplier into account; For example, if the multiplier is x0.01 (representing cents), enter two trailing zeroes for whole dollar amounts, as if the cent point is there. Press the green check mark button.
 
-Have your buyer scan the resulting QR code with their Bitcoin Cash wallet and authorize the transaction.
+Have your buyer scan the resulting QR code with their Bitcoin Cash wallet and authorize the transaction. Alternatively, you can click/tap on the QR code to copy the request URI to clipboard and send it to your buyer in a text message.
 
 Wait for the transaction to be detected by the system. Press the `Confirm` button and hand the buyer his purchase.
 
