@@ -10,14 +10,15 @@ var request_string = "id={tag}";
 </head>
 
 <body onload="setTimeout(checkPayment, 5000)">
-<img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}">
+<img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}" onclick="copy()">
 <p>Please send <strong>{amt} BCH</strong> (total {fiat} {cur})</p>
 <p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</strong></p>
 <p><em>1 BCH = {price} {cur}</em>. Payment ID: <strong>{tag}</strong></p>
-<div id="popup"><p>The payment request has timed out.</p></div>
+<div id="popup"><p id="popup_text"></p></div>
 <form method="get" name="cancel" action="cancel">
 <input type="submit" id="cancel" class="clear" value="&#10007; Cancel">
 <input type="hidden" name="address" value="{addr}">
+<input type="text" name="copy" id="copy" value="{request}" style="display: none">
 </form>
 <form method="get" name="finish" action="request">
 <input style="display: none;" type="submit" id="finish" class="ok" value="&#10003; Finish">

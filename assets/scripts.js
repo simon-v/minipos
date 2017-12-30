@@ -47,11 +47,17 @@ function showConfirmButton(response) {
 		document.getElementById("finish").style.display = "inline";
 	}
 	else if (response == -1) {
-		document.getElementById("popup").style.display = "block";
+		displayPopup("The payment request has timed out.")
 	}
 	else {
 		setTimeout(checkPayment, 5000);
 	}
+}
+
+// Display an informational popup dialog
+function displayPopup(text) {
+	document.getElementById("popup_text").innerHTML = text;
+	document.getElementById("popup").style.display = "block";
 }
 
 // Check whether or not payment was made
@@ -80,12 +86,11 @@ function sendEmail(date) {
 }
 function emailSent(response) {
 	if ( response == 1 ) {
-		document.getElementById("popup_text").innerHTML = "The email was sent to the configured address.";
+		displayPopup("The email was sent to the configured address.");
 	}
 	else {
-		document.getElementById("popup_text").innerHTML = "There was an error sending the email.";
+		displayPopup("There was an error sending the email.");
 	}
-	document.getElementById("popup").style.display = "block";
 }
 function dismissPopup() {
 	document.getElementById("popup_text").innerHTML = "";
@@ -103,5 +108,21 @@ function returnTimer() {
 		else {
 			setTimeout(returnTimer, 1000);
 		}
+	}
+}
+
+// Copy-to-clipboard
+function copy() {
+	var field = document.getElementById("copy");
+	try {
+		field.style.display = "block";
+		field.select();
+		document.execCommand("copy");
+		field.blur();
+	}
+	finally {
+		displayPopup("Copied to clipboard.");
+		setTimeout(dismissPopup, 1000);
+		field.style.display = "none";
 	}
 }
