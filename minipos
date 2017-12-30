@@ -153,7 +153,7 @@ def create_invoice(parameters):
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
-	amount = float(parameters['amount'][0]) * config['multiplier']
+	fiat = float(parameters['amount'][0]) * config['multiplier']
 	# Check for address lock timeout
 	for k in config['lock'].keys():
 		if check_lock_timeout(k):
@@ -166,7 +166,7 @@ def create_invoice(parameters):
 	except:
 		print(sys.exc_info()[1])
 		return error
-	btc_amount = bch.btc(amount / price)
+	amount = bch.btc(fiat / price)
 	# Use the next available address
 	address = config['addresses'][0]
 	lock_address(address)
@@ -178,39 +178,53 @@ def create_invoice(parameters):
 		return error
 	balance += unconfirmed
 	# BEGIN DEBUG
-	#balance -= float(btc_amount)
+	#balance -= float(amount)
 	# END DEBUG
 	tag = ''
 	for i in range(7):
 		tag += random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 	label = urllib.quote('%s ID:%s' % (config['label'], tag))
-	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=btc_amount, label=label)
+	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
 	output = StringIO.StringIO()
 	image.save(output)
 	output = output.getvalue().encode('base64').replace('\n', '')
 	filler = {
 		'addr': address,
-		'amt': btc_amount,
+		'amt': amount,
 		'balance': balance,
 		'qr': output,
 		'request': data,
-		'fiat': bch.fiat(amount),
+		'fiat': bch.fiat(fiat),
 		'cur': currency,
 		'price': bch.fiat(price),
 		'tag': tag,
 	}
+	config['lock'][address]['amount'] = amount
+	config['lock'][address]['fiat'] = filler['fiat']
+	config['lock'][address]['currency'] = currency
+	config['lock'][address]['balance'] = balance
+	config['lock'][address]['tag'] = tag
 	page = load_file('invoice.html').format(**filler)
 	return page
 
 # API check if a payment was received
 def check_payment(parameters):
-	amount = float(parameters['amount'][0])
-	initial = float(parameters['initial'][0])
-	address = parameters['address'][0]
+	# Find the address associated with the tag
+	address = None
+	for addr in config['lock']:
+		if parameters['id'][0] == config['lock'][addr]['tag']:
+			address = addr
+			break
+	if not address:
+		return '-1'
+	# Update address lock
 	if check_lock_timeout(address):
 		return '-1'
 	lock_address(address)
+	# Check address balance
+	amount = float(config['lock'][address]['amount'])
+	initial = float(config['lock'][address]['balance'])
 	try:
 		balance, unconfirmed = bch.get_balance(address)
 	except KeyboardInterrupt:
@@ -219,29 +233,29 @@ def check_payment(parameters):
 		print('Could not fetch balance: ' + str(sys.exc_info()[1]))
 		return '0'
 	if balance + unconfirmed >= initial + amount:
+		record_payment(address)
 		unlock_address(address)
 		return '1'
-	else:
-		return '0'
+	return '0'
 
 # Write the details of the payment to a log file
-def record_payment(parameters):
-	amount = parameters['amount'][0]
-	currency = parameters['currency'][0]
-	btc_amount = parameters['btc_amount'][0]
-	address = parameters['address'][0]
-	tag = parameters['tag'][0]
+def record_payment(address):
+	fiat = config['lock'][address]['fiat']
+	currency = config['lock'][address]['currency']
+	amount = config['lock'][address]['amount']
+	tag = config['lock'][address]['tag']
 	log_dir = os.path.join(data_dir, 'logs')
 	if not os.path.isdir(log_dir):
 		os.mkdir(log_dir)
 	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
 	log = open(logfile, 'a')
-	log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=btc_amount, fiat=amount, cur=currency, tag=tag))
+	log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
 	log.close()
 
 # Lock an address to prevent concurrent access
 def lock_address(address):
-	config['lock'][address] = datetime.datetime.now()
+	if address not in config['lock']:
+		config['lock'][address] = {'time': datetime.datetime.now()}
 	if address in config['addresses']:
 		del(config['addresses'][config['addresses'].index(address)])
 
@@ -255,7 +269,7 @@ def unlock_address(address):
 def check_lock_timeout(address):
 	if address not in config['lock']:
 		return True
-	delta = datetime.datetime.now() - config['lock'][address]
+	delta = datetime.datetime.now() - config['lock'][address]['time']
 	if delta >= datetime.timedelta(seconds=60):
 		return True
 	return False
@@ -279,14 +293,14 @@ def read_log_file(filename, plaintext=False):
 				line.append('')
 			elif not len(line) == 5:
 				raise ValueError
-			date, address, btc_amount, amount, tag = line
-			amount, currency = amount.split(' ')
-			totals[currency] += float(amount)
+			date, address, amount, fiat, tag = line
+			fiat, currency = fiat.split(' ')
+			totals[currency] += float(fiat)
 			date = date.split('.')[0].replace('T', ' ')
 			if plaintext:
-				table += '{date}  {addr}...  {amt}  {fiat} {cur}  {tag}\n'.format(date=date, addr=address[0:10], amt=str(btc_amount).rjust(12), fiat=str(amount).rjust(15), cur=currency, tag=tag)
+				table += '{date}  {addr}...  {amt}  {fiat} {cur}  {tag}\n'.format(date=date, addr=address[0:10], amt=str(amount).rjust(12), fiat=str(fiat).rjust(15), cur=currency, tag=tag)
 			else:
-				table += '<tr><td>{date}</td><td>{addr}...</td><td>{amt}</td><td>{fiat} {cur}</td><td>{tag}</td></tr>\n'.format(date=date, addr=address[0:10], amt=btc_amount, fiat=amount, cur=currency, tag=tag)
+				table += '<tr><td>{date}</td><td>{addr}...</td><td>{amt}</td><td>{fiat} {cur}</td><td>{tag}</td></tr>\n'.format(date=date, addr=address[0:10], amt=amount, fiat=fiat, cur=currency, tag=tag)
 	except:
 		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
 		msg = 'The log file for {file} is corrupted!'.format(file=filename.split('/')[1].split('.')[0])
