@@ -7,7 +7,7 @@ With `minipos` you can set up receiving Bitcoin Cash payments without exposing y
 
 __Setup__
 
-You will need an Internet-connected computer with Python 2 and `python-qrcode` installed, as the server. It does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
+You will need an Internet-connected computer with Python 3 and `python-qrcode` installed, as the server. It does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
 
 Place the executable and accompanying library files in a convenient location. Decide where to keep your local data. `minipos` will look for it in the following places:
 
@@ -73,5 +73,4 @@ This program is free software, released under the Apache License, Version 2.0. S
 
 The program's canonical project page resides at https://github.com/simon-v/minipos/
 
-I gratefully accept appreciation for my work in material form at __13JSnRst7PJiMUr6fyVAkFWTwf9XKivWLh__.
-
+I gratefully accept appreciation for my work in material form at __[bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88](bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88)__.
