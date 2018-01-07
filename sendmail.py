@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # sendmail.py - A mail-sending abstraction library
 # Author: Simon Volpert <simon@simonvolpert.com>
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
@@ -6,11 +6,7 @@
 import subprocess
 import sys
 import smtplib
-# Workaround for very old Python versions
-try:
-	from email.mime.text import MIMEText  # Python 2.7+
-except ImportError:
-	from email.MIMEText import MIMEText  # Likely, Python 2.4
+from email.mime.text import MIMEText
 
 email_from = 'nobody <noreply@localhost.localdomain>'
 

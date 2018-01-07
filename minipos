@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # minipos - A self-hosted, 0-confirmation Bitcoin Cash point-of-sale server
 # Author: Simon Volpert <simon@simonvolpert.com>
 # Project page: https://github.com/simon-v/minipos/
@@ -8,12 +8,12 @@
 import os
 import sys
 from wsgiref.simple_server import make_server
-import urllib
-import urlparse
+import urllib.parse
 import datetime
 import qrcode
-import StringIO
+import io
 import random
+import base64
 
 import bch # Local library file
 import sendmail # Local library file
@@ -44,7 +44,7 @@ if len(sys.argv) > 1:
 for data_dir in data_dir_locations:
 	try:
 		os.chdir(data_dir)
-	except OSError:
+	except (OSError, NotADirectoryError):
 		continue
 	if os.path.isfile('address.list'):
 		print('Using {dir} as data directory'.format(dir=data_dir))
@@ -57,7 +57,7 @@ try:
 		if _addr != '' and not _addr in config['addresses']:
 			config['addresses'].append(_addr)
 	f.close()
-except IOError:
+except (IOError, OSError, FileNotFoundError, PermissionError):
 	print('Could not open address.list')
 	sys.exit(2)
 if config['addresses'] == []:
@@ -163,6 +163,8 @@ def create_invoice(parameters):
 	# Get the exchange rate
 	try:
 		price = bch.get_price(currency)
+	except KeyboardInterrupt:
+		raise
 	except:
 		print(sys.exc_info()[1])
 		return error
@@ -172,6 +174,8 @@ def create_invoice(parameters):
 	lock_address(address)
 	try:
 		balance, unconfirmed = bch.get_balance(address)
+	except KeyboardInterrupt:
+		raise
 	except:
 		print(sys.exc_info()[1])
 		unlock_address(address)
@@ -183,12 +187,12 @@ def create_invoice(parameters):
 	tag = ''
 	for i in range(7):
 		tag += random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-	label = urllib.quote('%s ID:%s' % (config['label'], tag))
+	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
-	output = StringIO.StringIO()
+	output = io.BytesIO()
 	image.save(output)
-	output = output.getvalue().encode('base64').replace('\n', '')
+	output = base64.b64encode(output.getvalue()).decode('UTF-8')
 	filler = {
 		'addr': address,
 		'amt': amount,
@@ -283,7 +287,7 @@ def read_log_file(filename, plaintext=False):
 	try:
 		logfile = open(os.path.join(data_dir, filename), 'r')
 	except:
-		if sys.exc_info()[0] is not IOError:
+		if sys.exc_info()[0] not in [IOError, OSError, FileNotFoundError, PermissionError]:
 			print(sys.exc_info()[1])
 		return {}, ''
 	try:
@@ -440,11 +444,11 @@ def show_logs(parameters, plaintext=False):
 		# Load print header and footer
 		try:
 			header = load_file('log_header.html')
-		except IOError:
+		except (IOError, OSError, FileNotFoundError, PermissionError):
 			header = ''
 		try:
 			footer = load_file('log_footer.html')
-		except IOError:
+		except (IOError, OSError, FileNotFoundError, PermissionError):
 			footer = ''
 		table = table_head + table + table_foot
 		# Pack the above variables into a filler dict
@@ -478,7 +482,7 @@ def minipos(environ, start_response):
 		start_response(status, headers)
 		return [page]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
-	parameters = urlparse.parse_qs(environ['QUERY_STRING'])
+	parameters = urllib.parse.parse_qs(environ['QUERY_STRING'])
 	# Handle specific content-types
 	if request == 'style.css':
 		headers = [('Content-type', 'text/css')]
@@ -582,7 +586,7 @@ def minipos(environ, start_response):
 			print(sys.exc_info()[1])
 	# Serve the page
 	start_response(status, headers)
-	return [page]
+	return [bytes(page, 'UTF-8')]
 
 # Start the web server
 random.seed()

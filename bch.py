@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # bch.py - A Bitcoin Cash utility library
 # Author: Simon Volpert <simon@simonvolpert.com>
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
@@ -20,10 +20,13 @@ bitpay_url = 'https://bch-insight.bitpay.com/api/addr/%s'
 test_explorers = [
 ]
 
-import urllib
+
+import urllib.request
 import json
 import random
 import sys
+
+random.seed()
 
 # float amount -> str formatted amount
 def btc(amount):
@@ -38,9 +41,8 @@ def fiat(amount):
 # str URL -> str JSON data from the URL
 def jsonload(url):
 	try:
-		webpage = urllib.urlopen(url)
-		data = json.load(webpage)
-		webpage.close()
+		with urllib.request.urlopen(url) as webpage:
+			data = json.load(webpage)
 	except:
 		raise sys.exc_info()[0]('{exception} ({explorer})'.format(exception=sys.exc_info()[1], explorer=url.split('/')[2]))
 	return data
