@@ -96,6 +96,13 @@ def btc(amount):
 		return '0'
 	return result
 
+def bits(amount):
+	bit, sat = fiat(amount * 1000000).split('.')
+	sat = sat.rstrip('0')
+	if sat == '':
+		return bit
+	return(bit + '.' + sat)
+
 def fiat(amount):
 	return ('%.2f' % amount)
 
