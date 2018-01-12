@@ -115,6 +115,12 @@ except (KeyError, ValueError):
 	config['welcome_timeout'] = 120
 if 'label' not in config or config['label'] == '':
 	config['label'] = 'MiniPOS'
+if 'unit' not in config:
+	config['unit'] = 'native'
+else:
+	if config['unit'] not in ['native', 'bits', 'satoshi']:
+		print("Invalid 'unit' value, falling back to 'native'")
+		config['unit'] = 'native'
 
 # Utility wrapper function
 def load_file(filename):
@@ -125,6 +131,16 @@ def load_file(filename):
 	data = src.read()
 	src.close()
 	return data
+
+# Cast amount into preferred units
+def format_amount(amount):
+	if config['unit'] == 'bits':
+		return bch.bits(float(amount))
+	elif config['unit'] == 'satoshi':
+		return str(int(float(amount) * 100000000))
+	else:
+		return amount
+
 
 # Create a payment request QR page
 def create_invoice(parameters):
@@ -195,7 +211,7 @@ def create_invoice(parameters):
 	output = base64.b64encode(output.getvalue()).decode('UTF-8')
 	filler = {
 		'addr': address,
-		'amt': amount,
+		'amt': format_amount(amount),
 		'balance': balance,
 		'qr': output,
 		'request': data,
@@ -204,6 +220,7 @@ def create_invoice(parameters):
 		'price': bch.fiat(price),
 		'tag': tag,
 	}
+	filler['token'] = 'BCH' if config['unit'] == 'native' else 'bits' if config['unit'] == 'bits' else 'satoshi'
 	config['lock'][address]['amount'] = amount
 	config['lock'][address]['fiat'] = filler['fiat']
 	config['lock'][address]['currency'] = currency
@@ -298,6 +315,7 @@ def read_log_file(filename, plaintext=False):
 			elif not len(line) == 5:
 				raise ValueError
 			date, address, amount, fiat, tag = line
+			amount = format_amount(amount)
 			fiat, currency = fiat.split(' ')
 			totals[currency] += float(fiat)
 			date = date.split('.')[0].replace('T', ' ')
@@ -428,10 +446,11 @@ def show_logs(parameters, plaintext=False):
 			summary += chunk.format(fiat=bch.fiat(totals[sign]), cur=sign)
 	# Format and return the logs page
 	if table != '':
+		token = 'BCH' if config['unit'] == 'native' else 'bits' if config['unit'] == 'bits' else 'satoshi'
 		if plaintext:
-			table_head = '====== Date =======||== Address ==||== Amount ==||== Amount (fiat) ==||== ID =='
+			table_head = '====== Date =======||== Address ==||== Amount ({token}) ==||== Amount (fiat) ==||== ID =='.format(token=token)
 		else:
-			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount</th><th>Amount (fiat)</th><th>ID</th></tr>\n'
+			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount ({token})</th><th>Amount (fiat)</th><th>ID</th></tr>\n'.format(token=token)
 			table_foot = '</table>\n'
 	else:
 		if plaintext:

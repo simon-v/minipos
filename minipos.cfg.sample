@@ -49,3 +49,7 @@ email=
 # the payment request page to the welcome page, or set to 0 to disable the
 # welcome page entirely
 welcome_timeout=120
+
+# The preferred display unit for the bitcoin amounts
+# Valid values are 'native', 'bits' and 'satoshi'
+unit=native
