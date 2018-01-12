@@ -3,21 +3,77 @@
 # Author: Simon Volpert <simon@simonvolpert.com>
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
 
+MAX_ERRORS = 10
 price_url = 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/'
 currency_url = 'http://api.fixer.io/latest?base=USD&symbols=%s'
-block_explorers = [
-	'https://cashexplorer.bitcoin.com/insight-api/addr/%s',
-#	'https://api.explorer.cash/%s/balance', # bogus data provided
-	'https://blockdozer.com/insight-api/addr/%s',
-	'https://bccblock.info/api/addr/%s',
-#	'https://api.blockchair.com/bitcoin-cash/dashboards/address/%s', # high error rates
-#	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY', # high error rates
-#	'https://bch-chain.api.btc.com/v3/address/%s', # high error rates
-#	'https://bch-bitcore2.trezor.io/api/addr/%s', # scripts not allowed
-#	'https://bitcoincash.blockexplorer.com/api/addr/%s', # scripts not allowed
-]
-bitpay_url = 'https://bch-insight.bitpay.com/api/addr/%s'
-test_explorers = [
+explorers = [
+	{
+		'url': 'https://cashexplorer.bitcoin.com/api/addr/{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': '13',
+	},
+	{
+		'url': 'https://blockdozer.com/insight-api/addr/{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': '13',
+	},
+	{
+		'url': 'https://bccblock.info/api/addr/{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': '13',
+	},
+	{
+		'url': 'https://bch-insight.bitpay.com/api/addr/{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': 'CH',
+	},
+	{
+		# Non-realtime source; https://github.com/Blockchair/Blockchair.Support/blob/master/API.md
+		'url': 'https://api.blockchair.com/bitcoin-cash/dashboards/address/{address}',
+		'balance_key': None,
+		'confirmed_key': 'data.0.sum_value_unspent',
+		'unconfirmed_key': None,
+		'unit_satoshi': True,
+		'prefixes': 'qp13',
+	},
+	{
+		'url': 'https://bch-chain.api.btc.com/v3/address/{address}',
+		'balance_key': 'data.balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'data.unconfirmed_received',
+		'unit_satoshi': True,
+		'prefixes': '13',
+	},
+	{
+		'url': 'https://bch-bitcore2.trezor.io/api/addr/{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': '13',
+	},
+	{
+		'url': 'https://bitcoincash.blockexplorer.com/api/addr/{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': '13',
+	},
+#	'https://api.explorer.cash/%s/balance', # broken
+#	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY', # API key required
 ]
 
 
@@ -26,7 +82,12 @@ import json
 import random
 import sys
 
+# Initialize explorer list
 random.seed()
+random.shuffle(explorers)
+for i in range(len(explorers)):
+	explorers[i]['errors'] = 0
+	explorers[i]['name'] = explorers[i]['url'].split('/')[2]
 
 # float amount -> str formatted amount
 def btc(amount):
@@ -40,12 +101,25 @@ def fiat(amount):
 
 # str URL -> str JSON data from the URL
 def jsonload(url):
-	try:
-		with urllib.request.urlopen(url) as webpage:
-			data = json.load(webpage)
-	except:
-		raise sys.exc_info()[0]('{exception} ({explorer})'.format(exception=sys.exc_info()[1], explorer=url.split('/')[2]))
+	request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+	with urllib.request.urlopen(request) as webpage:
+		data = json.load(webpage)
 	return data
+
+# Return the value at the end of the key hierarchy in the json object
+def get_value(json_object, key_path):
+	for k in key_path.split('.'):
+		# Process integer indices
+		try:
+			k = int(k)
+		except ValueError:
+			pass
+		# Expand the key
+		try:
+			json_object = json_object[k]
+		except KeyError:
+			raise KeyError('Key "{k}" from "{key_path}" not found in JSON'.format(k=k, key_path=key_path))
+	return json_object
 
 # Get the conversion rate
 def get_price(currency):
@@ -57,39 +131,89 @@ def get_price(currency):
 	return rate
 
 # Get the address balance
-def get_balance(address):
-	# BitPay's address scheme is non-standard and only recognized by its own software
-	if address.startswith('C') or address.startswith('H'):
-		block_url = bitpay_url
-	else:
-		block_url = random.choice(block_explorers)
-	explorer = block_url.split('/')[2]
-	data = jsonload(block_url % address)
-	#print(data)
-	if 'data' in data:
-		data = data['data']
-	if type(data) is list:
-		data = data[0]
-	elif data is None:
-		raise ValueError(explorer + ' returned empty data')
-	# Particular block explorer quirks
-	if 'balance' in data:
-		balance = float(data['balance'])
-		# BTC.com/BlockTrail
-		if 'balanceSat' not in data:
-			balance /= 100000000
-	elif 'sum_value_unspent' in data:
-		# BlockChair requires special handling
-		balance = float(data['sum_value_unspent']) / 100000000
-	else:
-		raise ValueError('Could not figure out balance in API response from ' + explorer)
-	if 'unconfirmedBalance' in data:
-		unconfirmed = float(data['unconfirmedBalance'])
-	elif 'unconfirmed_received' in data:
-		# BTC.com/BlockTrail
-		unconfirmed = float(data['unconfirmed_received']) / 100000000
-	else:
-		# Explorer.Cash does not provide the unconfirmed balance field; Getting it would require an extra query and some calculation
-		print('No unconfirmed balance field in API response from ' + explorer)
-		unconfirmed = 0.0
-	return balance, unconfirmed
+def get_balance(address, config={}, verify=False):
+	if address.startswith('b'):
+		address = address.split(':')[1]
+	confirmed_only = True if 'unconfirmed' not in config else not config['unconfirmed']
+	# Add a temporary separator
+	server = None
+	results = []
+	while True:
+		# Cycle to the next server
+		explorers.append(server)
+		server = explorers.pop(0)
+		# If the end of the server list was reached without a single success, assume a network error
+		if server is None:
+			for i in range(len(explorers)):
+				if explorers[i]['errors'] > 0:
+					explorers[i]['errors'] -= 1
+			raise ConnectionError('Connection errors when trying to fetch balance')
+		# Wrong address type
+		if address[0] not in server['prefixes']:
+			continue
+		# Avoid servers with excessive errors
+		if server['errors'] > MAX_ERRORS:
+			continue
+		# Try to get balance
+		try:
+			# Conditional balance processing
+			# TODO: This is a mighty convoluted way of doing it and needs rethinking
+			if server['confirmed_key'] is not None and server['unconfirmed_key'] is not None:
+				json = jsonload(server['url'].format(address=address))
+				confirmed = float(get_value(json, server['confirmed_key']))
+				unconfirmed = float(get_value(json, server['unconfirmed_key']))
+			elif server['confirmed_key'] is not None and server['balance_key'] is not None:
+				json = jsonload(server['url'].format(address=address))
+				confirmed = float(get_value(json, server['confirmed_key']))
+				balance = float(get_value(json, server['balance_key']))
+				unconfirmed = balance - confirmed
+			elif server['unconfirmed_key'] is not None and server['balance_key'] is not None:
+				json = jsonload(server['url'].format(address=address))
+				balance = float(get_value(json, server['balance_key']))
+				unconfirmed = float(get_value(json, server['unconfirmed_key']))
+				confirmed = balance - unconfirmed
+			elif confirmed_only and server['confirmed_key'] is not None:
+				json = jsonload(server['url'].format(address=address))
+				confirmed = float(get_value(json, server['confirmed_key']))
+				unconfirmed = 0.0
+			elif not confirmed_only and server['balance_key'] is not None:
+				json = jsonload(server['url'].format(address=address))
+				balance = float(get_value(json, server['balance_key']))
+				confirmed = balance
+				unconfirmed = 0.0
+			else:
+				continue
+		except KeyboardInterrupt:
+			explorers.remove(None)
+			raise
+		except:
+			server['errors'] += 1
+			exception = sys.exc_info()[1]
+			try:
+				server['last_error'] = str(exception.reason)
+			except AttributeError:
+				server['last_error'] = str(exception)
+			if server['errors'] > MAX_ERRORS:
+				print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
+			continue
+		# Convert balances to native units
+		if server['unit_satoshi']:
+			confirmed /= 100000000
+			unconfirmed /= 100000000
+		if server['errors'] > 0:
+			server['errors'] -= 1
+		if verify:
+			if (confirmed, unconfirmed) not in results:
+				results.append((confirmed, unconfirmed))
+				continue
+
+		break
+	# Clean up
+	explorers.append(server)
+	explorers.remove(None)
+	return confirmed, unconfirmed
+
+if __name__ == '__main__':
+	print('*** Known block explorers ***')
+	for server in explorers:
+		print(server['name'])
