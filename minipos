@@ -121,6 +121,8 @@ else:
 	if config['unit'] not in ['native', 'bits', 'satoshi']:
 		print("Invalid 'unit' value, falling back to 'native'")
 		config['unit'] = 'native'
+if 'price_source' not in config:
+	config['price_source'] = bch.exchanges[0]['name']
 
 # Utility wrapper function
 def load_file(filename):
@@ -178,7 +180,7 @@ def create_invoice(parameters):
 		return noaddrs
 	# Get the exchange rate
 	try:
-		price = bch.get_price(currency)
+		price = bch.get_price(currency, config)
 	except KeyboardInterrupt:
 		raise
 	except:
@@ -189,7 +191,7 @@ def create_invoice(parameters):
 	address = config['addresses'][0]
 	lock_address(address)
 	try:
-		balance, unconfirmed = bch.get_balance(address, verify=True)
+		balance, unconfirmed = bch.get_balance(address, config=config, verify=True)
 	except KeyboardInterrupt:
 		raise
 	except:
@@ -247,7 +249,7 @@ def check_payment(parameters):
 	amount = float(config['lock'][address]['amount'])
 	initial = float(config['lock'][address]['balance'])
 	try:
-		balance, unconfirmed = bch.get_balance(address, verify=True)
+		balance, unconfirmed = bch.get_balance(address, config=config, verify=True)
 	except KeyboardInterrupt:
 		raise
 	except:

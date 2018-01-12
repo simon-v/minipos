@@ -53,3 +53,7 @@ welcome_timeout=120
 # The preferred display unit for the bitcoin amounts
 # Valid values are 'native', 'bits' and 'satoshi'
 unit=native
+
+# The name of the server used as a source of price data
+# To get a list of available servers, execute the command `python bch.py`
+price_source=api.coinmarketcap.com

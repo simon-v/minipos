@@ -4,8 +4,13 @@
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
 
 MAX_ERRORS = 10
-price_url = 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/'
-currency_url = 'http://api.fixer.io/latest?base=USD&symbols=%s'
+currency_url = 'http://api.fixer.io/latest?base=USD&symbols={cur}'
+exchanges = [
+	{
+		'url': 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/?convert={cur}',
+		'price_key': '0.price_{cur}',
+	}
+]
 explorers = [
 	{
 		'url': 'https://cashexplorer.bitcoin.com/api/addr/{address}',
@@ -82,12 +87,14 @@ import json
 import random
 import sys
 
-# Initialize explorer list
+# Initialize explorer and exchange list
 random.seed()
 random.shuffle(explorers)
 for i in range(len(explorers)):
 	explorers[i]['errors'] = 0
 	explorers[i]['name'] = explorers[i]['url'].split('/')[2]
+for i in range(len(exchanges)):
+	exchanges[i]['name'] = exchanges[i]['url'].split('/')[2]
 
 # float amount -> str formatted amount
 def btc(amount):
@@ -129,12 +136,20 @@ def get_value(json_object, key_path):
 	return json_object
 
 # Get the conversion rate
-def get_price(currency):
-	data = jsonload(price_url)
-	rate = float(data[0]['price_usd'])
-	if currency != 'USD':
-		data = jsonload(currency_url % currency)
-		rate = rate * data['rates'][currency]
+def get_price(currency, config={'price_source': exchanges[0]['name']}):
+	currency = currency.lower()
+	found = False
+	for server in exchanges:
+		if server['name'] == config['price_source']:
+			found = True
+			break
+	if not found:
+		raise KeyError('Exchange "{src}" not in list of exchanges'.format(src=config['price_source']))
+	try:
+		data = jsonload(server['url'].format(cur=currency))
+	except KeyboardInterrupt:
+		raise
+	rate = float(get_value(data, server['price_key'].format(cur=currency)))
 	return rate
 
 # Get the address balance
@@ -221,6 +236,9 @@ def get_balance(address, config={}, verify=False):
 	return confirmed, unconfirmed
 
 if __name__ == '__main__':
-	print('*** Known block explorers ***')
+	print('===== Known block explorers =====')
 	for server in explorers:
+		print(server['name'])
+	print('\n===== Known exchange rate sources =====')
+	for server in exchanges:
 		print(server['name'])
