@@ -29,6 +29,14 @@ explorers = [
 		'prefixes': '13',
 	},
 	{
+		'url': 'https://blockdozer.com/insight-api/addr/bitcoincash:{address}',
+		'balance_key': 'balance',
+		'confirmed_key': None,
+		'unconfirmed_key': 'unconfirmedBalance',
+		'unit_satoshi': False,
+		'prefixes': 'qp',
+	},
+	{
 		'url': 'https://bccblock.info/api/addr/{address}',
 		'balance_key': 'balance',
 		'confirmed_key': None,
