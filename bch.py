@@ -169,7 +169,9 @@ def get_balance(address, config={}, verify=False):
 			for i in range(len(explorers)):
 				if explorers[i]['errors'] > 0:
 					explorers[i]['errors'] -= 1
-			raise ConnectionError('Connection errors when trying to fetch balance')
+			if results == []:
+				raise ConnectionError('Connection errors when trying to fetch balance')
+			return(results[-1])
 		# Wrong address type
 		if address[0] not in server['prefixes']:
 			continue
