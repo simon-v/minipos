@@ -170,6 +170,23 @@ def get_balance(address, config={}, verify=False):
 	if address.startswith('b'):
 		address = address.split(':')[1]
 	confirmed_only = True if 'unconfirmed' not in config else not config['unconfirmed']
+	# If the passed config defines a custom explorer, use that instead
+	try:
+		custom_explorer = {
+			'name': config['custom_explorer_url'].split('/')[2],
+			'url': config['custom_explorer_url'],
+			'balance_key': config['custom_balance_key'],
+			'confirmed_key': config['custom_confirmed_key'],
+			'unconfirmed_key': config['custom_unconfirmed_key'],
+			'unit_satoshi': config['custom_unit_satoshi'],
+			'prefixes': 'qp13CH', # Accept all prefixes by default
+			'errors': 0
+		}
+	except KeyError:
+		pass
+	else:
+		explorers.clear()
+		explorers.append(custom_explorer)
 	# Add a temporary separator
 	server = None
 	results = []

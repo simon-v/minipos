@@ -123,6 +123,11 @@ else:
 		config['unit'] = 'native'
 if 'price_source' not in config:
 	config['price_source'] = bch.exchanges[0]['name']
+for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key']:
+	if k in config and config[k] == '':
+		config[k] = None
+if 'custom_unit_satoshi' in config:
+	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
 
 # Utility wrapper function
 def load_file(filename):

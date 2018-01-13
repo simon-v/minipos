@@ -59,3 +59,20 @@ welcome_timeout=120
 # The preferred display unit for the bitcoin amounts
 # Valid values are 'native', 'bits' and 'satoshi'
 unit=native
+
+# If you have your own block explorer and you wish to query it instead,
+# uncomment and set all of the following fields
+#
+# The URL of the block explorer, with {address} in place of the address
+#custom_explorer_url=https://bch-chain.api.btc.com/v3/address/{address}
+
+# The key path in the JSON data which corresponds to the total balance,
+# confirmed balance and unconfirmed balance, dot-separated. If the explorer
+# does not provide this field, uncomment it and leave it blank
+# Examples:
+#custom_balance_key=data.balance
+#custom_confirmed_key=
+#custom_unconfirmed_key=data.unconfirmed_received
+
+# Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
+#custom_unit_satoshi=no
