@@ -5,7 +5,7 @@
 
 With `minipos` you can set up receiving Bitcoin Cash payments without exposing your funds to a third party, or even to your own cashiers at any point in the process, by simply giving it a list of Bitcoin Cash addresses to work with.
 
-__Setup__
+### Setup
 
 You will need an Internet-connected computer with Python 3 and `python-qrcode` installed, as the server. It does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
 
@@ -24,7 +24,7 @@ Finally, start the `minipos` executable, and take note of this computer's IP add
 
 A systemd service file is provided to ease this process.
 
-__Usage__
+### Usage
 
 Navigate to the server's address and port from any device with a relatively modern browser.
 
@@ -38,13 +38,13 @@ To review your sales, use the built-in log browser, accessible from the triple b
 
 A [live demo installation](https://simonvolpert.com/minipos-demo/) with an exposed configuration file is available for demonstrative purposes.
 
-__Customization__
+### Customization
 
 If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files.
 
 Any file placed in the data directory overrides its counterpart in the library directory. Images and other files that you want to be directly accessible to the web browser should be placed in the `assets` subdirectory.
 
-__Setting up with a web server__
+### Setting up with a web server
 
 MiniPOS doesn't need a web server to run, as it provides its own. It also doesn't care what the URL used to access it looks like, and will happily serve its content on a bare IP address, a subdomain or a directory. However, if you wish it to be accessible on port 80, you will need to set up a reverse proxy. An example Nginx configuration, similar to the one used by the live demo installation is provided below:
 
@@ -67,7 +67,7 @@ MiniPOS doesn't need a web server to run, as it provides its own. It also doesn'
     # More server configuration
     #
 
-__Other Notes__
+### Other Notes
 
 This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information.
 
