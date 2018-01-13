@@ -45,9 +45,10 @@ function showConfirmButton(response) {
 	if (response == 1) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
+		displayPopup("Payment received.");
 	}
 	else if (response == -1) {
-		displayPopup("The payment request has timed out.")
+		displayPopup("The payment request has timed out.");
 	}
 	else {
 		setTimeout(checkPayment, 5000);
