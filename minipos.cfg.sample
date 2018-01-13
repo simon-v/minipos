@@ -13,6 +13,12 @@ multiplier=1
 currencies=USD
 #currencies=USD,EUR
 
+# The name of the server to be used as a source of price data
+# To get a list of available servers, execute the command `python bch.py`
+# To get a list of available servers that provide the exchange rate for your
+# preferred currency, execute the command `python bch.py $CURRENCY_SYMBOL_HERE`
+price_source=api.coinmarketcap.com
+
 # The sales or value added tax in your jurisdiction, that you want to be able to
 # quickly add to the entered amount
 # Set to a negative number to provide a discount instead
@@ -53,7 +59,3 @@ welcome_timeout=120
 # The preferred display unit for the bitcoin amounts
 # Valid values are 'native', 'bits' and 'satoshi'
 unit=native
-
-# The name of the server used as a source of price data
-# To get a list of available servers, execute the command `python bch.py`
-price_source=api.coinmarketcap.com

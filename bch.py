@@ -155,12 +155,14 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 			found = True
 			break
 	if not found:
-		raise KeyError('Exchange "{src}" not in list of exchanges'.format(src=config['price_source']))
+		raise KeyError('{src} is not in list of exchanges'.format(src=config['price_source']))
 	try:
 		data = jsonload(server['url'].format(cur=currency, cur_lower=currency.lower()))
 	except KeyboardInterrupt:
 		raise
 	rate = float(get_value(data, server['price_key'].format(cur=currency, cur_lower=currency.lower())))
+	if rate == 0.0:
+		raise KeyError('{src} does not provide {cur} exchange rate'.format(src=server['name'], cur=currency))
 	return rate
 
 # Get the address balance
@@ -252,6 +254,17 @@ if __name__ == '__main__':
 	print('===== Known block explorers =====')
 	for server in explorers:
 		print(server['name'])
-	print('\n===== Known exchange rate sources =====')
+	try:
+		cur = sys.argv[1].upper()
+		print('\n===== Known exchange rate sources with {cur} support ====='.format(cur=cur))
+	except IndexError:
+		print('\n===== Known exchange rate sources =====')
 	for server in exchanges:
-		print(server['name'])
+		support = True
+		try:
+			get_price(cur, config={'price_source': server['name']})
+		except KeyError:
+			print(sys.exc_info()[1])
+			support = False
+		if support:
+			print(server['name'])
