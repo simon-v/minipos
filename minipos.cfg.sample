@@ -14,9 +14,9 @@ currencies=USD
 #currencies=USD,EUR
 
 # The name of the server to be used as a source of price data
-# To get a list of available servers, execute the command `python bch.py`
+# To get a list of available servers, run `bch.py`
 # To get a list of available servers that provide the exchange rate for your
-# preferred currency, execute the command `python bch.py $CURRENCY_SYMBOL_HERE`
+# preferred currency, execute the command `bch.py $YOUR_CURRENCY_CODE`
 price_source=api.coinmarketcap.com
 
 # The sales or value added tax in your jurisdiction, that you want to be able to
