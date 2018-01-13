@@ -3,3 +3,4 @@ address.list*
 logs/
 minipos.cfg
 Makefile
+__pycache__/
