@@ -129,7 +129,8 @@ def fiat(amount):
 def jsonload(url):
 	request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 	with urllib.request.urlopen(request) as webpage:
-		data = json.load(webpage)
+		data = str(webpage.read(), 'UTF-8')
+		data = json.loads(data)
 	return data
 
 # Return the value at the end of the key hierarchy in the json object
