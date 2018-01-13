@@ -8,7 +8,11 @@ currency_url = 'http://api.fixer.io/latest?base=USD&symbols={cur}'
 exchanges = [
 	{
 		'url': 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/?convert={cur}',
-		'price_key': '0.price_{cur}',
+		'price_key': '0.price_{cur_lower}',
+	},
+	{
+		'url': 'https://api.coinbase.com/v2/exchange-rates?currency=BCH',
+		'price_key': 'data.rates.{cur}',
 	}
 ]
 explorers = [
@@ -145,7 +149,6 @@ def get_value(json_object, key_path):
 
 # Get the conversion rate
 def get_price(currency, config={'price_source': exchanges[0]['name']}):
-	currency = currency.lower()
 	found = False
 	for server in exchanges:
 		if server['name'] == config['price_source']:
@@ -154,10 +157,10 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 	if not found:
 		raise KeyError('Exchange "{src}" not in list of exchanges'.format(src=config['price_source']))
 	try:
-		data = jsonload(server['url'].format(cur=currency))
+		data = jsonload(server['url'].format(cur=currency, cur_lower=currency.lower()))
 	except KeyboardInterrupt:
 		raise
-	rate = float(get_value(data, server['price_key'].format(cur=currency)))
+	rate = float(get_value(data, server['price_key'].format(cur=currency, cur_lower=currency.lower())))
 	return rate
 
 # Get the address balance
