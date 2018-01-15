@@ -41,7 +41,7 @@ def send(config, to, subject, text_body, headers={}):
 	else:
 		try:
 			server = subprocess.Popen(['/usr/sbin/sendmail','-i', message['To']], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-			server.communicate(message.as_string())
+			server.communicate(bytes(message.as_string(), 'UTF-8'))
 		except:
 			print('Sendmail failed: %s' % sys.exc_info()[1])
 			return False
