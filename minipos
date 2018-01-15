@@ -65,10 +65,9 @@ if config['addresses'] == []:
 	sys.exit(2)
 # Load the config file
 try:
-	f = open('minipos.cfg', 'r')
-	lines = f.readlines()
-	f.close()
-except IOError:
+	with open('minipos.cfg', 'r') as f:
+		lines = f.readlines()
+except (IOError, FileNotFoundError):
 	print('No configuration file found, using defaults')
 	lines = []
 for line in lines:
@@ -133,7 +132,7 @@ if 'custom_unit_satoshi' in config:
 def load_file(filename):
 	try:
 		src = open(os.path.join(data_dir, filename), 'r')
-	except IOError:
+	except (IOError, OSError, FileNotFoundError, PermissionError):
 		src = open(os.path.join(lib_dir, filename), 'r')
 	data = src.read()
 	src.close()
@@ -276,9 +275,8 @@ def record_payment(address):
 	if not os.path.isdir(log_dir):
 		os.mkdir(log_dir)
 	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
-	log = open(logfile, 'a')
-	log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
-	log.close()
+	with open(logfile, 'a') as log:
+		log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
 
 # Lock an address to prevent concurrent access
 def lock_address(address):
