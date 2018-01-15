@@ -84,7 +84,7 @@ try:
 	config['taxrate'] = float(config['taxrate'])
 except (KeyError, ValueError):
 	config['taxrate'] = 0
-if 'currencies' not in config.keys():
+if 'currencies' not in config:
 	config['currencies'] = ['USD']
 else:
 	config['currencies'] = config['currencies'].split(',')
@@ -235,11 +235,14 @@ def create_invoice(parameters):
 	page = load_file('invoice.html').format(**filler)
 	return page
 
+# Find the address associated with the tag
 def get_address_by_tag(parameters):
-	# Find the address associated with the tag
-	for addr in config['lock']:
-		if parameters['id'][0] == config['lock'][addr]['tag']:
-			return addr
+	try:
+		for address in config['lock'].keys():
+			if parameters['id'][0] == config['lock'][address]['tag']:
+				return address
+	except KeyError:
+		pass
 
 # API check if a payment was received
 def check_payment(parameters):
@@ -281,22 +284,28 @@ def record_payment(address):
 
 # Lock an address to prevent concurrent access
 def lock_address(address):
-	if address not in config['lock']:
+	if address not in config['lock'].keys():
 		config['lock'][address] = {'time': datetime.datetime.now()}
 	if address in config['addresses']:
 		del(config['addresses'][config['addresses'].index(address)])
 
 # Free address lock
 def unlock_address(address):
-	if address in config['lock']:
+	if address in config['lock'].keys():
 		config['addresses'].append(address)
-		del(config['lock'][address])
+		try:
+			del(config['lock'][address])
+		except KeyError:
+			pass
 
 # Check address lock timeout
 def check_lock_timeout(address):
-	if address not in config['lock']:
+	if address not in config['lock'].keys():
 		return True
-	delta = datetime.datetime.now() - config['lock'][address]['time']
+	try:
+		delta = datetime.datetime.now() - config['lock'][address]['time']
+	except KeyError:
+		return True
 	if delta >= datetime.timedelta(seconds=60):
 		return True
 	return False
