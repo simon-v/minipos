@@ -16,7 +16,7 @@ var request_string = "id={tag}";
 <p><em>1 BCH = {price} {cur}</em>. Payment ID: <strong>{tag}</strong></p>
 <div id="popup"><p id="popup_text"></p></div>
 <form method="get" name="cancel" action="cancel">
-<input type="hidden" name="address" value="{addr}">
+<input type="hidden" name="id" value="{tag}">
 <input type="submit" id="cancel" class="clear" onclick="document.getElementById('copy').remove()" value="&#10007; Cancel">
 <input type="text" name="copy" id="copy" value="{request}" style="display: none">
 </form>

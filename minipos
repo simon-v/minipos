@@ -235,14 +235,15 @@ def create_invoice(parameters):
 	page = load_file('invoice.html').format(**filler)
 	return page
 
-# API check if a payment was received
-def check_payment(parameters):
+def get_address_by_tag(parameters):
 	# Find the address associated with the tag
-	address = None
 	for addr in config['lock']:
 		if parameters['id'][0] == config['lock'][addr]['tag']:
-			address = addr
-			break
+			return addr
+
+# API check if a payment was received
+def check_payment(parameters):
+	address = get_address_by_tag(parameters)
 	if not address:
 		return '-1'
 	# Update address lock
@@ -547,7 +548,9 @@ def minipos(environ, start_response):
 			page = '1'
 	elif request == 'cancel':
 		try:
-			unlock_address(parameters['address'][0])
+			address = get_address_by_tag(parameters)
+			if address:
+				unlock_address(address)
 		except:
 			if sys.exc_info()[0] is KeyError:
 				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
