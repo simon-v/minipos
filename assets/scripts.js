@@ -115,15 +115,18 @@ function returnTimer() {
 // Copy-to-clipboard
 function copy() {
 	var field = document.getElementById("copy");
-	try {
-		field.style.display = "block";
-		field.select();
-		document.execCommand("copy");
-		field.blur();
-	}
-	finally {
-		displayPopup("Copied to clipboard.");
-		setTimeout(dismissPopup, 1000);
-		field.style.display = "none";
+	// Only process if there is no current popup
+	if ( document.getElementById("popup").style.display == "none" ) {
+		try {
+			field.style.display = "block";
+			field.select();
+			document.execCommand("copy");
+			field.blur();
+		}
+		finally {
+			displayPopup("Copied to clipboard.");
+			setTimeout(dismissPopup, 1000);
+			field.style.display = "none";
+		}
 	}
 }
