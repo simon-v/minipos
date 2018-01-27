@@ -107,15 +107,17 @@ for i in range(len(explorers)):
 	explorers[i]['name'] = explorers[i]['url'].split('/')[2]
 for i in range(len(exchanges)):
 	exchanges[i]['name'] = exchanges[i]['url'].split('/')[2]
+del(i) # Cleanup for help(bch)
 
-# float amount -> str formatted amount
 def btc(amount):
+	'''Return a native bitcoin amount representation'''
 	result = ('%.8f' % amount).rstrip('0.')
 	if result == '':
 		return '0'
 	return result
 
 def bits(amount):
+	'''Return the amount represented in bits/cash'''
 	bit, sat = fiat(amount * 1000000).split('.')
 	sat = sat.rstrip('0')
 	if sat == '':
@@ -123,18 +125,19 @@ def bits(amount):
 	return(bit + '.' + sat)
 
 def fiat(amount):
+	'''Return the amount represented in a dollar/cent notation'''
 	return ('%.2f' % amount)
 
-# str URL -> str JSON data from the URL
 def jsonload(url):
+	'''Load a web page and return the resulting JSON object'''
 	request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 	with urllib.request.urlopen(request) as webpage:
 		data = str(webpage.read(), 'UTF-8')
 		data = json.loads(data)
 	return data
 
-# Return the value at the end of the key hierarchy in the json object
 def get_value(json_object, key_path):
+	'''Get the value at the end of a dot-separated key path'''
 	for k in key_path.split('.'):
 		# Process integer indices
 		try:
@@ -148,8 +151,8 @@ def get_value(json_object, key_path):
 			raise KeyError('Key "{k}" from "{key_path}" not found in JSON'.format(k=k, key_path=key_path))
 	return json_object
 
-# Get the conversion rate
 def get_price(currency, config={'price_source': exchanges[0]['name']}):
+	'''Get the current Bitcoin Cash price in the desired currency'''
 	found = False
 	for server in exchanges:
 		if server['name'] == config['price_source']:
@@ -166,8 +169,9 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 		raise KeyError('{src} does not provide {cur} exchange rate'.format(src=server['name'], cur=currency))
 	return rate
 
-# Get the address balance
 def get_balance(address, config={}, verify=False):
+	'''Get the current balance of an address from a block explorer -> tuple(confirmed_balance, unconfirmed_balance)
+If 'verify' is True, the results of the first block explorer will be verified with another one.'''
 	if address.startswith('b'):
 		address = address.split(':')[1]
 	confirmed_only = True if 'unconfirmed' not in config else not config['unconfirmed']
