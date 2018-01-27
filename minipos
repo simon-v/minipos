@@ -6,6 +6,7 @@
 # Consult the README file for usage instructions and other helpful hints
 
 import os
+os.environ["PYCOIN_NATIVE"]="openssl"
 import sys
 from wsgiref.simple_server import make_server
 import urllib.parse
@@ -14,6 +15,8 @@ import qrcode
 import io
 import random
 import base64
+import re
+import pycoin.key
 
 import bch # Local library file
 import sendmail # Local library file
@@ -60,9 +63,30 @@ try:
 except (IOError, OSError, FileNotFoundError, PermissionError):
 	print('Could not open address.list')
 	sys.exit(2)
+	
 if config['addresses'] == []:
 	print('No receiving addresses in address.list')
 	sys.exit(2)
+
+# xpub
+pattern = re.compile("xpub")
+if pattern.match(config['addresses'][0]):
+  xpub = pycoin.key.Key.from_text(config['addresses'][0])
+  # 0 => public addresses
+  # 1 => change addresses, only for internal use
+  account_type = 0
+  xpub_subkey = xpub.subkey(account_type)
+  index = 0
+  addr_batch = []
+  output = []
+  for index in range(0, 9):
+    addr = xpub_subkey.subkey(index).bitcoin_address()
+    addr_batch.append(addr)
+    print(addr)
+
+  config['addresses'] = addr_batch
+
+
 # Load the config file
 try:
 	with open('minipos.cfg', 'r') as f:
