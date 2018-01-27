@@ -98,6 +98,9 @@ import urllib.request
 import json
 import random
 import sys
+import pycoin.key
+
+import cashaddr
 
 # Initialize explorer and exchange list
 random.seed()
@@ -278,6 +281,13 @@ If 'verify' is True, the results of the first block explorer will be verified wi
 	explorers.append(server)
 	explorers.remove(None)
 	return confirmed, unconfirmed
+
+def generate_address(xpub, idx, cash=True):
+	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
+	subkey = pycoin.key.Key.from_text(xpub).subkey(0).subkey(idx)
+	if cash:
+		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
+	return subkey.address()
 
 if __name__ == '__main__':
 	print('===== Known block explorers =====')
