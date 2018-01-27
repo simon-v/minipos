@@ -78,7 +78,6 @@ if pattern.match(config['addresses'][0]):
   xpub_subkey = xpub.subkey(account_type)
   index = 0
   addr_batch = []
-  output = []
   for index in range(0, 9):
     addr = xpub_subkey.subkey(index).bitcoin_address()
     addr_batch.append(addr)
