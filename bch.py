@@ -138,6 +138,8 @@ def jsonload(url):
 
 def get_value(json_object, key_path):
 	'''Get the value at the end of a dot-separated key path'''
+	# Workaround for explorers that return "null" for unused addresses
+	error = bool(json_object['err_no']) if 'err_no' in json_object else False
 	for k in key_path.split('.'):
 		# Process integer indices
 		try:
@@ -149,6 +151,10 @@ def get_value(json_object, key_path):
 			json_object = json_object[k]
 		except KeyError:
 			raise KeyError('Key "{k}" from "{key_path}" not found in JSON'.format(k=k, key_path=key_path))
+		except TypeError:
+			if not error:
+				return 0
+			raise
 	return json_object
 
 def get_price(currency, config={'price_source': exchanges[0]['name']}):
@@ -213,6 +219,7 @@ If 'verify' is True, the results of the first block explorer will be verified wi
 		# Avoid servers with excessive errors
 		if server['errors'] > MAX_ERRORS:
 			continue
+		#print(server['name']) # DEBUG
 		# Try to get balance
 		try:
 			# Conditional balance processing
