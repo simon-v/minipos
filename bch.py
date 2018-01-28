@@ -181,7 +181,12 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 def get_balance(address, config={}, verify=False):
 	'''Get the current balance of an address from a block explorer -> tuple(confirmed_balance, unconfirmed_balance)
 If 'verify' is True, the results of the first block explorer will be verified with another one.'''
-	if address.startswith('b'):
+	# Generated address request
+	xpub = None
+	if type(address) is tuple:
+		xpub, idx = address
+	# Strip prefix
+	elif address.startswith('b'):
 		address = address.split(':')[1]
 	confirmed_only = True if 'unconfirmed' not in config else not config['unconfirmed']
 	# If the passed config defines a custom explorer, use that instead
@@ -216,13 +221,22 @@ If 'verify' is True, the results of the first block explorer will be verified wi
 			if results == []:
 				raise ConnectionError('Connection errors when trying to fetch balance')
 			return(results[-1])
-		# Wrong address type
-		if address[0] not in server['prefixes']:
-			continue
 		# Avoid servers with excessive errors
 		if server['errors'] > MAX_ERRORS:
 			continue
 		#print(server['name']) # DEBUG
+		# Wrong address type
+		if xpub is None and address[0] not in server['prefixes']:
+			continue
+		# Cannot generate BitPay addresses
+		elif xpub is not None and '1' not in server['prefixes'] and 'q' not in server['prefixes']:
+			continue
+		# Generate address if necessary
+		if xpub is not None:
+			if 'q' in server['prefixes'] or 'p' in server['prefixes']:
+				address = generate_address(xpub, idx)
+			else:
+				address = generate_address(xpub, idx, False)
 		# Try to get balance
 		try:
 			# Conditional balance processing
