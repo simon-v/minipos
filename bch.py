@@ -104,9 +104,9 @@ random.seed()
 random.shuffle(explorers)
 for i in range(len(explorers)):
 	explorers[i]['errors'] = 0
-	explorers[i]['name'] = explorers[i]['url'].split('/')[2]
+	explorers[i]['name'] = '.'.join(explorers[i]['url'].split('/')[2].split('.')[-2:])
 for i in range(len(exchanges)):
-	exchanges[i]['name'] = exchanges[i]['url'].split('/')[2]
+	exchanges[i]['name'] = '.'.join(exchanges[i]['url'].split('/')[2].split('.')[-2:])
 del(i) # Cleanup for help(bch)
 
 def btc(amount):
@@ -178,7 +178,7 @@ If 'verify' is True, the results of the first block explorer will be verified wi
 	# If the passed config defines a custom explorer, use that instead
 	try:
 		custom_explorer = {
-			'name': config['custom_explorer_url'].split('/')[2],
+			'name': '.'.join(config['custom_explorer_url'].split('/')[2].split('.')[-2:]),
 			'url': config['custom_explorer_url'],
 			'balance_key': config['custom_balance_key'],
 			'confirmed_key': config['custom_confirmed_key'],
