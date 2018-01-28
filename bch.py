@@ -179,8 +179,20 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 	return rate
 
 def get_balance(address, config={}, verify=False):
-	'''Get the current balance of an address from a block explorer -> tuple(confirmed_balance, unconfirmed_balance)
-If 'verify' is True, the results of the first block explorer will be verified with another one.'''
+	'''Get the current balance of an address from a block explorer
+Returns tuple(confirmed_balance, unconfirmed_balance)
+
+Keyword arguments:
+address    (str) bitcoin_address or tuple(str xpub, int index)
+config     (dict) custom explorer configuration, like the ones in "explorers":
+           {
+               "custom_explorer_url": str, "{address}" means address to look up
+               "custom_balance_key": str or None
+               "custom_confirmed_key": str or None
+               "custom_unconfirmed_key": str or None
+               "custom_unit_satoshi": bool
+           }
+verify     (bool) the results should be verified with another explorer'''
 	# Generated address request
 	xpub = None
 	if type(address) is tuple:
