@@ -107,7 +107,10 @@ except (KeyError, ValueError):
 if 'allowed_ips' not in config:
 	config['allowed_ips'] = ['0.0.0.0']
 else:
-	config['allowed_ips'] = config['allowed_ips'].split(',')
+	config['allowed_ips'] = set(config['allowed_ips'].split(','))
+	# Prune meaningless values from configuration
+	if '127.0.0.1' in config['allowed_ips']:
+		config['allowed_ips'].remove('127.0.0.1')
 try:
 	config['welcome_timeout'] = int(config['welcome_timeout'])
 	if config['welcome_timeout'] < 0:
@@ -527,11 +530,11 @@ def minipos(environ, start_response):
 		environ['REMOTE_ADDR'] = environ['HTTP_X_REAL_IP']
 	ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
-	if '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
+	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
 		status = '403 Not Allowed'
 		page = error.format(err=status)
 		start_response(status, headers)
-		return [page]
+		return [bytes(page, 'UTF-8')]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urllib.parse.parse_qs(environ['QUERY_STRING'])
 	# Handle specific content-types

@@ -37,11 +37,11 @@ label=MiniPOS
 
 # A comma-separated list of IP addresses that are allowed to connect
 # Set to "0.0.0.0" to allow all connections
-# Set to "127.0.0.1" to allow local connections only.
 # To allow connections from a specific subnet, e.g. a LAN, set the last digit of
 # the IP address to "0", e.g., 192.168.1.0
+# Local connections (from the same computer as the server) are always accepted
 allowed_ips=0.0.0.0
-#allowed_ips=127.0.0.1,192.168.1.0
+#allowed_ips=192.168.0.0,192.168.1.0,192.168.2.0,192.168.10.0
 
 # Set this to your email address if you want to enable log mailing capabilities
 email=
