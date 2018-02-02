@@ -82,41 +82,39 @@ for line in lines:
 	value = '='.join(words[1:]).strip()
 	config[key] = value
 # Sanitize the config file
-try:
-	config['taxrate'] = float(config['taxrate'])
-except (KeyError, ValueError):
-	config['taxrate'] = 0
-if 'currencies' not in config:
-	config['currencies'] = ['USD']
-else:
-	config['currencies'] = config['currencies'].split(',')
-try:
-	config['multiplier'] = float(config['multiplier'])
-except (KeyError, ValueError):
-	config['multiplier'] = 1
+def cast_config_type(key, _type, default):
+	try:
+		config[key] = _type(config[key])
+	except (KeyError, ValueError):
+		config[key] = default
+
+cast_config_type('taxrate', float, 0)
+cast_config_type('multiplier', float, 1)
+cast_config_type('port', int, 8080)
+cast_config_type('welcome_timeout', int, 120)
+if config['welcome_timeout'] < 0:
+	raise ValueError('"welcome_timeout" must be >= 0')
+cast_config_type('index', int, 0)
+
+def split_config_key(key, default):
+	if key not in config:
+		config[key] = [default]
+	else:
+		config[key] = config[key].split(',')
+
+split_config_key('currencies', 'USD')
+split_config_key('allowed_ips', '0.0.0.0')
+# Prune meaningless values from configuration
+config['allowed_ips'] = set(config['allowed_ips'])
+if '127.0.0.1' in config['allowed_ips']:
+	config['allowed_ips'].remove('127.0.0.1')
+
 if 'week_start' not in config or config['week_start'] == 'monday':
 	config['week_start'] = 0
 elif config['week_start'] == 'sunday':
 	config['week_start'] = 1
 else:
 	print("Invalid 'week_start' value, falling back to 'monday'")
-try:
-	config['port'] = int(config['port'])
-except (KeyError, ValueError):
-	config['port'] = 8080
-if 'allowed_ips' not in config:
-	config['allowed_ips'] = ['0.0.0.0']
-else:
-	config['allowed_ips'] = set(config['allowed_ips'].split(','))
-	# Prune meaningless values from configuration
-	if '127.0.0.1' in config['allowed_ips']:
-		config['allowed_ips'].remove('127.0.0.1')
-try:
-	config['welcome_timeout'] = int(config['welcome_timeout'])
-	if config['welcome_timeout'] < 0:
-		raise ValueError
-except (KeyError, ValueError):
-	config['welcome_timeout'] = 120
 if 'label' not in config or config['label'] == '':
 	config['label'] = 'MiniPOS'
 if 'unit' not in config:
@@ -132,10 +130,6 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 		config[k] = None
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
-try:
-	config['index'] = int(config['index'])
-except (KeyError, ValueError):
-	config['index'] = 0
 
 # Return the next usable address index
 def next_index():
