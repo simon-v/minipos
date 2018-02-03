@@ -122,8 +122,12 @@ else:
 	if config['unit'] not in ['native', 'bits', 'satoshi']:
 		print("Invalid 'unit' value, falling back to 'native'")
 		config['unit'] = 'native'
-if 'price_source' not in config:
-	config['price_source'] = bch.exchanges[0]['name']
+exchange_list = []
+for e in bch.exchanges:
+	exchange_list.append(e['name'])
+if 'price_source' not in config or config['price_source'] not in exchange_list:
+	print('Using default exchange rate source "{}"'.format(exchange_list[0]))
+	config['price_source'] = exchange_list[0]
 for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key']:
 	if k in config and config[k] == '':
 		config[k] = None
