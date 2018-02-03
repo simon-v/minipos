@@ -130,14 +130,57 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
 
-# Write the cached address list to address.list
-def write_address_list():
+def write_config_file():
+	# Open the current config file
+	try:
+		with open(os.path.join(data_dir, 'minipos.cfg'), 'r') as f:
+			lines = f.readlines()
+	except (IOError, FileNotFoundError):
+		# Or the config file sample
+		with open(os.path.join(lib_dir, 'minipos.cfg.sample'), 'r') as f:
+			lines = f.readlines()
+	# Iterate through the config
+	for key in config:
+		if key in ['addresses', 'lock']:
+			continue
+		# Cast types into correct format
+		if type(config[key]) in [list, set]:
+			value = ','.join(config[key])
+		elif key == 'week_start':
+			value = {1: 'sunday', 0: 'monday'}[config[key]]
+		else:
+			value = config[key]
+		# Seek for first matching set key
+		found = False
+		for k in ['{}=', '#{}=']:
+			if not found:
+				k = k.format(key)
+				for i in range(len(lines)):
+					if lines[i].startswith(k):
+						found = True
+						break
+		# Replace the matching line
+		if found:
+			lines[i] = '{}={}\n'.format(key, value)
+		# Or append to the end of the config file
+		else:
+			lines.append('{}={}\n'.format(key, value))
+	# Write the config file
+	try:
+		with open(os.path.join(data_dir, 'minipos.cfg'), 'w') as f:
+			f.writelines(lines)
+	except (IOError, OSError, PermissionError):
+		print('Could not write config file: {}'.format(sys.exc_info()[1]))
+	# Write the cached address list to address.list
 	address_list = config['addresses'].copy()
 	for entry in config['lock'].values():
 		address_list.append(entry['address'])
-	with open(os.path.join(data_dir, 'address.list'), 'w') as f:
-		for address in config['addresses']:
-			f.write(address + '\n')
+	try:
+		with open(os.path.join(data_dir, 'address.list'), 'w') as f:
+			for address in config['addresses']:
+				f.write(address + '\n')
+	except (IOError, OSError, PermissionError):
+		print('Could not write address.list: {}'.format(sys.exc_info()[1]))
 
 # Utility wrapper function
 def load_file(filename):
@@ -197,7 +240,7 @@ def create_invoice(parameters):
 			address = bch.generate_address(config['xpub'], config['index'])
 			config['addresses'].append(address)
 			config['index'] += 1
-			write_address_list()
+			write_config_file()
 		else:
 			return noaddrs
 	address = config['addresses'].pop(0)
@@ -284,7 +327,7 @@ def check_payment(parameters):
 		# Remove this address from future use if generated
 		if 'xpub' in config:
 			config['addresses'].remove(address)
-			write_address_list()
+			write_config_file()
 		return '1'
 	return '0'
 
@@ -648,7 +691,7 @@ if 'xpub' in config:
 	else:
 		config['addresses'].append(address)
 		config['index'] += 1
-		write_address_list()
+		write_config_file()
 if config['addresses'] == []:
 	print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 	sys.exit(2)
