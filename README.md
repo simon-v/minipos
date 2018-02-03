@@ -24,7 +24,9 @@ Place the executable and accompanying library files in a convenient location. De
 
 Copy `minipos.cfg.sample` to `minipos.cfg` in your data directory and edit it to your liking.
 
-Next, create a file in your data directory named `address.list` and put your receiving addresses there, one address per line. You will need at least one address, and at least as many as the number of simultaneous payments you expect to receive (if at no point do you expect to process more than one customer at once, then one receiving address is enough).
+Add your extended public key (xpub), or some receiving addresses (a minimum of one, and at least as many as the number of simultaneous payments you expect to receive; So, if at no point do you expect to process more than one customer at once, then one receiving address is enough). If you use both, statically defined addresses will be used first, then generated ones.
+
+If you want to add many static receiving addresses at once, you can put them in an `address.list` file, one per line.
 
 Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the `minipos` server.
 
