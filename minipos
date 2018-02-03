@@ -130,6 +130,15 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
 
+# Write the cached address list to address.list
+def write_address_list():
+	address_list = config['addresses'].copy()
+	for entry in config['lock'].values():
+		address_list.append(entry['address'])
+	with open(os.path.join(data_dir, 'address.list'), 'w') as f:
+		for address in config['addresses']:
+			f.write(address + '\n')
+
 # Utility wrapper function
 def load_file(filename):
 	try:
@@ -186,11 +195,12 @@ def create_invoice(parameters):
 	if config['addresses'] == []:
 		if 'xpub' in config:
 			address = bch.generate_address(config['xpub'], config['index'])
+			config['addresses'].append(address)
 			config['index'] += 1
+			write_address_list()
 		else:
 			return noaddrs
-	else:
-		address = config['addresses'].pop(0)
+	address = config['addresses'].pop(0)
 	# Generate a lock tag
 	tag = ''
 	for i in range(7):
@@ -274,6 +284,7 @@ def check_payment(parameters):
 		# Remove this address from future use if generated
 		if 'xpub' in config:
 			config['addresses'].remove(address)
+			write_address_list()
 		return '1'
 	return '0'
 
@@ -637,10 +648,10 @@ if 'xpub' in config:
 	else:
 		config['addresses'].append(address)
 		config['index'] += 1
+		write_address_list()
 if config['addresses'] == []:
 	print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 	sys.exit(2)
-print(config['addresses'])
 httpd = make_server('', config['port'], minipos)
 print('Serving minipos on port {port}...'.format(**config))
 try:
