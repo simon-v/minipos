@@ -54,7 +54,7 @@ explorers = [
 		'confirmed_key': None,
 		'unconfirmed_key': 'unconfirmedBalance',
 		'unit_satoshi': False,
-		'prefixes': 'CH',
+		'prefixes': 'qp',
 	},
 	{
 		# Non-realtime source; https://github.com/Blockchair/Blockchair.Support/blob/master/API.md
@@ -210,7 +210,7 @@ verify     (bool) the results should be verified with another explorer'''
 			'confirmed_key': config['custom_confirmed_key'],
 			'unconfirmed_key': config['custom_unconfirmed_key'],
 			'unit_satoshi': config['custom_unit_satoshi'],
-			'prefixes': 'qp13CH', # Accept all prefixes by default
+			'prefixes': 'qp13', # Accept all prefixes by default
 			'errors': 0
 		}
 	except KeyError:
@@ -239,9 +239,6 @@ verify     (bool) the results should be verified with another explorer'''
 		#print(server['name']) # DEBUG
 		# Wrong address type
 		if xpub is None and address[0] not in server['prefixes']:
-			continue
-		# Cannot generate BitPay addresses
-		elif xpub is not None and '1' not in server['prefixes'] and 'q' not in server['prefixes']:
 			continue
 		# Generate address if necessary
 		if xpub is not None:
