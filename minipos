@@ -21,7 +21,7 @@ import sendmail # Local library file
 usage = '''Usage: minipos [DATA_DIRECTORY]
 See the README file for more information.'''
 config = {
-	'addresses': {},
+	'addresses': [],
 	'lock': {},
 }
 
@@ -46,31 +46,16 @@ for data_dir in data_dir_locations:
 		os.chdir(data_dir)
 	except (OSError, NotADirectoryError):
 		continue
-	if os.path.isfile('address.list'):
+	if os.path.isfile('minipos.cfg'):
 		print('Using {dir} as data directory'.format(dir=data_dir))
 		break
-# Read the address list
-try:
-	with open('address.list', 'r') as f:
-		lines = f.readlines()
-	idx = len(lines) * -1 - 1
-	for line in lines:
-			_addr = line.strip()
-			if _addr != '' and not _addr in config['addresses'].values():
-				idx += 1
-				config['addresses'][idx] = _addr
-except (IOError, OSError, FileNotFoundError, PermissionError):
-	print('Could not open address.list')
-	sys.exit(2)
-if config['addresses'] == {}:
-	print('No receiving addresses in address.list')
-	sys.exit(2)
 # Load the config file
 try:
 	with open('minipos.cfg', 'r') as f:
 		lines = f.readlines()
-except (IOError, FileNotFoundError):
-	print('No configuration file found, using defaults')
+except (IOError, OSError, FileNotFoundError, PermissionError):
+	print('Could not open configuration file, using default settings')
+	print(sys.exc_info()[1])
 	lines = []
 for line in lines:
 	# Skip blank lines and comments
@@ -80,7 +65,21 @@ for line in lines:
 	words = line.strip().split('=')
 	key = words[0].strip()
 	value = '='.join(words[1:]).strip()
-	config[key] = value
+	if key == 'address':
+		config['addresses'].append(value)
+	else:
+		config[key] = value
+# Read the auxillary address list, if present
+try:
+	with open('address.list', 'r') as f:
+		lines = f.readlines()
+except (IOError, OSError, FileNotFoundError, PermissionError):
+	lines = []
+for line in lines:
+	_addr = line.strip()
+	if _addr != '' and not _addr in config['addresses']:
+		config['addresses'].append(_addr)
+
 # Sanitize the config file
 def cast_config_type(key, _type, default):
 	try:
@@ -130,26 +129,6 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 		config[k] = None
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
-
-# Return the next usable address index
-def next_index():
-	idx = config['index'] + 1
-	for i in range(len(config['addresses'])):
-		if idx not in config['addresses']:
-			idx = sorted(config['addresses'])[0]
-		if idx not in config['lock']:
-			return idx
-		idx += 1
-
-def adjust_index(address):
-	# Fixed address list
-	for i in range(len(config['addresses'])):
-		config['index'] += 1
-		if config['index'] not in config['addresses']:
-			config['index'] = sorted(config['addresses'])[0]
-		if config['index'] not in config['lock']:
-			return config['index']
-
 
 # Utility wrapper function
 def load_file(filename):
@@ -204,11 +183,21 @@ def create_invoice(parameters):
 		if check_lock_timeout(k):
 			unlock_address(k)
 	# Use the next available address
-	idx = next_index()
-	if idx is None:
-		return noaddrs
-	lock_address(idx)
-	address = config['addresses'][idx]
+	if config['addresses'] == []:
+		if 'xpub' in config:
+			address = bch.generate_address(config['xpub'], config['index'])
+			config['index'] += 1
+		else:
+			return noaddrs
+	else:
+		address = config['addresses'].pop(0)
+	# Generate a lock tag
+	tag = ''
+	for i in range(7):
+		tag += random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+	# Lock the address
+	lock_address(tag)
+	config['lock'][tag]['address'] = address
 	# Get the exchange rate
 	try:
 		price = bch.get_price(currency, config)
@@ -217,22 +206,26 @@ def create_invoice(parameters):
 	except:
 		print(sys.exc_info()[1])
 		return error
+	# Calculate amount
 	amount = bch.btc(fiat / price)
+	# Get current balance
 	try:
 		balance, unconfirmed = bch.get_balance(address, config=config, verify=False)
 	except KeyboardInterrupt:
 		raise
 	except:
 		print(sys.exc_info()[1])
-		unlock_address(address)
+		unlock_address(tag)
 		return error
 	balance += unconfirmed
 	# BEGIN DEBUG
 	#balance -= float(amount)
 	# END DEBUG
-	tag = ''
-	for i in range(7):
-		tag += random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+	config['lock'][tag]['amount'] = amount
+	config['lock'][tag]['fiat'] = bch.fiat(fiat)
+	config['lock'][tag]['currency'] = currency
+	config['lock'][tag]['balance'] = balance
+	# Display invoice
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
@@ -251,75 +244,69 @@ def create_invoice(parameters):
 		'tag': tag,
 	}
 	filler['token'] = 'BCH' if config['unit'] == 'native' else 'bits' if config['unit'] == 'bits' else 'satoshi'
-	config['lock'][idx]['amount'] = amount
-	config['lock'][idx]['fiat'] = filler['fiat']
-	config['lock'][idx]['currency'] = currency
-	config['lock'][idx]['balance'] = balance
-	config['lock'][idx]['tag'] = tag
 	page = load_file('invoice.html').format(**filler)
 	return page
 
-# Find the address index associated with the tag
-def get_index_by_tag(parameters):
-	for idx in config['lock']:
-		if parameters['id'][0] == config['lock'][idx]['tag']:
-			return idx
-
 # API check if a payment was received
 def check_payment(parameters):
-	idx = get_index_by_tag(parameters)
-	if idx is None:
+	tag = parameters['id'][0]
+	if tag not in config['lock']:
 		return '-1'
 	# Update address lock
-	if check_lock_timeout(idx):
+	if check_lock_timeout(tag):
+		unlock_address(tag)
 		return '-1'
-	lock_address(idx)
+	lock_address(tag)
 	# Check address balance
-	amount = float(config['lock'][idx]['amount'])
-	initial = float(config['lock'][idx]['balance'])
+	address = config['lock'][tag]['address']
+	amount = float(config['lock'][tag]['amount'])
+	initial = float(config['lock'][tag]['balance'])
 	try:
-		balance, unconfirmed = bch.get_balance(config['addresses'][idx], config=config, verify=True)
+		balance, unconfirmed = bch.get_balance(address, config=config, verify=True)
 	except KeyboardInterrupt:
 		raise
 	except:
 		print('Could not fetch balance: ' + str(sys.exc_info()[1]))
 		return '0'
 	if balance + unconfirmed >= initial + amount:
-		record_payment(idx)
-		unlock_address(idx)
-		adjust_index(idx)
+		record_payment(tag)
+		unlock_address(tag)
+		# Remove this address from future use if generated
+		if 'xpub' in config:
+			config['addresses'].remove(address)
 		return '1'
 	return '0'
 
 # Write the details of the payment to a log file
-def record_payment(idx):
-	fiat = config['lock'][idx]['fiat']
-	currency = config['lock'][idx]['currency']
-	amount = config['lock'][idx]['amount']
-	tag = config['lock'][idx]['tag']
+def record_payment(tag):
+	address = config['lock'][tag]['address']
+	fiat = config['lock'][tag]['fiat']
+	currency = config['lock'][tag]['currency']
+	amount = config['lock'][tag]['amount']
 	log_dir = os.path.join(data_dir, 'logs')
 	if not os.path.isdir(log_dir):
 		os.mkdir(log_dir)
 	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
 	with open(logfile, 'a') as log:
-		log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=config['addresses'][idx], amt=amount, fiat=fiat, cur=currency, tag=tag))
+		log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
 
 # Lock an address to prevent concurrent access
-def lock_address(idx):
-	if idx not in config['lock']:
-		config['lock'][idx] = {}
-	config['lock'][idx]['time'] = datetime.datetime.now()
+def lock_address(tag):
+	if tag not in config['lock']:
+		config['lock'][tag] = {}
+	config['lock'][tag]['time'] = datetime.datetime.now()
 
 # Free address lock
-def unlock_address(idx):
-	if idx in config['lock']:
-		del(config['lock'][idx])
+def unlock_address(tag):
+	if tag in config['lock']:
+		config['addresses'].append(config['lock'][tag]['address'])
+		del(config['lock'][tag])
 
 # Check address lock timeout
-def check_lock_timeout(idx):
-	if idx not in config['lock']:
+def check_lock_timeout(tag):
+	if tag not in config['lock']:
 		return True
-	delta = datetime.datetime.now() - config['lock'][idx]['time']
+	delta = datetime.datetime.now() - config['lock'][tag]['time']
 	if delta >= datetime.timedelta(seconds=60):
 		return True
 	return False
@@ -571,9 +558,9 @@ def minipos(environ, start_response):
 			page = '1'
 	elif request == 'cancel':
 		try:
-			idx = get_index_by_tag(parameters)
-			if idx:
-				unlock_address(idx)
+			tag = parameters['id'][0]
+			if tag:
+				unlock_address(tag)
 		except:
 			if sys.exc_info()[0] is KeyError:
 				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
@@ -640,6 +627,20 @@ def minipos(environ, start_response):
 
 # Start the web server
 random.seed()
+# Make sure xpub works
+if 'xpub' in config:
+	try:
+		address = bch.generate_address(config['xpub'], config['index'])
+	except:
+		print(sys.exc_info()[1])
+		del(config['xpub'])
+	else:
+		config['addresses'].append(address)
+		config['index'] += 1
+if config['addresses'] == []:
+	print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
+	sys.exit(2)
+print(config['addresses'])
 httpd = make_server('', config['port'], minipos)
 print('Serving minipos on port {port}...'.format(**config))
 try:

@@ -76,3 +76,11 @@ unit=native
 
 # Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
 #custom_unit_satoshi=no
+
+# Add your receiving addresses here
+# For a fixed address list:
+# Add one or more 'address=' keys with your addresses
+#address=
+# For address generation on demand:
+# Uncomment and set the following to your extended public key
+#xpub=
