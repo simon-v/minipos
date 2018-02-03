@@ -99,8 +99,7 @@ import json
 import random
 import sys
 #optional import pycoin.key
-
-import cashaddr # Local library file
+#optional import cashaddr # Local library file
 
 # Initialize explorer and exchange list
 random.seed()
@@ -307,8 +306,9 @@ verify     (bool) the results should be verified with another explorer'''
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
-	# Optional dependency if unused
+	# Optional dependencies if unused
 	import pycoin.key
+	import cashaddr
 	subkey = pycoin.key.Key.from_text(xpub).subkey(0).subkey(idx)
 	if cash:
 		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
