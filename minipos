@@ -24,7 +24,16 @@ config = {
 	'addresses': [],
 	'lock': {},
 }
-
+binary_extensions = ['png', 'jpg', 'gif']
+mime_types = {
+	'txt': 'text/plain',
+	'css': 'text/css',
+	'js': 'text/javascript',
+	'png': 'image/png',
+	'jpg': 'image/jpeg',
+	'gif': 'image/gif',
+	'svg': 'images/svg+xml',
+}
 # Look for the directory containing the configuration files
 lib_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir_locations = [
@@ -188,10 +197,11 @@ def write_config_file():
 
 # Utility wrapper function
 def load_file(filename):
+	file_mode = 'rb' if filename.split('.')[-1] in binary_extensions else 'r'
 	try:
-		src = open(os.path.join(data_dir, filename), 'r')
+		src = open(os.path.join(data_dir, filename), file_mode)
 	except (IOError, OSError, FileNotFoundError, PermissionError):
-		src = open(os.path.join(lib_dir, filename), 'r')
+		src = open(os.path.join(lib_dir, filename), file_mode)
 	data = src.read()
 	src.close()
 	return data
@@ -577,16 +587,9 @@ def minipos(environ, start_response):
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urllib.parse.parse_qs(environ['QUERY_STRING'])
 	# Handle specific content-types
-	if request == 'style.css':
-		headers = [('Content-type', 'text/css')]
-	elif request == 'scripts.js':
-		headers = [('Content-type', 'text/javascript')]
-	elif request.endswith('.png'):
-		headers = [('Content-type', 'image/png')]
-	elif request.endswith('.svg'):
-		headers = [('Content-type', 'image/svg+xml')]
-	elif request.endswith('.txt'):
-		headers = [('Content-type', 'text/plain')]
+	extension = request.split('.')[-1]
+	if extension in mime_types:
+		headers = [('Content-Type', mime_types[extension])]
 	# Handle specific app pages
 	elif request == 'invoice':
 		try:
@@ -681,6 +684,8 @@ def minipos(environ, start_response):
 			print(sys.exc_info()[1])
 	# Serve the page
 	start_response(status, headers)
+	if type(page) is bytes:
+		return [page]
 	return [bytes(page, 'UTF-8')]
 
 # Start the web server
