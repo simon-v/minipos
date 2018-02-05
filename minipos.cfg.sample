@@ -1,88 +1,88 @@
-# minipos configuration file
+## MiniPOS configuration file
 
-# The factor by which the amount entered in the payment request form will be
-# modified.
-# If all your prices are whole currency units (i.e., rounded to the dollar),
-# set this to 1
-# If all your prices are rounded to the 1000, set this to 1000
-# If you have cent prices, set this to 0.01 and enter the amount ignoring the
-# decimal point, e.g., "100" for $1.00
+## The factor by which the amount entered in the payment request form will be
+## modified.
+## If all your prices are whole currency units (i.e., rounded to the dollar),
+## set this to 1
+## If all your prices are rounded to the 1000, set this to 1000
+## If you have cent prices, set this to 0.01 and enter the amount ignoring the
+## decimal point, e.g., "100" for $1.00
 multiplier=1
 
-# Comma-separated list of currencies you accept in ISO 4217 format
+## Comma-separated list of currencies you accept in ISO 4217 format
 currencies=USD
 #currencies=USD,EUR
 
-# The name of the server to be used as a source of price data
-# To get a list of available servers, run `bch.py`
-# To get a list of available servers that provide the exchange rate for your
-# preferred currency, execute the command `bch.py $YOUR_CURRENCY_CODE`
+## The name of the server to be used as a source of price data
+## To get a list of available servers, run `bch.py`
+## To get a list of available servers that provide the exchange rate for your
+## preferred currency, execute the command `bch.py $YOUR_CURRENCY_CODE`
 #price_source=coinmarketcap.com
 
-# The sales or value added tax in your jurisdiction, that you want to be able to
-# quickly add to the entered amount
-# Set to a negative number to provide a discount instead
+## The sales or value added tax in your jurisdiction, that you want to be able
+## to quickly add to the entered amount
+## Set to a negative number to provide a discount instead
 taxrate=0
 
-# First day of the week for the purposes of week log display, according to your
-# locale. Possible values are "sunday" and "monday"
+## First day of the week for the purposes of week log display, according to your
+## locale. Possible values are "sunday" and "monday"
 week_start=monday
 
-# The port number minipos will listen on
+## The port number minipos will listen on
 port=8080
 
-# The label which will be added to the transaction's description or memo in the
-# payment request QR code. Set this to the short version of your shop name
+## The label which will be added to the transaction's description or memo in the
+## payment request QR code. Set this to the short version of your shop name
 label=MiniPOS
 
-# A comma-separated list of IP addresses that are allowed to connect
-# Set to "0.0.0.0" to allow all connections
-# To allow connections from a specific subnet, e.g. a LAN, set the last digit of
-# the IP address to "0", e.g., 192.168.1.0
-# Local connections (from the same computer as the server) are always accepted
+## A comma-separated list of IP addresses that are allowed to connect
+## Set to "0.0.0.0" to allow all connections
+## To allow connections from a specific subnet, e.g. a LAN, set the last digit
+## of the IP address to "0", e.g., 192.168.1.0
+## Local connections (from the same computer as the server) are always accepted
 allowed_ips=0.0.0.0
 #allowed_ips=192.168.0.0,192.168.1.0,192.168.2.0,192.168.10.0
 
-# Set this to your email address if you want to enable log mailing capabilities
+## Set this to your email address if you want to enable log mailing capabilities
 email=
-# By default, the "sendmail" program will be used to send emails.
-# Uncomment and set the following to use SMTP instead
+## By default, the "sendmail" program will be used to send emails.
+## Uncomment and set the following to use SMTP instead
 #server=
 #login=
 #passwd=
 
-# Set to the time of inactivity in seconds after which MiniPOS will return from
-# the payment request page to the welcome page, or set to 0 to disable the
-# welcome page entirely
+## Set to the time of inactivity in seconds after which MiniPOS will return from
+## the payment request page to the welcome page, or set to 0 to disable the
+## welcome page entirely
 welcome_timeout=120
 
-# The preferred display unit for the bitcoin amounts
-# Valid values are 'native', 'bits' and 'satoshi'
+## The preferred display unit for the bitcoin amounts
+## Valid values are 'native', 'bits' and 'satoshi'
 unit=native
 
-# If you have your own block explorer and you wish to query it instead,
-# uncomment and set all of the following fields
-#
-# The URL of the block explorer, with {address} in place of the address
+## If you have your own block explorer and you wish to query it instead,
+## uncomment and set all of the following fields
+##
+## The URL of the block explorer, with {address} in place of the address
 #custom_explorer_url=https://bch-chain.api.btc.com/v3/address/{address}
 
-# The key path in the JSON data which corresponds to the total balance,
-# confirmed balance and unconfirmed balance, dot-separated. If the explorer
-# does not provide this field, uncomment it and leave it blank
-# Examples:
+## The key path in the JSON data which corresponds to the total balance,
+## confirmed balance and unconfirmed balance, dot-separated. If the explorer
+## does not provide this field, uncomment it and leave it blank
+## Examples:
 #custom_balance_key=data.balance
 #custom_confirmed_key=
 #custom_unconfirmed_key=data.unconfirmed_received
 
-# Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
+## Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
 #custom_unit_satoshi=no
 
-# Add your receiving addresses here
-# For a fixed address list:
-# Add one or more 'address=' keys with your addresses
+## Add your receiving addresses here
+## For a fixed address list:
+## Add one or more 'address=' keys with your addresses
 #address=
-# For address generation on demand:
-# Uncomment and set the following to your extended public key
-# The current derivation index will be updated automatically
+## For address generation on demand:
+## Uncomment and set the following to your extended public key
+## The current derivation index will be updated automatically
 #xpub=
 #index=0
