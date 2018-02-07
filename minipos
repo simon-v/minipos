@@ -32,7 +32,7 @@ mime_types = {
 	'png': 'image/png',
 	'jpg': 'image/jpeg',
 	'gif': 'image/gif',
-	'svg': 'images/svg+xml',
+	'svg': 'image/svg+xml',
 }
 # Look for the directory containing the configuration files
 lib_dir = os.path.dirname(os.path.abspath(__file__))
