@@ -56,6 +56,10 @@ email=
 ## welcome page entirely
 welcome_timeout=120
 
+## Which page should MiniPOS return to after a payment is received or cancelled
+## Possible values are 'request' and 'welcome'
+payment_return=request
+
 ## The preferred display unit for the bitcoin amounts
 ## Valid values are 'native', 'bits' and 'satoshi'
 unit=native
