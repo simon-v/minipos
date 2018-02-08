@@ -10,6 +10,11 @@ function loadHTTP(url, callback) {
 	xmlhttp.send();
 }
 
+// Check if JavaScript is enabled
+function jsCheck() {
+	document.getElementById("begin").style.display = "block";
+}
+
 // Form button controls
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
