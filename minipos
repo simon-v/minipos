@@ -223,28 +223,8 @@ def format_amount(amount):
 
 # Create a payment request QR page
 def create_invoice(parameters):
-	error = '''<!doctype html>
-<head>
-<meta http-equiv="refresh" content="5">
-<title>Request Timed Out</title>
-</head>
-<body>
-<h1>Request Timed Out</h1>
-<p>Check the Internet connection of the MiniPOS server.</p>
-<p>Trying again in 5 seconds...</p>
-</body>
-</html>'''
-	noaddrs = '''<!doctype html>
-<head>
-<meta http-equiv="refresh" content="5">
-<title>No Addresses Available</title>
-</head>
-<body>
-<h1>No Addresses Available</h1>
-<p>There are no free receiving addresses to process the request.</p>
-<p>Trying again in 5 seconds...</p>
-</body>
-</html>'''
+	error = load_file('timeout.html')
+	noaddrs = load_file('noaddrs.html')
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
@@ -561,22 +541,16 @@ def show_logs(parameters, plaintext=False):
 			footer = ''
 		table = table_head + table + table_foot
 		# Pack the above variables into a filler dict
+		label = config['label']
 		params = {}
-		_names = ['date', 'prev_date', 'tag_s', 'scope_s', 'tag_m', 'scope_m', 'tag_l', 'scope_l', 'next_date', 'header', 'summary', 'table', 'footer']
+		_names = ['date', 'prev_date', 'tag_s', 'scope_s', 'tag_m', 'scope_m', 'tag_l', 'scope_l', 'next_date', 'header', 'summary', 'table', 'footer', 'label']
 		for n in _names:
 			params[n] = locals()[n]
 		return page.format(**params)
 
 # Main webapp function
 def minipos(environ, start_response):
-	error = '''<!doctype html>
-<head>
-<title>{err}</title>
-</head>
-<body>
-<h1>{err}</h1>
-</body>
-</html>'''
+	error = load_file('error.html')
 	headers = [('Content-type', 'text/html; charset=UTF-8')]
 	status = '200 OK'
 	page = ''
