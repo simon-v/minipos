@@ -303,11 +303,11 @@ def create_invoice(parameters):
 def check_payment(parameters):
 	tag = parameters['id'][0]
 	if tag not in config['lock']:
-		return '-1'
+		return '2'
 	# Update address lock
 	if check_lock_timeout(tag):
 		unlock_address(tag)
-		return '-1'
+		return '2'
 	lock_address(tag)
 	# Check address balance
 	address = config['lock'][tag]['address']

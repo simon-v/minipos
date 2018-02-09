@@ -52,7 +52,7 @@ function showConfirmButton(response) {
 		document.getElementById("finish").style.display = "inline";
 		displayPopup("Payment received.");
 	}
-	else if (response == -1) {
+	else if (response == 2) {
 		displayPopup("The payment request has timed out.");
 	}
 	else {
