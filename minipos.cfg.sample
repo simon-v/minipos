@@ -32,7 +32,8 @@ week_start=monday
 port=8080
 
 ## The label which will be added to the transaction's description or memo in the
-## payment request QR code. Set this to the short version of your shop name
+## payment request QR code and in the headings across the interface. Set this to
+## the short version of your shop name
 label=MiniPOS
 
 ## A comma-separated list of IP addresses that are allowed to connect

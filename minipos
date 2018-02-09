@@ -293,6 +293,7 @@ def create_invoice(parameters):
 		'price': bch.fiat(price),
 		'tag': tag,
 		'return': config['payment_return'],
+		'label': config['label'],
 	}
 	filler['token'] = 'BCH' if config['unit'] == 'native' else 'bits' if config['unit'] == 'bits' else 'satoshi'
 	page = load_file('invoice.html').format(**filler)
@@ -624,7 +625,7 @@ def minipos(environ, start_response):
 		else:
 			page = '0'
 	elif request == 'welcome':
-		page = load_file('welcome.html')
+		page = load_file('welcome.html').format(label=config['label'])
 	elif request == 'request':
 		if len(config['currencies']) == 1:
 			disabled = 'disabled'
@@ -641,7 +642,8 @@ def minipos(environ, start_response):
 			'cur': config['currencies'][0],
 			'tax': tax,
 			'taxrate': config['taxrate'],
-			'multiplier': config['multiplier']
+			'multiplier': config['multiplier'],
+			'label': config['label'],
 		}
 		page = load_file('request.html').format(**filler)
 	# Redirect blank request to main page
