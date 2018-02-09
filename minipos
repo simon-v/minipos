@@ -223,8 +223,6 @@ def format_amount(amount):
 
 # Create a payment request QR page
 def create_invoice(parameters):
-	error = load_file('timeout.html')
-	noaddrs = load_file('noaddrs.html')
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
@@ -241,7 +239,7 @@ def create_invoice(parameters):
 			config['index'] += 1
 			write_config_file()
 		else:
-			return noaddrs
+			return load_file('noaddrs.html')
 	address = config['addresses'].pop(0)
 	# Generate a lock tag
 	tag = ''
@@ -257,7 +255,7 @@ def create_invoice(parameters):
 		raise
 	except:
 		print(sys.exc_info()[1])
-		return error
+		return load_file('timeout.html')
 	# Calculate amount
 	amount = bch.btc(fiat / price)
 	# Get current balance
@@ -268,7 +266,7 @@ def create_invoice(parameters):
 	except:
 		print(sys.exc_info()[1])
 		unlock_address(tag)
-		return error
+		return load_file('timeout.html')
 	balance += unconfirmed
 	# BEGIN DEBUG
 	#balance -= float(amount)
