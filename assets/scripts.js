@@ -12,7 +12,13 @@ function loadHTTP(url, callback) {
 
 // Check if JavaScript is enabled
 function jsCheck() {
-	document.getElementById("begin").style.display = "block";
+	loadHTTP('check?id=0', jsCheckReady);
+}
+function jsCheckReady(code) {
+	if ( code == 2 ) {
+		document.getElementById("begin").style.display = "block";
+		document.getElementById("noscript").style.display = "none";
+	}
 }
 
 // Form button controls
