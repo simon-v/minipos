@@ -97,7 +97,6 @@ def cast_config_type(key, _type, default):
 		config[key] = default
 
 cast_config_type('taxrate', float, 0)
-cast_config_type('multiplier', float, 1)
 cast_config_type('port', int, 8080)
 cast_config_type('welcome_timeout', int, 120)
 if config['welcome_timeout'] < 0:
@@ -147,6 +146,7 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 		config[k] = None
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
+config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'] in ['1', 'yes'] else False
 
 def write_config_file():
 	# Open the current config file
@@ -226,7 +226,8 @@ def create_invoice(parameters):
 	if 'currency' not in parameters:
 		parameters['currency'] = config['currencies']
 	currency = parameters['currency'][0]
-	fiat = float(parameters['amount'][0]) * config['multiplier']
+	divider = 100 if config['auto_cents'] else 1
+	fiat = float(parameters['amount'][0]) / divider
 	# Check for address lock timeouts
 	for k in list(config['lock']):
 		if check_lock_timeout(k):
@@ -642,8 +643,8 @@ def minipos(environ, start_response):
 			'cur': config['currencies'][0],
 			'tax': tax,
 			'taxrate': config['taxrate'],
-			'multiplier': config['multiplier'],
 			'label': config['label'],
+			'centkey': '00' if config['auto_cents'] else '.',
 		}
 		page = load_file('request.html').format(**filler)
 	# Redirect blank request to main page

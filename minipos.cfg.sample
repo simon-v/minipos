@@ -1,14 +1,5 @@
 ## MiniPOS configuration file
 
-## The factor by which the amount entered in the payment request form will be
-## modified.
-## If all your prices are whole currency units (i.e., rounded to the dollar),
-## set this to 1
-## If all your prices are rounded to the 1000, set this to 1000
-## If you have cent prices, set this to 0.01 and enter the amount ignoring the
-## decimal point, e.g., "100" for $1.00
-multiplier=1
-
 ## Comma-separated list of currencies you accept in ISO 4217 format
 currencies=USD
 #currencies=USD,EUR
@@ -23,6 +14,10 @@ currencies=USD
 ## to quickly add to the entered amount
 ## Set to a negative number to provide a discount instead
 taxrate=0
+
+## Set to "yes" to automatically insert the decimal dot into the entered number
+## at two decimal places, e.g., to type "100" for a $1.00
+auto_cents=no
 
 ## First day of the week for the purposes of week log display, according to your
 ## locale. Possible values are "sunday" and "monday"
