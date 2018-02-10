@@ -36,7 +36,7 @@ A systemd service file is provided to ease this process.
 
 Navigate to the server's address and port from any device with a relatively modern browser.
 
-In the request creation page, enter the amount, taking the multiplier into account; For example, if the multiplier is x0.01 (representing cents), enter two trailing zeroes for whole dollar amounts, as if the cent point is there. Press the green check mark button.
+In the request creation page, enter the amount you wish to charge. You can use the percent button to apply a sales tax or crypto discount to the amount you have entered. Press the green check mark button.
 
 Have your buyer scan the resulting QR code with their Bitcoin Cash wallet and authorize the transaction. Alternatively, you can click/tap on the QR code to copy the request URI to clipboard and send it to your buyer in a text message.
 
