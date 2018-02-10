@@ -65,6 +65,10 @@ function validateInput() {
 	else if ( value.length > 1 && value[0] == "0" && value[1] != "." ) {
 		field.value = value.substring(1, value.length);
 	}
+	// Numbers only
+	else if ( !~ "1234567890.".indexOf(value[value.length - 1]) ) {
+		field.value = value.substring(0, value.length - 1);
+	}
 }
 
 // Add the tax to the entered amount

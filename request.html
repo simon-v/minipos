@@ -15,7 +15,7 @@
 <form method="get" action="invoice">
 <table>
 <tr>
-<td colspan="3"><input type="text" class="text" id="amountbox" name="amount" pattern="[0-9.]+(\.[0-9][0-9]?)?" required></td>
+<td colspan="3"><input type="text" class="text" id="amountbox" name="amount" pattern="[0-9.]+(\.[0-9][0-9]?)?" onkeypress="setTimeout(validateInput, 1)" required></td>
 <td><input type="button" {disabled} value="{cur}" id="currency" onclick="cycleCurrency()">
 <input type="hidden" value="{cur}" id="currencybox" name="currency"></td>
 <tr>
