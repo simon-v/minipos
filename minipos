@@ -14,6 +14,7 @@ import qrcode
 import io
 import random
 import base64
+import threading
 
 import bch # Local library file
 import sendmail # Local library file
@@ -341,8 +342,9 @@ def record_payment(tag):
 	if not os.path.isdir(log_dir):
 		os.mkdir(log_dir)
 	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
-	with open(logfile, 'a') as log:
-		log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
+	with log_lock:
+		with open(logfile, 'a') as log:
+			log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
 
 # Lock an address to prevent concurrent access
 def lock_address(tag):
@@ -671,6 +673,7 @@ def minipos(environ, start_response):
 
 # Start the web server
 random.seed()
+log_lock = threading.Lock()
 # Make sure xpub works
 if 'xpub' in config:
 	try:
