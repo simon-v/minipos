@@ -229,7 +229,7 @@ def create_invoice(parameters):
 	currency = parameters['currency'][0]
 	divider = 100 if config['auto_cents'] else 1
 	fiat = float(parameters['amount'][0]) / divider
-	if fiat == 0.0:
+	if fiat == 0.0 and not os.path.isfile('.debug'):
 		raise ValueError('Requested amount cannot be zero')
 	# Check for address lock timeouts
 	for k in list(config['lock']):
@@ -272,9 +272,6 @@ def create_invoice(parameters):
 		unlock_address(tag)
 		return load_file('timeout.html')
 	balance += unconfirmed
-	# BEGIN DEBUG
-	#balance -= float(amount)
-	# END DEBUG
 	config['lock'][tag]['amount'] = amount
 	config['lock'][tag]['fiat'] = bch.fiat(fiat)
 	config['lock'][tag]['currency'] = currency
@@ -447,7 +444,6 @@ def show_logs(parameters, plaintext=False):
 		# Populate date list
 		for i in range(7):
 			days.append((d + datetime.timedelta(i - config['week_start'])).isoformat())
-		#print('range {start} to {end}'.format(start=days[0], end=days[6]))
 	# Month scope
 	elif len(date) == 7:
 		d = datetime.datetime.strptime(date, '%Y-%m')
