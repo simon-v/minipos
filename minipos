@@ -229,6 +229,8 @@ def create_invoice(parameters):
 	currency = parameters['currency'][0]
 	divider = 100 if config['auto_cents'] else 1
 	fiat = float(parameters['amount'][0]) / divider
+	if fiat == 0.0:
+		raise ValueError('Requested amount cannot be zero')
 	# Check for address lock timeouts
 	for k in list(config['lock']):
 		if check_lock_timeout(k):
@@ -574,6 +576,9 @@ def minipos(environ, start_response):
 	elif request == 'invoice':
 		try:
 			page = create_invoice(parameters)
+		except ValueError:
+			status = '303 See Other\nLocation: request'
+			page = 'Redirecting...'
 		except:
 			if sys.exc_info()[0] is KeyError:
 				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
