@@ -588,7 +588,10 @@ def minipos(environ, start_response):
 		headers = [('Content-type', 'text/plain')]
 	elif request == 'record':
 		try:
-			record_payment(parameters)
+			tag = parameters['id'][0]
+			if tag:
+				record_payment(tag)
+				unlock_address(tag)
 		except:
 			if sys.exc_info()[0] is KeyError:
 				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
@@ -597,8 +600,8 @@ def minipos(environ, start_response):
 			status = '400 Bad Request'
 			page = error.format(err=status)
 		else:
-			headers = [('Content-type', 'text/plain')]
-			page = '1'
+			status = '303 See Other\nLocation: {}'.format(config['payment_return'])
+			page = 'Redirecting...'
 	elif request == 'cancel':
 		try:
 			tag = parameters['id'][0]
