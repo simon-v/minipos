@@ -2,7 +2,7 @@
 function loadHTTP(url, callback) {
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function() {
-		if (xmlhttp.readyState == 4) {
+		if (xmlhttp.readyState == 4 && callback) {
 			callback(xmlhttp.responseText.trim());
 		}
 	};
@@ -100,16 +100,30 @@ function cycleCurrency() {
 
 // Turn cancel button into confirm button
 function showConfirmButton(response) {
-	if (response == 1) {
-		document.getElementById("cancel").style.display = "none";
-		document.getElementById("finish").style.display = "inline";
-		displayPopup("Payment received.");
+	if ( response == 1 ) {
+		confirms = confirms + 1;
+		if ( confirms == 1 ) {
+			document.getElementById("cancel").style.display = "none";
+			document.getElementById("accept").style.display = "inline";
+			displayPopup("Payment detected.");
+			setTimeout(checkPayment, 2000);
+		}
+		else if ( confirms == 2 ) {
+			document.getElementById("accept").style.backgroundColor = "orange";
+			setTimeout(checkPayment, 2000);
+		}
+		else if ( confirms == 3 ) {
+			document.getElementById("accept").style.display = "none";
+			document.getElementById("finish").style.display = "inline";
+			loadHTTP("record?" + request_string + "&noredirect=1");
+			displayPopup("Payment received.");
+		}
 	}
-	else if (response == 2) {
+	else if ( response == 2 ) {
 		displayPopup("The payment request has timed out.");
 	}
 	else {
-		setTimeout(checkPayment, 5000);
+		setTimeout(checkPayment, 2000);
 	}
 }
 

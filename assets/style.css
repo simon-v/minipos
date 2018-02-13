@@ -52,6 +52,11 @@ input.back {
 	background-color: blue;
 }
 
+input.warn {
+	color: white;
+	background-color: orangered;
+}
+
 input#tax {
 	color: white;
 	background-color: darkcyan;
@@ -66,7 +71,7 @@ input#currency {
 	font-size: 4vmin;
 }
 
-input#finish, input#cancel {
+input#finish, input#accept, input#cancel {
 	width: 50vmin;
 }
 
