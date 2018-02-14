@@ -205,6 +205,10 @@ def write_config_file():
 	except (IOError, OSError, PermissionError):
 		print('Could not write address.list: {}'.format(sys.exc_info()[1]))
 
+# Simple logging wrapper
+def logger(message):
+	print('{} {}'.format(datetime.datetime.now().isoformat().replace('T', ' '), message))
+
 # Utility wrapper function
 def load_file(filename):
 	file_mode = 'rb' if filename.split('.')[-1] in binary_extensions else 'r'
@@ -238,6 +242,7 @@ def create_invoice(parameters):
 	# Check for address lock timeouts
 	for k in list(config['lock']):
 		if check_lock_timeout(k):
+			logger('payment request {} timed out'.format(k))
 			unlock_address(k)
 	# Use the next available address
 	if config['addresses'] == []:
@@ -281,6 +286,7 @@ def create_invoice(parameters):
 	config['lock'][tag]['currency'] = currency
 	config['lock'][tag]['balance'] = balance
 	# Display invoice
+	logger('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **config['lock'][tag]))
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
@@ -311,6 +317,7 @@ def check_payment(parameters):
 		return '2'
 	# Update address lock
 	if check_lock_timeout(tag):
+		logger('payment request {} timed out'.format(k))
 		unlock_address(tag)
 		return '2'
 	lock_address(tag)
@@ -327,6 +334,7 @@ def check_payment(parameters):
 		return '0'
 	if balance + unconfirmed >= initial + amount:
 		if 'sightings' not in config['lock'][tag]:
+			logger('payment {} detected'.format(tag))
 			config['lock'][tag]['sightings'] = 0
 		config['lock'][tag]['sightings'] += 1
 		if config['lock'][tag]['sightings'] >= config['sightings']:
@@ -337,6 +345,7 @@ def check_payment(parameters):
 
 # Write the details of the payment to a log file
 def record_payment(tag):
+	logger('payment {} received'.format(tag))
 	address = config['lock'][tag]['address']
 	fiat = config['lock'][tag]['fiat']
 	currency = config['lock'][tag]['currency']
@@ -599,6 +608,7 @@ def minipos(environ, start_response):
 		try:
 			tag = parameters['id'][0]
 			if tag:
+				logger('payment {} cancelled'.format(tag))
 				unlock_address(tag)
 		except:
 			if sys.exc_info()[0] is KeyError:
