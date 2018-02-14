@@ -33,14 +33,6 @@ explorers = [
 		'prefixes': '13',
 	},
 	{
-		'url': 'https://blockdozer.com/insight-api/addr/{address}',
-		'balance_key': 'balance',
-		'confirmed_key': None,
-		'unconfirmed_key': 'unconfirmedBalance',
-		'unit_satoshi': False,
-		'prefixes': '13',
-	},
-	{
 		'url': 'https://blockdozer.com/insight-api/addr/bitcoincash:{address}',
 		'balance_key': 'balance',
 		'confirmed_key': None,
@@ -202,8 +194,11 @@ verify     (bool) the results should be verified with another explorer'''
 	if type(address) is tuple:
 		xpub, idx = address
 	# Strip prefix
-	elif address.startswith('b'):
+	elif address[0].lower() == 'b':
 		address = address.split(':')[1]
+	# Normalize case
+	if address[0] in 'QP':
+		address = address.lower()
 	confirmed_only = True if 'unconfirmed' not in config else not config['unconfirmed']
 	# If the passed config defines a custom explorer, use that instead
 	try:
@@ -241,9 +236,12 @@ verify     (bool) the results should be verified with another explorer'''
 		if server['errors'] > MAX_ERRORS:
 			continue
 		#print(server['name']) # DEBUG
-		# Wrong address type
+		# Convert wrong address type
 		if xpub is None and address[0] not in server['prefixes']:
-			continue
+			try:
+				address = convert_address(address)
+			except (ImportError, ModuleNotFoundError):
+				continue
 		# Generate address if necessary
 		if xpub is not None:
 			if 'q' in server['prefixes'] or 'p' in server['prefixes']:
@@ -318,6 +316,20 @@ def generate_address(xpub, idx, cash=True):
 	if cash:
 		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
 	return subkey.address()
+
+def convert_address(address):
+	'''Convert an address back and forth between cash and legacy formats'''
+	# Optional dependencies if unused
+	import pycoin.key
+	import cashaddr
+	if address[0] in '13':
+		subkey = pycoin.key.Key.from_text(address)
+		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
+	elif address[0] in 'qpQP':
+		subkey = cashaddr.decode('bitcoincash:' + address.lower())[2]
+		return pycoin.key.Key(hash160=subkey).address()
+	else:
+		raise ValueError('Unsupported address format')
 
 if __name__ == '__main__':
 	print('===== Known block explorers =====')
