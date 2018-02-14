@@ -100,6 +100,10 @@ def cast_config_type(key, _type, default):
 cast_config_type('taxrate', float, 0)
 cast_config_type('port', int, 8080)
 cast_config_type('welcome_timeout', int, 120)
+cast_config_type('sightings', int, 3)
+if config['sightings'] < 1:
+	print("Invalid 'sightings' value, falling back to 1")
+	config['sightings'] = 1
 if config['welcome_timeout'] < 0:
 	raise ValueError('"welcome_timeout" must be >= 0')
 cast_config_type('index', int, 0)
@@ -325,7 +329,7 @@ def check_payment(parameters):
 		if 'sightings' not in config['lock'][tag]:
 			config['lock'][tag]['sightings'] = 0
 		config['lock'][tag]['sightings'] += 1
-		if config['lock'][tag]['sightings'] >= 3: # TODO configurable threshold
+		if config['lock'][tag]['sightings'] >= config['sightings']:
 			record_payment(tag)
 			unlock_address(tag)
 			return '1'
