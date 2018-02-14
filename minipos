@@ -322,7 +322,13 @@ def check_payment(parameters):
 		print('Could not fetch balance: ' + str(sys.exc_info()[1]))
 		return '0'
 	if balance + unconfirmed >= initial + amount:
-		return '1'
+		if 'sightings' not in config['lock'][tag]:
+			config['lock'][tag]['sightings'] = 0
+		config['lock'][tag]['sightings'] += 1
+		if config['lock'][tag]['sightings'] >= 3: # TODO configurable threshold
+			record_payment(tag)
+			unlock_address(tag)
+			return '1'
 	return '0'
 
 # Write the details of the payment to a log file
