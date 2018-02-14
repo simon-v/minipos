@@ -176,13 +176,10 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 			break
 	if not found:
 		raise KeyError('{src} is not in list of exchanges'.format(src=config['price_source']))
-	try:
-		data = jsonload(server['url'].format(cur=currency, cur_lower=currency.lower()))
-	except KeyboardInterrupt:
-		raise
+	data = jsonload(server['url'].format(cur=currency, cur_lower=currency.lower()))
 	rate = float(get_value(data, server['price_key'].format(cur=currency, cur_lower=currency.lower())))
 	if rate == 0.0:
-		raise KeyError('{src} does not provide {cur} exchange rate'.format(src=server['name'], cur=currency))
+		raise ValueError('Returned exchange rate is zero')
 	return round(rate, 2)
 
 def get_balance(address, config={}, verify=False):
@@ -335,8 +332,10 @@ if __name__ == '__main__':
 		support = True
 		try:
 			get_price(cur, config={'price_source': server['name']})
-		except KeyError:
-			print(sys.exc_info()[1])
+		except (KeyError, ValueError, urllib.error.HTTPError):
+			print('{src} does not provide {cur} exchange rate: {err}'.format(src=server['name'], cur=cur, err=sys.exc_info()[1]))
 			support = False
+		except KeyboardInterrupt:
+			sys.exit()
 		if support:
 			print(server['name'])
