@@ -4,7 +4,6 @@
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
 
 MAX_ERRORS = 10
-currency_url = 'http://api.fixer.io/latest?base=USD&symbols={cur}'
 exchanges = [
 	{
 		'url': 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/?convert={cur}',
@@ -13,7 +12,11 @@ exchanges = [
 	{
 		'url': 'https://api.coinbase.com/v2/exchange-rates?currency=BCH',
 		'price_key': 'data.rates.{cur}',
-	}
+	},
+	{
+		'url': 'https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BCH&fiat={cur}',
+		'price_key': 'BCH{cur}.last',
+	},
 ]
 explorers = [
 	{
@@ -175,7 +178,7 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 	rate = float(get_value(data, server['price_key'].format(cur=currency, cur_lower=currency.lower())))
 	if rate == 0.0:
 		raise KeyError('{src} does not provide {cur} exchange rate'.format(src=server['name'], cur=currency))
-	return rate
+	return round(rate, 2)
 
 def get_balance(address, config={}, verify=False):
 	'''Get the current balance of an address from a block explorer
