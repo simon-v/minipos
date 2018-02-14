@@ -17,6 +17,11 @@ exchanges = [
 		'url': 'https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BCH&fiat={cur}',
 		'price_key': 'BCH{cur}.last',
 	},
+	{
+		# Extremely limited ticker set
+		'url': 'https://api.kraken.com/0/public/Ticker?pair=BCH{cur}',
+		'price_key': 'result.BCH{cur}.c.0',
+	},
 ]
 explorers = [
 	{
