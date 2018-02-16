@@ -273,7 +273,7 @@ def create_invoice(parameters):
 	amount = bch.btc(fiat / price)
 	# Get current balance
 	try:
-		balance, unconfirmed = bch.get_balance(address, config=config, verify=False)
+		balance, unconfirmed = bch.get_balance(address, config=config, verify=True)
 	except KeyboardInterrupt:
 		raise
 	except:
