@@ -340,6 +340,10 @@ def check_payment(parameters):
 		if config['lock'][tag]['sightings'] >= config['sightings']:
 			record_payment(tag)
 			unlock_address(tag)
+			# Remove this address from future use if generated
+			if 'xpub' in config:
+				config['addresses'].remove(address)
+				write_config_file()
 			return '1'
 	return '0'
 
@@ -357,10 +361,6 @@ def record_payment(tag):
 	with log_lock:
 		with open(logfile, 'a') as log:
 			log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
-	# Remove this address from future use if generated
-	if 'xpub' in config:
-		config['addresses'].remove(address)
-		write_config_file()
 
 # Lock an address to prevent concurrent access
 def lock_address(tag):
