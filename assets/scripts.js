@@ -2,8 +2,13 @@
 function loadHTTP(url, callback) {
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function() {
-		if (xmlhttp.readyState == 4 && callback) {
-			callback(xmlhttp.responseText.trim());
+		if ( xmlhttp.readyState == 4 && callback ) {
+			if ( xmlhttp.status == 200 ) {
+				callback(xmlhttp.responseText.trim());
+			}
+			else {
+				callback(4);
+			}
 		}
 	};
 	xmlhttp.open("GET", url, true);
@@ -100,23 +105,42 @@ function cycleCurrency() {
 
 // Turn cancel button into confirm button
 function showConfirmButton(response) {
-	if ( response == 1 ) {
+	// Waiting for payment
+	if ( response == 0 ) {
+		setTimeout(checkPayment, 2000);
+	}
+	// Payment detected
+	else if ( response == 1 ) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
 		displayPopup("Payment received.");
 	}
+	// Payment request timed out
 	else if ( response == 2 ) {
 		displayPopup("The payment request has timed out.");
 	}
-	else {
+	// Server connection error
+	else if ( response == 3 ) {
+		displayPopup("Server connection error", true);
+		setTimeout(checkPayment, 2000);
+	}
+	// Client connection error
+	else if ( response == 4 ) {
+		displayPopup("Client connection error", true);
 		setTimeout(checkPayment, 2000);
 	}
 }
 
 // Display an informational popup dialog
-function displayPopup(text) {
+function displayPopup(text, fade) {
+	var popupBox = document.getElementById("popup");
 	document.getElementById("popup_text").innerHTML = text;
-	document.getElementById("popup").style.display = "block";
+	popupBox.style.display = "block";
+	if ( fade ) {
+		popupBox.style.animation = "fader 1.5s linear 1";
+		popupBox.style.WebkitAnimation = "fader 1.5s linear 1";
+		setTimeout(dismissPopup, 1501);
+	}
 }
 
 // Check whether or not payment was made
@@ -152,8 +176,11 @@ function emailSent(response) {
 	}
 }
 function dismissPopup() {
+	var popupBox = document.getElementById("popup");
 	document.getElementById("popup_text").innerHTML = "";
-	document.getElementById("popup").style.display = "none";
+	popupBox.style.display = "none";
+	popupBox.style.animation = "initial";
+	popupBox.style.WebkitAnimation = "initial";
 }
 
 // Automatically return to the welcome page after a timeout

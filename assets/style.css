@@ -22,6 +22,11 @@ table td.error {
 	50% { opacity: 0; }
 }
 
+@keyframes fader {
+	75% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
 input {
 	width: 16.67vmin;
 	height: 16.67vmin;

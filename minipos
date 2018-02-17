@@ -330,8 +330,8 @@ def check_payment(parameters):
 	except KeyboardInterrupt:
 		raise
 	except:
-		print('Could not fetch balance: ' + str(sys.exc_info()[1]))
-		return '0'
+		logger('Could not fetch balance: ' + str(sys.exc_info()[1]))
+		return '3'
 	if balance + unconfirmed >= initial + amount:
 		if 'sightings' not in config['lock'][tag]:
 			logger('payment {} detected'.format(tag))
