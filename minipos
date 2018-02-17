@@ -626,10 +626,14 @@ def minipos(environ, start_response):
 			page = error.format(err=status)
 	elif request == 'email':
 		headers = [('Content-type', 'text/plain')]
+		if 'date' not in parameters:
+			date = datetime.date.today().isoformat()
+		else:
+			date = parameters['date'][0]
 		if 'email' not in config:
 			print('Email not configured.')
 			page = '0'
-		elif sendmail.send(config, config['email'], '[MiniPOS] Transaction listing for ' + parameters['date'][0], show_logs(parameters, plaintext=True)):
+		elif sendmail.send(config, config['email'], '[MiniPOS] Transaction listing for ' + date, show_logs(parameters, plaintext=True)):
 			page = '1'
 		else:
 			page = '0'
