@@ -207,7 +207,7 @@ def write_config_file():
 
 # Simple logging wrapper
 def logger(message):
-	print('{} {}'.format(datetime.datetime.now().isoformat().replace('T', ' '), message))
+	print('{} {}'.format(datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), message))
 
 # Utility wrapper function
 def load_file(filename):
