@@ -230,7 +230,7 @@ verify     (bool) the results should be verified with another explorer'''
 				if explorers[i]['errors'] > 0:
 					explorers[i]['errors'] -= 1
 			if results == []:
-				raise ConnectionError('Connection errors when trying to fetch balance')
+				raise ConnectionError('Connection error')
 			return(results[-1])
 		# Avoid servers with excessive errors
 		if server['errors'] > MAX_ERRORS:
