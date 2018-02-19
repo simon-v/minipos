@@ -690,7 +690,7 @@ if 'xpub' in config:
 		address = bch.generate_address(config['xpub'], config['index'])
 	except:
 		err = sys.exc_info()
-		if err[0] in (ImportError, ModuleNotFoundError):
+		if err[0] is ImportError:
 			print("pycoin is not installed, address generation unavailable")
 		else:
 			print(err[1])

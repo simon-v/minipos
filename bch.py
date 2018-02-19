@@ -240,7 +240,7 @@ verify     (bool) the results should be verified with another explorer'''
 		if xpub is None and address[0] not in server['prefixes']:
 			try:
 				address = convert_address(address)
-			except (ImportError, ModuleNotFoundError):
+			except ImportError:
 				continue
 		# Generate address if necessary
 		if xpub is not None:
