@@ -565,9 +565,26 @@ def show_logs(parameters, plaintext=False):
 			params[n] = locals()[n]
 		return page.format(**params)
 
+# Serve a static file or return a 404
+def serve_static_file(request):
+	status = '200 OK'
+	headers = [('Content-type', 'text/html; charset=UTF-8')]
+	# Handle specific content-types
+	extension = request.split('.')[-1]
+	if extension in mime_types:
+		headers = [('Content-Type', mime_types[extension])]
+	# Try to load the requested file
+	try:
+		page = load_file(os.path.join('assets', request))
+	except:
+		headers = [('Content-type', 'text/html; charset=UTF-8')]
+		status = '404 Not Found'
+		page = load_file('error.html').format(err=status)
+		print(sys.exc_info()[1])
+	return status, headers, page
+
 # Main webapp function
 def minipos(environ, start_response):
-	error = load_file('error.html')
 	headers = [('Content-type', 'text/html; charset=UTF-8')]
 	status = '200 OK'
 	page = ''
@@ -578,17 +595,13 @@ def minipos(environ, start_response):
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
 		status = '403 Not Allowed'
-		page = error.format(err=status)
+		page = load_file('error.html').format(err=status)
 		start_response(status, headers)
 		return [bytes(page, 'UTF-8')]
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urllib.parse.parse_qs(environ['QUERY_STRING'])
-	# Handle specific content-types
-	extension = request.split('.')[-1]
-	if extension in mime_types:
-		headers = [('Content-Type', mime_types[extension])]
 	# Handle specific app pages
-	elif request == 'invoice':
+	if request == 'invoice':
 		try:
 			page = create_invoice(parameters)
 		except ValueError:
@@ -600,7 +613,7 @@ def minipos(environ, start_response):
 			else:
 				print(sys.exc_info()[1])
 			status = '400 Bad Request'
-			page = error.format(err=status)
+			page = load_file('error.html').format(err=status)
 	elif request == 'check':
 		page = check_payment(parameters)
 		headers = [('Content-type', 'text/plain')]
@@ -623,7 +636,7 @@ def minipos(environ, start_response):
 		except:
 			print(sys.exc_info()[1])
 			status = '400 Bad Request'
-			page = error.format(err=status)
+			page = load_file('error.html').format(err=status)
 	elif request == 'email':
 		headers = [('Content-type', 'text/plain')]
 		if 'date' not in parameters:
@@ -668,13 +681,7 @@ def minipos(environ, start_response):
 		page = 'Redirecting...'
 	# Load non-generated files from disk
 	if page == '':
-		try:
-			page = load_file(os.path.join('assets', request))
-		except:
-			headers = [('Content-type', 'text/html; charset=UTF-8')]
-			status = '404 Not Found'
-			page = error.format(err=status)
-			print(sys.exc_info()[1])
+		status, headers, page = serve_static_file(request)
 	# Serve the page
 	start_response(status, headers)
 	if type(page) is bytes:
