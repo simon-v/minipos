@@ -651,7 +651,11 @@ def minipos(environ, start_response):
 		else:
 			page = '0'
 	elif request == 'welcome':
-		page = load_file('welcome.html').format(label=config['label'])
+		try:
+			footer = load_file('welcome_footer.html')
+		except (IOError, OSError):
+			footer = ''
+		page = load_file('welcome.html').format(label=config['label'], welcome_footer=footer)
 	elif request == 'request':
 		if len(config['currencies']) == 1:
 			disabled = 'disabled'
