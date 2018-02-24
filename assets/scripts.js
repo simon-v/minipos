@@ -209,9 +209,7 @@ function copy() {
 			field.blur();
 		}
 		finally {
-			displayPopup("Copied to clipboard.");
-			setTimeout(dismissPopup, 1000);
-			field.style.display = "none";
+			displayPopup("Copied to clipboard.", true);
 		}
 	}
 }
