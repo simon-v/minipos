@@ -1,3 +1,10 @@
+/*
+MiniPOS web front-end common page scripts
+Author: Simon Volpert <simon@simonvolpert.com>
+Project page: https://github.com/simon-v/minipos/
+This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
+*/
+
 // HTTP request wrapper
 function loadHTTP(url, callback) {
 	var xmlhttp = new XMLHttpRequest();
