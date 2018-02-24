@@ -3,6 +3,13 @@
 # Author: Simon Volpert <simon@simonvolpert.com>
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
 
+import urllib.request
+import json
+import random
+import sys
+#optional import pycoin.key
+#optional import cashaddr # Local library file
+
 MAX_ERRORS = 10
 exchanges = [
 	{
@@ -92,14 +99,6 @@ explorers = [
 #	'https://api.explorer.cash/%s/balance', # broken
 #	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY', # API key required
 ]
-
-
-import urllib.request
-import json
-import random
-import sys
-#optional import pycoin.key
-#optional import cashaddr # Local library file
 
 # Initialize explorer and exchange list
 random.seed()
