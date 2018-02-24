@@ -142,6 +142,13 @@ function displayPopup(text, fade) {
 		setTimeout(dismissPopup, 1501);
 	}
 }
+function dismissPopup() {
+	var popupBox = document.getElementById("popup");
+	document.getElementById("popup_text").innerHTML = "";
+	popupBox.style.display = "none";
+	popupBox.style.animation = "initial";
+	popupBox.style.WebkitAnimation = "initial";
+}
 
 // Check whether or not payment was made
 function checkPayment() {
@@ -174,13 +181,6 @@ function emailSent(response) {
 	else {
 		displayPopup("There was an error sending the email.");
 	}
-}
-function dismissPopup() {
-	var popupBox = document.getElementById("popup");
-	document.getElementById("popup_text").innerHTML = "";
-	popupBox.style.display = "none";
-	popupBox.style.animation = "initial";
-	popupBox.style.WebkitAnimation = "initial";
 }
 
 // Automatically return to the welcome page after a timeout
