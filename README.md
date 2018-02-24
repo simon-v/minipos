@@ -1,9 +1,9 @@
-# minipos
+# MiniPOS
 ## A self-hosted, 0-confirmation Bitcoin Cash point-of-sale server
 
-`minipos` is a simple self-hosted point-of-sale server, intended for use by small merchants and brick-and-mortar stores, that can be operated from any device with a relatively modern web browser.
+MiniPOS is a simple self-hosted point-of-sale server, intended for use by small merchants and brick-and-mortar stores, that can be operated from any device with a relatively modern web browser.
 
-With `minipos` you can set up receiving Bitcoin Cash payments without exposing your funds to a third party, or even to your own cashiers at any point in the process, by simply giving it a list of Bitcoin Cash addresses to work with.
+With MiniPOS you can set up receiving Bitcoin Cash payments without exposing your funds to a third party, or even to your own cashiers at any point in the process, by simply giving it a list of Bitcoin Cash addresses to work with.
 
 ### Setup
 
@@ -11,11 +11,11 @@ For the server, you will need an Internet-connected computer with Python 3 and t
 
 * `python-qrcode` — _(required)_ for generating payment QR codes
 * `python-pil` or `python-pillow` — _(required)_ for generating payment QR codes
-* `python-pycoin` — _(optional)_ for generating receiving addresses
+* `python-pycoin` — _(optional)_ for generating receiving addresses and improved block explorer load balancing
 
 The server does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
 
-Place the executable and accompanying library files in a convenient location. Decide where to keep your local data. `minipos` will look for it in the following places:
+Place the executable and accompanying library files in a convenient location. Decide where to keep your local data. MiniPOS will look for it in the following places:
 
 * `$HOME/.minipos`
 * `$HOME/.config/minipos`
@@ -28,7 +28,7 @@ Add your extended public key (xpub), or some receiving addresses (a minimum of o
 
 If you want to add many static receiving addresses at once, you can put them in an `address.list` file, one per line.
 
-Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the `minipos` server.
+Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the MiniPOS server.
 
 A systemd service file is provided to ease this process.
 
@@ -48,7 +48,7 @@ A fully-refunding [live demo installation](https://simonvolpert.com/minipos-demo
 
 ### Customization
 
-If you would like to have a custom header and footer on your log pages, add the relevant HTML to the `log_header.html` and `log_footer.html` files.
+If you would like to have a custom header and footer on your welcome and log pages, add the relevant HTML to the `welcome_footer.html`, `log_header.html` and `log_footer.html` files.
 
 Any file placed in the data directory overrides its counterpart in the library directory. Images and other files that you want to be directly accessible to the web browser should be placed in the `assets` subdirectory.
 
