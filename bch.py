@@ -316,6 +316,27 @@ def generate_address(xpub, idx, cash=True):
 		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
 	return subkey.address()
 
+def validate_key(key):
+	'''Check the validity of a key or an address'''
+	# Optional dependencies if unused
+	import pycoin.key
+	import cashaddr
+	if ':' in key:
+		key = key.split(':')[1]
+	if key[0] in '13x':
+		try:
+			pycoin.key.Key.from_text(key)
+		except pycoin.encoding.EncodingError:
+			return False
+	elif key[0] in 'qpQP':
+		try:
+			subkey = cashaddr.decode('bitcoincash:' + key.lower())
+		except ValueError:
+			return False
+	else:
+		return False
+	return True
+
 def convert_address(address):
 	'''Convert an address back and forth between cash and legacy formats'''
 	# Optional dependencies if unused
