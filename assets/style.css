@@ -79,7 +79,7 @@ input#currency {
 	font-size: 4vmin;
 }
 
-input#finish, input#cancel {
+input.major {
 	width: 50vmin;
 }
 
