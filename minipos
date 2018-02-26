@@ -714,6 +714,13 @@ if __name__ == "__main__":
 			config['addresses'].append(address)
 			config['index'] += 1
 			write_config_file()
+	for addr in config['addresses']:
+		if addr.startswith('xp'):
+			print('Discarding extended key from address list')
+			config['addresses'].remove(addr)
+		elif not bch.validate_key(addr):
+			print('Discarding invalid address {}'.format(addr))
+			config['addresses'].remove(addr)
 	if config['addresses'] == []:
 		print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 		sys.exit(2)
