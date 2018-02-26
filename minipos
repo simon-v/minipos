@@ -75,6 +75,9 @@ for line in lines:
 	words = line.strip().split('=')
 	key = words[0].strip()
 	value = '='.join(words[1:]).strip()
+	# Skip empty values
+	if value == '':
+		continue
 	if key == 'address':
 		config['addresses'].append(value)
 	else:
