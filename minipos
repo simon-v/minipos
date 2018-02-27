@@ -702,18 +702,12 @@ if __name__ == "__main__":
 	# Make sure xpub works
 	if 'xpub' in config:
 		try:
-			address = bch.generate_address(config['xpub'], config['index'])
-		except:
-			err = sys.exc_info()
-			if err[0] is ImportError:
-				print("pycoin is not installed, address generation unavailable")
-			else:
-				print(err[1])
+			if not bch.validate_key(config['xpub']):
+				print('xpub is invalid, address generation unavailable')
+				del(config['xpub'])
+		except ImportError:
+			print('pycoin is not installed, address generation unavailable')
 			del(config['xpub'])
-		else:
-			config['addresses'].append(address)
-			config['index'] += 1
-			write_config_file()
 	for addr in config['addresses']:
 		if addr.startswith('xp'):
 			print('Discarding extended key from address list')
@@ -721,7 +715,7 @@ if __name__ == "__main__":
 		elif not bch.validate_key(addr):
 			print('Discarding invalid address {}'.format(addr))
 			config['addresses'].remove(addr)
-	if config['addresses'] == []:
+	if config['addresses'] == [] and 'xpub' not in config:
 		print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 		sys.exit(2)
 	httpd = make_server('', config['port'], minipos)
