@@ -157,11 +157,11 @@ def get_value(json_object, key_path):
 			raise
 	return json_object
 
-def get_price(currency, config={'price_source': exchanges[0]['name']}):
+def get_price(currency, exchange=exchanges[0]['name']):
 	'''Get the current Bitcoin Cash price in the desired currency'''
 	found = False
 	for server in exchanges:
-		if server['name'] == config['price_source']:
+		if server['name'] == exchange:
 			found = True
 			break
 	if not found:
@@ -172,21 +172,15 @@ def get_price(currency, config={'price_source': exchanges[0]['name']}):
 		raise ValueError('Returned exchange rate is zero')
 	return round(rate, 2)
 
-def get_balance(address, config={}, verify=False):
+def get_balance(address, explorer=None, verify=False, confirmed_only=False):
 	'''Get the current balance of an address from a block explorer
 Returns tuple(confirmed_balance, unconfirmed_balance)
 
 Keyword arguments:
-address    (str) bitcoin_address or tuple(str xpub, int index)
-config     (dict) custom explorer configuration, like the ones in "explorers":
-           {
-               "custom_explorer_url": str, "{address}" means address to look up
-               "custom_balance_key": str or None
-               "custom_confirmed_key": str or None
-               "custom_unconfirmed_key": str or None
-               "custom_unit_satoshi": bool
-           }
-verify     (bool) the results should be verified with another explorer'''
+address         (str) bitcoin_address or tuple(str xpub, int index)
+explorer        (str) the name of a specific explorer to query
+verify          (bool) the results should be verified with another explorer
+confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 	# Generated address request
 	xpub = None
 	if type(address) is tuple:
@@ -197,24 +191,6 @@ verify     (bool) the results should be verified with another explorer'''
 	# Normalize case
 	if address[0] in 'QP':
 		address = address.lower()
-	confirmed_only = True if 'unconfirmed' not in config else not config['unconfirmed']
-	# If the passed config defines a custom explorer, use that instead
-	try:
-		custom_explorer = {
-			'name': '.'.join(config['custom_explorer_url'].split('/')[2].split('.')[-2:]),
-			'url': config['custom_explorer_url'],
-			'balance_key': config['custom_balance_key'],
-			'confirmed_key': config['custom_confirmed_key'],
-			'unconfirmed_key': config['custom_unconfirmed_key'],
-			'unit_satoshi': config['custom_unit_satoshi'],
-			'prefixes': 'qp13', # Accept all prefixes by default
-			'errors': 0
-		}
-	except KeyError:
-		pass
-	else:
-		explorers.clear()
-		explorers.append(custom_explorer)
 	# Add a temporary separator
 	server = None
 	results = []
@@ -232,6 +208,9 @@ verify     (bool) the results should be verified with another explorer'''
 			if results == []:
 				raise ConnectionError('Connection error')
 			return(results[-1])
+		# Select only the desired server if requested
+		if explorer is not None and server['name'] != explorer:
+			continue
 		# Avoid servers with excessive errors
 		if server['errors'] > MAX_ERRORS:
 			continue
