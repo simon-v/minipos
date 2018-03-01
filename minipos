@@ -348,6 +348,8 @@ def check_payment(parameters):
 				config['addresses'].remove(address)
 				write_config_file()
 			return '1'
+		# Try to get another sighting
+		return check_payment(parameters)
 	return '0'
 
 # Write the details of the payment to a log file
