@@ -155,6 +155,22 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
 config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'] in ['1', 'yes'] else False
+# Try to set up a custom block explorer
+custom_explorer = None
+try:
+	custom_explorer = {
+		'name': '.'.join(config['custom_explorer_url'].split('/')[2].split('.')[-2:]),
+		'url': config['custom_explorer_url'],
+		'balance_key': config['custom_balance_key'],
+		'confirmed_key': config['custom_confirmed_key'],
+		'unconfirmed_key': config['custom_unconfirmed_key'],
+		'unit_satoshi': config['custom_unit_satoshi'],
+		'prefixes': config['custom_prefixes']
+	}
+	bch.explorers.insert(0, custom_explorer)
+	custom_explorer = custom_explorer['name']
+except KeyError:
+	pass
 
 def write_config_file():
 	# Open the current config file
@@ -266,7 +282,7 @@ def create_invoice(parameters):
 	config['lock'][tag]['address'] = address
 	# Get the exchange rate
 	try:
-		price = bch.get_price(currency, config)
+		price = bch.get_price(currency, exchange=config['price_source'])
 	except KeyboardInterrupt:
 		raise
 	except:
@@ -276,7 +292,7 @@ def create_invoice(parameters):
 	amount = bch.btc(fiat / price)
 	# Get current balance
 	try:
-		balance, unconfirmed = bch.get_balance(address, config=config, verify=True)
+		balance, unconfirmed = bch.get_balance(address, verify=True, explorer=custom_explorer)
 	except KeyboardInterrupt:
 		raise
 	except:
@@ -329,7 +345,7 @@ def check_payment(parameters):
 	amount = float(config['lock'][tag]['amount'])
 	initial = float(config['lock'][tag]['balance'])
 	try:
-		balance, unconfirmed = bch.get_balance(address, config=config)
+		balance, unconfirmed = bch.get_balance(address, explorer=custom_explorer)
 	except KeyboardInterrupt:
 		raise
 	except:
