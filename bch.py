@@ -104,7 +104,6 @@ explorers = [
 random.seed()
 random.shuffle(explorers)
 for i in range(len(explorers)):
-	explorers[i]['errors'] = 0
 	explorers[i]['name'] = '.'.join(explorers[i]['url'].split('/')[2].split('.')[-2:])
 for i in range(len(exchanges)):
 	exchanges[i]['name'] = '.'.join(exchanges[i]['url'].split('/')[2].split('.')[-2:])
@@ -220,6 +219,8 @@ verify     (bool) the results should be verified with another explorer'''
 	server = None
 	results = []
 	while True:
+		if 'errors' not in explorers[0]:
+			explorers[0]['errors'] = 0
 		# Cycle to the next server
 		explorers.append(server)
 		server = explorers.pop(0)
