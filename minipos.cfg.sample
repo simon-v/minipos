@@ -74,14 +74,17 @@ unit=native
 
 ## The key path in the JSON data which corresponds to the total balance,
 ## confirmed balance and unconfirmed balance, dot-separated. If the explorer
-## does not provide this field, uncomment it and leave it blank
+## does not provide this field, set it to 'none'
 ## Examples:
 #custom_balance_key=data.balance
-#custom_confirmed_key=
+#custom_confirmed_key=none
 #custom_unconfirmed_key=data.unconfirmed_received
 
 ## Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
 #custom_unit_satoshi=no
+
+## Set to the address prefixes the explorer accepts
+#custom_prefixes=13qp
 
 ## Add your receiving addresses here
 ## For a fixed address list:

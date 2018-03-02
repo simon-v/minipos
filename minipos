@@ -150,7 +150,7 @@ if 'price_source' not in config or config['price_source'] not in exchange_list:
 	print('Using default exchange rate source "{}"'.format(exchange_list[0]))
 	config['price_source'] = exchange_list[0]
 for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key']:
-	if k in config and config[k] == '':
+	if k in config and config[k] == 'none':
 		config[k] = None
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
