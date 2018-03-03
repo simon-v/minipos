@@ -195,11 +195,12 @@ confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 	server = None
 	results = []
 	while True:
-		if 'errors' not in explorers[0]:
-			explorers[0]['errors'] = 0
 		# Cycle to the next server
 		explorers.append(server)
 		server = explorers.pop(0)
+		# Populate server error count if necessary
+		if server is not None and 'errors' not in server:
+			server['errors'] = 0
 		# If the end of the server list was reached without a single success, assume a network error
 		if server is None:
 			for i in range(len(explorers)):
