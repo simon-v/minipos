@@ -11,6 +11,7 @@ For the server, you will need an Internet-connected computer with Python 3 and t
 
 * `python-qrcode` — _(required)_ for generating payment QR codes
 * `python-pil` or `python-pillow` — _(required)_ for generating payment QR codes
+* `python-urllib3` - _(required)_ for fetching the exchange rate and detecting incoming payments
 * `python-pycoin` — _(recommended)_ for generating receiving addresses, key validation and improved block explorer load balancing
 
 The server does not need to be Internet-accessible, unless it is your explicit intention. It can also reside on the same computer you will be connecting from, if convenient.
