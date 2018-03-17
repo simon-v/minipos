@@ -83,3 +83,9 @@ This program is free software, released under the Apache License, Version 2.0. S
 The program's canonical project page resides at https://github.com/simon-v/minipos/
 
 I gratefully accept appreciation for my work in material form at __[bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88](bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88)__.
+
+### Similar Projects
+
+* https://github.com/acidsploit/pyxpub and https://github.com/acidsploit/react-pos
+* https://github.com/stabwah/cheddrme
+* https://github.com/monsterbitar/SPOS4BCH
