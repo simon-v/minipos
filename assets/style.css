@@ -15,6 +15,11 @@ table {
 	margin: auto;
 }
 
+#keypad {
+	width: 70vmin;
+	margin: auto;
+}
+
 table.listing td {
 	padding-left: 1vmin;
 	padding-right: 1vmin;
@@ -42,12 +47,15 @@ input {
 	font-weight: bold;
 	background-color: lightgray;
 	border-radius: 1.67vmin;
+	margin: 0;
+	margin-bottom: 1vmin;
 }
 
 input.text {
 	width: 50vmin;
 	text-align: center;
 	background-color: white;
+	margin-bottom: 0;
 }
 
 input.ok {
@@ -77,6 +85,10 @@ input.ctrl {
 
 input#currency {
 	font-size: 4vmin;
+	position: relative;
+	top: -2.25vmin;
+	left: 0.5vmin;
+	margin-bottom: 0;
 }
 
 input.major {
