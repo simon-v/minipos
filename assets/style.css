@@ -16,7 +16,6 @@ table {
 }
 
 #keypad {
-	width: 70vmin;
 	margin: auto;
 }
 
@@ -48,14 +47,15 @@ input {
 	background-color: lightgray;
 	border-radius: 1.67vmin;
 	margin: 0;
+	padding: 1vmin;
 	margin-bottom: 1vmin;
+	vertical-align: middle;
 }
 
 input.text {
 	width: 50vmin;
 	text-align: center;
 	background-color: white;
-	margin-bottom: 0;
 }
 
 input.ok {
@@ -71,9 +71,11 @@ input.clear {
 input.back {
 	color: white;
 	background-color: blue;
+	padding-top: 0;
+	padding-left: 0;
 }
 
-input#tax {
+input.tax {
 	color: white;
 	background-color: darkcyan;
 }
@@ -85,10 +87,6 @@ input.ctrl {
 
 input#currency {
 	font-size: 4vmin;
-	position: relative;
-	top: -2.25vmin;
-	left: 0.5vmin;
-	margin-bottom: 0;
 }
 
 input.major {
@@ -96,7 +94,7 @@ input.major {
 }
 
 input.wide {
-	width: 33.34vmin;
+	width: 34.25vmin;
 }
 
 img {

@@ -14,19 +14,19 @@ This program is free software, released under the Apache License, Version 2.0. S
 
 <body>
 <form method="get" action="request">
-<table>
-<tr>
-<td><input type="submit" value="&larr;" class="clear"></td>
-<td colspan="2"><input type="button" value="Email" class="ctrl wide" onclick="sendEmail('{date}')"></td>
-<td colspan="2"><input type="button" value="Print" class="ctrl wide" onclick="window.print()"></td>
-</tr><tr>
-<td><input type="button" value="&lt;" onclick="openLogs('{prev_date}')"></td>
-<td><input type="button" value="{tag_s}" onclick="openLogs('{scope_s}')"></td>
-<td><input type="button" value="{tag_m}" onclick="openLogs('{scope_m}')"></td>
-<td><input type="button" value="{tag_l}" onclick="openLogs('{scope_l}')"></td>
-<td><input type="button" value="&gt;" onclick="openLogs('{next_date}')"></td>
-</tr>
-</table>
+<div id="keypad">
+<div class="row">
+<input type="submit" value="&larr;" class="clear">
+<input type="button" value="Email" class="ctrl wide" onclick="sendEmail('{date}')">
+<input type="button" value="Print" class="ctrl wide" onclick="window.print()">
+</div><div class="row">
+<input type="button" value="&lt;" onclick="openLogs('{prev_date}')">
+<input type="button" value="{tag_s}" onclick="openLogs('{scope_s}')">
+<input type="button" value="{tag_m}" onclick="openLogs('{scope_m}')">
+<input type="button" value="{tag_l}" onclick="openLogs('{scope_l}')">
+<input type="button" value="&gt;" onclick="openLogs('{next_date}')">
+</div>
+</div>
 </form>
 <div id="popup"><p id="popup_text"></p>
 <form><input type="button" class="ctrl wide" value="OK" onclick="dismissPopup()"></form>

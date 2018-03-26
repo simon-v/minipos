@@ -20,30 +20,31 @@ This program is free software, released under the Apache License, Version 2.0. S
 <body onload="setTimeout(returnTimer, 1000)">
 <form method="get" action="invoice">
 <div id="keypad">
+<div class="row">
 <input type="text" class="text" id="amountbox" name="amount" pattern="[0-9.]+(\.[0-9][0-9]?)?" onkeypress="setTimeout(validateInput, 1)" required>
 <input type="button" {disabled} value="{cur}" id="currency" onclick="cycleCurrency()">
 <input type="hidden" value="{cur}" id="currencybox" name="currency">
-
+</div><div class="row">
 <input type="button" value="1" onclick="textAppend(1)">
 <input type="button" value="2" onclick="textAppend(2)">
 <input type="button" value="3" onclick="textAppend(3)">
 <input type="button" class="back" value="&#9003;" onclick="textRemove()">
-
+</div><div class="row">
 <input type="button" value="4" onclick="textAppend(4)">
 <input type="button" value="5" onclick="textAppend(5)">
 <input type="button" value="6" onclick="textAppend(6)">
 <input type="reset" class="clear" value="C" onclick="return_timer = 0">
-
+</div><div class="row">
 <input type="button" value="7" onclick="textAppend(7)">
 <input type="button" value="8" onclick="textAppend(8)">
 <input type="button" value="9" onclick="textAppend(9)">
 <input type="button" value="&equiv;" class="ctrl" onclick="openLogs()">
-
+</div><div class="row">
 <input type="button" id="cents" value="{centkey}" onclick="addCents()">
 <input type="button" value="0" onclick="textAppend(0)">
-<input type="button" id="tax" value="%" onclick="addTax()">
+<input type="button" class="tax" value="%" onclick="addTax()">
 <input type="submit" class="ok" value="&#10003;">
-</div>
+</div></div>
 </form>
 <p>{tax}: <span id="percents">{taxrate}%</span></p>
 </body>
