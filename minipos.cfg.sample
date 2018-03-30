@@ -63,7 +63,7 @@ welcome_timeout=120
 payment_return=request
 
 ## The preferred display unit for the bitcoin amounts
-## Valid values are 'native', 'bits' and 'satoshi'
+## Valid values are 'native', 'bits' or 'cash' and 'satoshi'
 unit=native
 
 ## If you have your own block explorer and you wish to query it instead,

@@ -132,7 +132,7 @@ def pick_config_list(key, value_list):
 			print("Invalid '{key}' value, falling back to '{default}'".format(key=key, default=value_list[0]))
 			config[key] = value_list[0]
 
-pick_config_list('unit', ['native', 'bits', 'satoshi'])
+pick_config_list('unit', ['native', 'bits', 'cash', 'satoshi'])
 pick_config_list('payment_return', ['request', 'welcome'])
 
 if 'week_start' not in config or config['week_start'] == 'monday':
@@ -241,7 +241,7 @@ def load_file(filename):
 
 # Cast amount into preferred units
 def format_amount(amount):
-	if config['unit'] == 'bits':
+	if config['unit'] in ['bits', 'cash']:
 		return bch.bits(float(amount))
 	elif config['unit'] == 'satoshi':
 		return str(int(float(amount) * 100000000))
@@ -325,7 +325,7 @@ def create_invoice(parameters):
 		'return': config['payment_return'],
 		'label': config['label'],
 	}
-	filler['token'] = 'BCH' if config['unit'] == 'native' else 'bits' if config['unit'] == 'bits' else 'satoshi'
+	filler['token'] = 'BCH' if config['unit'] == 'native' else config['unit']
 	page = load_file('invoice.html').format(**filler)
 	return page
 
@@ -554,7 +554,7 @@ def show_logs(parameters, plaintext=False):
 			summary += chunk.format(fiat=bch.fiat(totals[sign]), cur=sign)
 	# Format and return the logs page
 	if table != '':
-		token = 'BCH' if config['unit'] == 'native' else 'bits' if config['unit'] == 'bits' else 'satoshi'
+		token = 'BCH' if config['unit'] == 'native' else config['unit']
 		if plaintext:
 			table_head = '====== Date =======||== Address ==||== Amount ({token}) ==||== Amount (fiat) ==||== ID =='.format(token=token)
 		else:
