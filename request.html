@@ -22,7 +22,7 @@ This program is free software, released under the Apache License, Version 2.0. S
 <div id="keypad">
 <div class="row">
 <input type="text" class="text" id="amountbox" name="amount" pattern="[0-9.]+(\.[0-9][0-9]?)?" onkeypress="setTimeout(validateInput, 1)" required>
-<input type="button" {disabled} value="{cur}" id="currency" onclick="cycleCurrency()">
+<input type="button" {currency_disabled} value="{cur}" id="currency" onclick="cycleCurrency()">
 <input type="hidden" value="{cur}" id="currencybox" name="currency">
 </div><div class="row">
 <input type="button" value="1" onclick="textAppend(1)">
@@ -42,7 +42,7 @@ This program is free software, released under the Apache License, Version 2.0. S
 </div><div class="row">
 <input type="button" id="cents" value="{centkey}" onclick="addCents()">
 <input type="button" value="0" onclick="textAppend(0)">
-<input type="button" class="tax" value="%" onclick="addTax()">
+<input type="button" class="tax" {tax_disabled} value="%" onclick="addTax()">
 <input type="submit" class="ok" value="&#10003;">
 </div></div>
 </form>

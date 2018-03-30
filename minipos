@@ -678,10 +678,6 @@ def minipos(environ, start_response):
 			footer = ''
 		page = load_file('welcome.html').format(label=config['label'], welcome_footer=footer)
 	elif request == 'request':
-		if len(config['currencies']) == 1:
-			disabled = 'disabled'
-		else:
-			disabled = ''
 		if config['taxrate'] < 0:
 			tax = 'Discount'
 		else:
@@ -689,13 +685,14 @@ def minipos(environ, start_response):
 		filler = {
 			'currencies': repr(config['currencies']),
 			'timeout': config['welcome_timeout'],
-			'disabled': disabled,
 			'cur': config['currencies'][0],
 			'tax': tax,
 			'taxrate': config['taxrate'],
 			'label': config['label'],
 			'centkey': '00' if config['auto_cents'] else '.',
 		}
+		filler['currency_disabled'] = 'disabled' if len(config['currencies']) == 1 else ''
+		filler['tax_disabled'] = 'disabled' if config['taxrate'] == 0 else ''
 		page = load_file('request.html').format(**filler)
 	# Redirect blank request to main page
 	elif request == '':

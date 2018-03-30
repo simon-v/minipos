@@ -97,6 +97,10 @@ input.wide {
 	width: 34.25vmin;
 }
 
+input.tax:disabled {
+	color: #bfbfbf;
+}
+
 img {
 	width: 80vmin;
 	height: auto;
