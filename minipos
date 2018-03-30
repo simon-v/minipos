@@ -256,8 +256,8 @@ def create_invoice(parameters):
 	currency = parameters['currency'][0]
 	divider = 100 if config['auto_cents'] else 1
 	fiat = float(parameters['amount'][0]) / divider
-	if fiat == 0.0 and not os.path.isfile('.debug'):
-		raise ValueError('Requested amount cannot be zero')
+	if fiat <= 0.0:
+		raise ValueError('Requested amount must be positive')
 	# Check for address lock timeouts
 	for k in list(config['lock']):
 		if check_lock_timeout(k):
