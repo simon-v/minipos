@@ -50,6 +50,8 @@ input {
 	padding: 1vmin;
 	margin-bottom: 1vmin;
 	vertical-align: middle;
+	border-color: darkgray;
+	border-width: 0.75vmin;
 }
 
 input.text {
@@ -61,11 +63,13 @@ input.text {
 input.ok {
 	color: white;
 	background-color: darkgreen;
+	border-color: darkgreen;
 }
 
 input.clear {
 	color: white;
 	background-color: red;
+	border-color: darkred;
 }
 
 input.back {
@@ -73,16 +77,19 @@ input.back {
 	background-color: blue;
 	padding-top: 0;
 	padding-left: 0;
+	border-color: darkblue;
 }
 
 input.tax {
 	color: white;
 	background-color: darkcyan;
+	border-color: darkcyan;
 }
 
 input.ctrl {
 	color: white;
 	background-color: #333333;
+	border-color: #262626;
 }
 
 input#currency {
