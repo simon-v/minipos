@@ -197,8 +197,8 @@ def write_config_file():
 		for k in ['{}=', '#{}=']:
 			if not found:
 				k = k.format(key)
-				for i in range(len(lines)):
-					if lines[i].startswith(k):
+				for i, line in enumerate(lines):
+					if line.startswith(k):
 						found = True
 						break
 		# Replace the matching line

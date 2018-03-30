@@ -103,11 +103,11 @@ explorers = [
 # Initialize explorer and exchange list
 random.seed()
 random.shuffle(explorers)
-for i in range(len(explorers)):
-	explorers[i]['name'] = '.'.join(explorers[i]['url'].split('/')[2].split('.')[-2:])
-for i in range(len(exchanges)):
-	exchanges[i]['name'] = '.'.join(exchanges[i]['url'].split('/')[2].split('.')[-2:])
-del(i) # Cleanup for help(bch)
+for i, server in enumerate(explorers):
+	explorers[i]['name'] = '.'.join(server['url'].split('/')[2].split('.')[-2:])
+for i, server in enumerate(exchanges):
+	exchanges[i]['name'] = '.'.join(server['url'].split('/')[2].split('.')[-2:])
+del i, server # Cleanup for help(bch)
 
 def btc(amount):
 	'''Return a native bitcoin amount representation'''
@@ -203,8 +203,8 @@ confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 			server['errors'] = 0
 		# If the end of the server list was reached without a single success, assume a network error
 		if server is None:
-			for i in range(len(explorers)):
-				if explorers[i]['errors'] > 0:
+			for i, server in enumerate(explorers):
+				if server['errors'] > 0:
 					explorers[i]['errors'] -= 1
 			if results == []:
 				raise ConnectionError('Connection error')
