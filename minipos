@@ -290,6 +290,8 @@ def create_invoice(parameters):
 		return load_file('timeout.html')
 	# Calculate amount
 	amount = bch.btc(fiat / price)
+	if float(amount) > 20999950:
+		raise ValueError('Requested amount is greater than logically possible')
 	# Get current balance
 	try:
 		balance, unconfirmed = bch.get_balance(address, verify=True, explorer=custom_explorer)
