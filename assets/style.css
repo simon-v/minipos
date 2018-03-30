@@ -40,12 +40,12 @@ table td.error {
 }
 
 input {
-	width: 16.67vmin;
-	height: 16.67vmin;
-	font-size: 10vmin;
+	width: 18vmin;
+	height: 18vmin;
+	font-size: 11vmin;
 	font-weight: bold;
 	background-color: lightgray;
-	border-radius: 1.67vmin;
+	border-radius: 2vmin;
 	margin: 0;
 	padding: 1vmin;
 	margin-bottom: 1vmin;
@@ -53,7 +53,7 @@ input {
 }
 
 input.text {
-	width: 50vmin;
+	width: 52.75vmin;
 	text-align: center;
 	background-color: white;
 }
@@ -86,15 +86,15 @@ input.ctrl {
 }
 
 input#currency {
-	font-size: 4vmin;
+	font-size: 5vmin;
 }
 
 input.major {
-	width: 50vmin;
+	width: 52.75vmin;
 }
 
 input.wide {
-	width: 34.25vmin;
+	width: 37vmin;
 }
 
 input.tax:disabled {
