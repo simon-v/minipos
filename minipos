@@ -410,6 +410,7 @@ def check_lock_timeout(tag):
 def read_log_file(filename, plaintext=False):
 	table = ''
 	totals = {}
+	token = 'BCH' if config['unit'] == 'native' else config['unit']
 	for currency in config['currencies']:
 		totals[currency] = 0
 	try:
@@ -431,16 +432,22 @@ def read_log_file(filename, plaintext=False):
 			totals[currency] += float(fiat)
 			date = date.split('.')[0].replace('T', ' ')
 			if plaintext:
-				table += '{date}  {addr}...  {amt}  {fiat} {cur}  {tag}\n'.format(date=date, addr=address[0:10], amt=str(amount).rjust(12), fiat=str(fiat).rjust(15), cur=currency, tag=tag)
+				table += '{date}  {addr}  {amt}  {fiat} {cur}  {tag}\n'.format(date=date, addr=address, amt=str(amount).rjust(12), fiat=str(fiat).rjust(15), cur=currency, tag=tag)
 			else:
-				table += '<tr><td>{date}</td><td>{addr}...</td><td>{amt}</td><td>{fiat} {cur}</td><td>{tag}</td></tr>\n'.format(date=date, addr=address[0:10], amt=amount, fiat=fiat, cur=currency, tag=tag)
+				table += '''<tr class="%STYLE%">
+<td><a id="toggle%ROW%" href="javascript:toggleRow(%ROW%);">+</a></td>
+<td>{date}</td><td>{fiat} {cur}</td><td>{tag}</td>
+</tr>
+<tr class="%STYLE% expand" id="row%ROW%">
+<td colspan="4"><strong>Address:</strong> <span>{addr}</span><br>
+<strong>Amount:</strong> <span>{amt} {token}</span></td></tr>\n'''.format(date=date, addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag, token=token)
 	except:
 		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
 		msg = 'The log file for {file} is corrupted!'.format(file=filename.split('/')[1].split('.')[0])
 		if plaintext:
 			table += msg
 		else:
-			table += '<tr><td colspan="4" class="error">' + msg + '</td></tr>'
+			table += '<tr class="%STYLE%"><td colspan="5" class="error">' + msg + '</td></tr>'
 	logfile.close()
 	return totals, table
 
@@ -556,11 +563,10 @@ def show_logs(parameters, plaintext=False):
 			summary += chunk.format(fiat=bch.fiat(totals[sign]), cur=sign)
 	# Format and return the logs page
 	if table != '':
-		token = 'BCH' if config['unit'] == 'native' else config['unit']
 		if plaintext:
-			table_head = '====== Date =======||== Address ==||== Amount ({token}) ==||== Amount (fiat) ==||== ID =='.format(token=token)
+			table_head = '====== Date =======||================ Address =================||== Amount ==||== Amount (fiat) ==||== ID =='
 		else:
-			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date and time</th><th>Address</th><th>Amount ({token})</th><th>Amount (fiat)</th><th>ID</th></tr>\n'.format(token=token)
+			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th></th><th>Date and time</th><th>Amount</th><th>ID</th></tr>\n'
 			table_foot = '</table>\n'
 	else:
 		if plaintext:
@@ -579,6 +585,13 @@ def show_logs(parameters, plaintext=False):
 			footer = load_file('log_footer.html')
 		except (IOError, OSError, FileNotFoundError, PermissionError):
 			footer = ''
+		row_count = 1
+		style = 'odd'
+		while '%ROW%' in table:
+			table = table.replace('%ROW%', str(row_count), 3)
+			table = table.replace('%STYLE%', style, 2)
+			style = 'even' if style == 'odd' else 'odd'
+			row_count += 1
 		table = table_head + table + table_foot
 		# Pack the above variables into a filler dict
 		label = config['label']

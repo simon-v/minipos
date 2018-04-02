@@ -19,17 +19,43 @@ table {
 	margin: auto;
 }
 
+table.listing {
+	width: 95vmin;
+}
+
 table.listing td {
 	padding-left: 1vmin;
 	padding-right: 1vmin;
+	max-width: 91vmin;
 }
-table.listing tr:nth-child(even) {
+
+table.listing .odd {
 	background-color: lightgray;
 }
+
+table.listing tr.expand {
+	text-align: left;
+}
+
+table.listing tr.expand span {
+	padding-left: 3.34vmin;
+}
+
+@media screen {
+	tr.expand {
+		display: none;
+	}
+	tr.expand strong:after {
+		content: "\a";
+		white-space: pre;
+	}
+}
+
 table td.error {
 	animation: blinker 0.75s linear infinite;
 	font-weight: bold;
 }
+
 @keyframes blinker {
 	50% { opacity: 0; }
 }
@@ -142,5 +168,14 @@ img.icon {
 @media print {
 	input {
 		display: none !important;
+	}
+	body {
+		font-size: 1.67vmin;
+	}
+	tr.expand {
+		display: table-row;
+	}
+	tr.odd {
+		background-color: white;
 	}
 }

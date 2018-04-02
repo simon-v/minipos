@@ -220,3 +220,17 @@ function copy() {
 		}
 	}
 }
+
+// Switch log viewer collapsed row display
+function toggleRow(row) {
+	var table_row = document.getElementById("row" + row),
+	toggle = document.getElementById("toggle" + row);
+	if ( ( table_row.computedStyle && table_row.computedStyle.display == "none" ) || getComputedStyle(table_row, null).display == "none" ) {
+		table_row.style.display = "table-row";
+		toggle.innerHTML = "&ndash;";
+	}
+	else {
+		table_row.style.display = "none";
+		toggle.innerHTML = "+";
+	}
+}
