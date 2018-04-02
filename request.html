@@ -28,22 +28,22 @@ This program is free software, released under the Apache License, Version 2.0. S
 <input type="button" value="1" onclick="textAppend(1)">
 <input type="button" value="2" onclick="textAppend(2)">
 <input type="button" value="3" onclick="textAppend(3)">
-<input type="button" class="back" value="&#9003;" onclick="textRemove()">
+<input type="button" class="blue back" value="&#9003;" onclick="textRemove()">
 </div><div class="row">
 <input type="button" value="4" onclick="textAppend(4)">
 <input type="button" value="5" onclick="textAppend(5)">
 <input type="button" value="6" onclick="textAppend(6)">
-<input type="reset" class="clear" value="C" onclick="return_timer = 0">
+<input type="reset" class="red" value="C" onclick="return_timer = 0">
 </div><div class="row">
 <input type="button" value="7" onclick="textAppend(7)">
 <input type="button" value="8" onclick="textAppend(8)">
 <input type="button" value="9" onclick="textAppend(9)">
-<input type="button" value="&equiv;" class="ctrl" onclick="openLogs()">
+<input type="button" value="&equiv;" class="dark" onclick="openLogs()">
 </div><div class="row">
 <input type="button" id="cents" value="{centkey}" onclick="addCents()">
 <input type="button" value="0" onclick="textAppend(0)">
-<input type="button" class="tax" {tax_disabled} value="%" onclick="addTax()">
-<input type="submit" class="ok" value="&#10003;">
+<input type="button" class="cyan" {tax_disabled} value="%" onclick="addTax()">
+<input type="submit" class="green" value="&#10003;">
 </div></div>
 </form>
 <p>{tax}: <span id="percents">{taxrate}%</span></p>

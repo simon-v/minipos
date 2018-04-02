@@ -19,39 +19,41 @@ table {
 	margin: auto;
 }
 
-table.listing {
+.listing {
 	width: 95vmin;
 }
 
-table.listing td {
+.listing td {
 	padding-left: 1vmin;
 	padding-right: 1vmin;
 	max-width: 91vmin;
 }
 
-table.listing .odd {
-	background-color: lightgray;
+tr.odd {
+	background-color: #d3d3d3;
 }
 
-table.listing tr.expand {
+tr.expand {
 	text-align: left;
 }
 
-table.listing tr.expand span {
+tr.expand span {
 	padding-left: 3.34vmin;
 }
 
 @media screen {
+
 	tr.expand {
 		display: none;
 	}
+
 	tr.expand strong:after {
 		content: "\a";
 		white-space: pre;
 	}
 }
 
-table td.error {
+.error {
 	animation: blinker 0.75s linear infinite;
 	font-weight: bold;
 }
@@ -70,52 +72,85 @@ input {
 	height: 18vmin;
 	font-size: 11vmin;
 	font-weight: bold;
-	background-color: lightgray;
+	background-color: #d3d3d3;
 	border-radius: 2vmin;
 	margin: 0;
 	padding: 1vmin;
 	margin-bottom: 1vmin;
 	vertical-align: middle;
-	border-color: darkgray;
 	border-width: 0.75vmin;
+	border-style: solid;
+	border-color: #e6e6e6 #808080 #808080 #e6e6e6;
 }
 
-input.text {
+input:active {
+	border-color: #808080 #e6e6e6 #e6e6e6 #808080;
+}
+
+input.text, input.text:active {
 	width: 52.75vmin;
 	text-align: center;
 	background-color: white;
+	border-color: #808080 #e6e6e6 #e6e6e6 #808080;
 }
 
-input.ok {
+input.green {
 	color: white;
-	background-color: darkgreen;
-	border-color: darkgreen;
+	background-color: #006400;
+	border-color: #00b300 #003300 #003300 #00b300;
 }
 
-input.clear {
+input.green:active {
+	border-color: #003300 #00b300 #00b300 #003300;
+}
+
+input.red {
 	color: white;
-	background-color: red;
-	border-color: darkred;
+	background-color: #ff0000;
+	border-color: #ff8080 #990000 #990000 #ff8080;
+}
+
+input.red:active {
+	border-color: #990000 #ff8080 #ff8080 #990000;
+}
+
+input.blue {
+	color: white;
+	background-color: #0000ff;
+	border-color: #8080ff #000099 #000099 #8080ff;
+}
+
+input.blue:active {
+	border-color: #000099 #8080ff #8080ff #000099;
 }
 
 input.back {
-	color: white;
-	background-color: blue;
 	padding-top: 0;
 	padding-left: 0;
-	border-color: darkblue;
 }
 
-input.tax {
+input.cyan {
 	color: white;
-	background-color: darkcyan;
-	border-color: darkcyan;
+	background-color: #008b8b;
+	border-color: #19b3b3 #004d4d #004d4d #19b3b3;
 }
 
-input.ctrl {
+input.cyan:active {
+	border-color: #004d4d #19b3b3 #19b3b3 #004d4d;
+}
+
+input:disabled {
+	color: #bfbfbf;
+}
+
+input.dark {
 	color: white;
 	background-color: #333333;
-	border-color: #262626;
+	border-color: #8c8c8c #1a1a1a #1a1a1a #8c8c8c;
+}
+
+input.dark:active {
+	border-color: #1a1a1a #8c8c8c #8c8c8c #1a1a1a;
 }
 
 input#currency {
@@ -130,25 +165,20 @@ input.wide {
 	width: 37vmin;
 }
 
-input.tax:disabled {
-	color: #bfbfbf;
-}
-
 img {
 	width: 80vmin;
 	height: auto;
 	image-rendering: optimizespeed;
 }
 
-strong.address {
+.address {
 	white-space: nowrap;
 }
 
 img.icon {
 	height: 3.34vmin;
 	width: auto;
-	position: relative;
-	top: 0.34vmin;
+	vertical-align: middle;
 }
 
 #popup {
@@ -166,15 +196,19 @@ img.icon {
 }
 
 @media print {
+
 	input {
 		display: none !important;
 	}
+
 	body {
 		font-size: 1.67vmin;
 	}
+
 	tr.expand {
 		display: table-row;
 	}
+
 	tr.odd {
 		background-color: white;
 	}
