@@ -68,12 +68,12 @@ tr.expand span {
 }
 
 input {
-	width: 18vmin;
-	height: 18vmin;
-	font-size: 11vmin;
+	width: 16.67vmin;
+	height: 16.67vmin;
+	font-size: 10vmin;
 	font-weight: bold;
 	background-color: #d3d3d3;
-	border-radius: 2vmin;
+	border-radius: 1.67vmin;
 	margin: 0;
 	padding: 1vmin;
 	margin-bottom: 1vmin;
@@ -88,7 +88,7 @@ input:active {
 }
 
 input.text, input.text:active {
-	width: 52.75vmin;
+	width: 48.75vmin;
 	text-align: center;
 	background-color: white;
 	border-color: #808080 #e6e6e6 #e6e6e6 #808080;
@@ -154,15 +154,15 @@ input.dark:active {
 }
 
 input#currency {
-	font-size: 5vmin;
+	font-size: 4vmin;
 }
 
 input.major {
-	width: 52.75vmin;
+	width: 48.75vmin;
 }
 
 input.wide {
-	width: 37vmin;
+	width: 34.45vmin;
 }
 
 img {
