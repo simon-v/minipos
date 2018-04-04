@@ -93,6 +93,8 @@ input {
 	border-width: 0.75vmin;
 	border-style: solid;
 	border-color: #e6e6e6 #808080 #808080 #e6e6e6;
+	-webkit-appearance: none;
+	-webkit-border-radius: 1.67vmin;
 }
 
 input:active {
