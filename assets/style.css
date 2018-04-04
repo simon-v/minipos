@@ -41,6 +41,10 @@ tr.expand span {
 	padding-left: 3.34vmin;
 }
 
+tr.expand span.address {
+	padding-left: 0;
+}
+
 @media screen {
 
 	tr.expand {
@@ -215,4 +219,9 @@ img.icon {
 	tr.odd {
 		background-color: white;
 	}
+
+	img.icon {
+		height: 1.67vmin;
+	}
+
 }
