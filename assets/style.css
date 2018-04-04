@@ -173,6 +173,9 @@ img {
 
 .address {
 	white-space: nowrap;
+	display: inline-block;
+	width: 100%;
+	overflow-x: auto;
 }
 
 img.icon {
