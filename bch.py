@@ -171,6 +171,35 @@ def get_price(currency, exchange=exchanges[0]['name']):
 		raise ValueError('Returned exchange rate is zero')
 	return round(rate, 2)
 
+def pick_explorer(server_name=None, address_prefix=None, confirmed_only=False):
+	'''Advance the list of explorers until one that matches the requirements is found'''
+	for __ in explorers:
+		# Cycle to the next server
+		server = explorers.pop(0)
+		if server is None:
+			return
+		explorers.append(server)
+		# Populate server error count if necessary
+		if 'errors' not in server:
+			server['errors'] = 0
+			server['last_error'] = None
+			server['last_data'] = None
+		# Filter by server name
+		if server_name is not None and server['name'] != server_name:
+			continue
+		# Filter by error rate
+		if server['errors'] > MAX_ERRORS:
+			continue
+		# Filter by address prefix
+		if address_prefix is not None and address_prefix not in server['prefixes']:
+			continue
+		# Filter by non-provided information
+		if confirmed_only and server['confirmed_key'] is None and server['balance_key'] is None:
+			continue
+		if not confirmed_only and server['unconfirmed_key'] is None and server['balance_key'] is None:
+			continue
+		return server
+
 def get_balance(address, explorer=None, verify=False, confirmed_only=False):
 	'''Get the current balance of an address from a block explorer
 Returns tuple(confirmed_balance, unconfirmed_balance)
@@ -191,71 +220,63 @@ confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 	if address[0] in 'QP':
 		address = address.lower()
 	# Add a temporary separator
-	server = None
+	explorers.append(None)
 	results = []
 	while True:
-		# Cycle to the next server
-		explorers.append(server)
-		server = explorers.pop(0)
-		# Populate server error count if necessary
-		if server is not None and 'errors' not in server:
-			server['errors'] = 0
-		# If the end of the server list was reached without a single success, assume a network error
-		if server is None:
-			for i, server in enumerate(explorers):
-				if server['errors'] > 0:
-					explorers[i]['errors'] -= 1
-			if results == []:
-				raise ConnectionError('Connection error')
-			return(results[-1])
-		# Select only the desired server if requested
-		if explorer is not None and server['name'] != explorer:
-			continue
-		# Avoid servers with excessive errors
-		if server['errors'] > MAX_ERRORS:
-			continue
-		#print(server['name']) # DEBUG
-		# Convert wrong address type
-		if xpub is None and address[0] not in server['prefixes']:
+		if xpub is None:
+			# Enforce address prefix if optional dependencies are not available
 			try:
-				address = convert_address(address)
+				import pycoin.key
+				import cashaddr
 			except ImportError:
-				continue
-		# Generate address if necessary
-		if xpub is not None:
+				server = pick_explorer(explorer, address_prefix=address[0], confirmed_only=confirmed_only)
+			else:
+				# Convert address into the right type
+				server = pick_explorer(explorer, confirmed_only=confirmed_only)
+				if address[0] not in server['prefixes']:
+					address = convert_address(address)
+		else:
+			server = pick_explorer(explorer, confirmed_only=confirmed_only)
+			# Generate the address from xpub
 			if 'q' in server['prefixes'] or 'p' in server['prefixes']:
 				address = generate_address(xpub, idx)
 			else:
 				address = generate_address(xpub, idx, False)
+		# If the end of the server list was reached without a single success, assume a network error
+		if server is None:
+			for server in explorers:
+				if server['errors'] > 0:
+					server['errors'] -= 1
+			if results == []:
+				raise ConnectionError('Connection error')
+			return(results[-1])
 		# Try to get balance
 		try:
+			# Get and cache the received data for possible future analysis
+			json = jsonload(server['url'].format(address=address))
+			server['last_data'] = json
 			# Conditional balance processing
 			# TODO: This is a mighty convoluted way of doing it and needs rethinking
 			if server['confirmed_key'] is not None and server['unconfirmed_key'] is not None:
-				json = jsonload(server['url'].format(address=address))
 				confirmed = float(get_value(json, server['confirmed_key']))
 				unconfirmed = float(get_value(json, server['unconfirmed_key']))
 			elif server['confirmed_key'] is not None and server['balance_key'] is not None:
-				json = jsonload(server['url'].format(address=address))
 				confirmed = float(get_value(json, server['confirmed_key']))
 				balance = float(get_value(json, server['balance_key']))
 				unconfirmed = balance - confirmed
 			elif server['unconfirmed_key'] is not None and server['balance_key'] is not None:
-				json = jsonload(server['url'].format(address=address))
 				balance = float(get_value(json, server['balance_key']))
 				unconfirmed = float(get_value(json, server['unconfirmed_key']))
 				confirmed = balance - unconfirmed
 			elif confirmed_only and server['confirmed_key'] is not None:
-				json = jsonload(server['url'].format(address=address))
 				confirmed = float(get_value(json, server['confirmed_key']))
 				unconfirmed = 0.0
 			elif not confirmed_only and server['balance_key'] is not None:
-				json = jsonload(server['url'].format(address=address))
 				balance = float(get_value(json, server['balance_key']))
 				confirmed = balance
 				unconfirmed = 0.0
 			else:
-				continue
+				raise RuntimeError('Cannot figure out address balance')
 		except KeyboardInterrupt:
 			explorers.remove(None)
 			raise
@@ -279,10 +300,8 @@ confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 			if (confirmed, unconfirmed) not in results:
 				results.append((confirmed, unconfirmed))
 				continue
-
 		break
 	# Clean up
-	explorers.append(server)
 	explorers.remove(None)
 	return confirmed, unconfirmed
 
