@@ -103,11 +103,10 @@ explorers = [
 # Initialize explorer and exchange list
 random.seed()
 random.shuffle(explorers)
-for i, server in enumerate(explorers):
-	explorers[i]['name'] = '.'.join(server['url'].split('/')[2].split('.')[-2:])
-for i, server in enumerate(exchanges):
-	exchanges[i]['name'] = '.'.join(server['url'].split('/')[2].split('.')[-2:])
-del i, server # Cleanup for help(bch)
+for _server in explorers:
+	_server['name'] = '.'.join(_server['url'].split('/')[2].split('.')[-2:])
+for _server in exchanges:
+	_server['name'] = '.'.join(_server['url'].split('/')[2].split('.')[-2:])
 
 def btc(amount):
 	'''Return a native bitcoin amount representation'''
