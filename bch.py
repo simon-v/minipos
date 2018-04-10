@@ -100,18 +100,6 @@ explorers = [
 		'prefixes': 'qp',
 	},
 	{
-		# Non-realtime source; https://github.com/Blockchair/Blockchair.Support/blob/master/API.md
-		# Receiving tx data requires several additional HTTP requests
-		'url': 'https://api.blockchair.com/bitcoin-cash/dashboards/address/{address}',
-		'tx_url': None,
-		'balance_key': None,
-		'confirmed_key': 'data.0.sum_value_unspent',
-		'unconfirmed_key': None,
-		'last_tx_key': None,
-		'unit_satoshi': True,
-		'prefixes': 'qp13',
-	},
-	{
 		'url': 'https://bch-chain.api.btc.com/v3/address/{address}',
 		'tx_url': 'https://bch-chain.api.btc.com/v3/tx/{txid}',
 		'balance_key': 'data.balance',
@@ -161,8 +149,6 @@ explorers = [
 		'unit_satoshi': False,
 		'prefixes': '13',
 	},
-#	'https://api.explorer.cash/%s/balance', # broken
-#	'https://api.blocktrail.com/v1/bcc/address/%s?api_key=MY_APIKEY', # API key required
 ]
 
 # Initialize explorer and exchange list
