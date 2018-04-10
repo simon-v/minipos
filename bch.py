@@ -228,7 +228,7 @@ def pick_explorer(server_name=None, address_prefix=None):
 		# Cycle to the next server
 		server = explorers.pop(0)
 		if server is None:
-			return
+			raise StopIteration('Server list depleted')
 		explorers.append(server)
 		# Populate server error count if necessary
 		if 'errors' not in server:
@@ -239,12 +239,13 @@ def pick_explorer(server_name=None, address_prefix=None):
 		if server_name is not None and server['name'] != server_name:
 			continue
 		# Filter by error rate
-		if server['errors'] > MAX_ERRORS:
+		if server['errors'] > MAX_ERRORS and server['name'] != server_name:
 			continue
 		# Filter by address prefix
 		if address_prefix is not None and address_prefix not in server['prefixes']:
 			continue
 		return server
+	raise KeyError('No servers match the requirements')
 
 def get_balance(address, explorer=None, verify=False):
 	'''Get the current balance of an address from a block explorer
@@ -267,7 +268,7 @@ verify          (bool) the results should be verified with another explorer'''
 	# Add a temporary separator
 	explorers.append(None)
 	results = []
-	while True:
+	while explorers[0] is not None:
 		if xpub is None:
 			# Enforce address prefix if optional dependencies are not available
 			try:
@@ -287,14 +288,6 @@ verify          (bool) the results should be verified with another explorer'''
 				address = generate_address(xpub, idx)
 			else:
 				address = generate_address(xpub, idx, False)
-		# If the end of the server list was reached without a single success, assume a network error
-		if server is None:
-			for server in explorers:
-				if server['errors'] > 0:
-					server['errors'] -= 1
-			if results == []:
-				raise ConnectionError('Connection error')
-			return(results[-1])
 		# Try to get balance
 		try:
 			# Get and cache the received data for possible future analysis
@@ -338,10 +331,16 @@ verify          (bool) the results should be verified with another explorer'''
 			if (confirmed, unconfirmed) not in results:
 				results.append((confirmed, unconfirmed))
 				continue
-		break
-	# Clean up
+		explorers.remove(None)
+		return confirmed, unconfirmed
+	# If the end of the server list was reached without a single success, assume a network error
 	explorers.remove(None)
-	return confirmed, unconfirmed
+	if results == []:
+		for server in explorers:
+			if server['errors'] > 0:
+				server['errors'] -= 1
+		raise ConnectionError('Connection error')
+	return(results[-1])
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
