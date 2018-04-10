@@ -222,7 +222,7 @@ def get_price(currency, exchange=exchanges[0]['name']):
 		raise ValueError('Returned exchange rate is zero')
 	return round(rate, 2)
 
-def pick_explorer(server_name=None, address_prefix=None, confirmed_only=False):
+def pick_explorer(server_name=None, address_prefix=None):
 	'''Advance the list of explorers until one that matches the requirements is found'''
 	for __ in explorers:
 		# Cycle to the next server
@@ -244,22 +244,16 @@ def pick_explorer(server_name=None, address_prefix=None, confirmed_only=False):
 		# Filter by address prefix
 		if address_prefix is not None and address_prefix not in server['prefixes']:
 			continue
-		# Filter by non-provided information
-		if confirmed_only and server['confirmed_key'] is None and server['balance_key'] is None:
-			continue
-		if not confirmed_only and server['unconfirmed_key'] is None and server['balance_key'] is None:
-			continue
 		return server
 
-def get_balance(address, explorer=None, verify=False, confirmed_only=False):
+def get_balance(address, explorer=None, verify=False):
 	'''Get the current balance of an address from a block explorer
 Returns tuple(confirmed_balance, unconfirmed_balance)
 
 Keyword arguments:
 address         (str) bitcoin_address or tuple(str xpub, int index)
 explorer        (str) the name of a specific explorer to query
-verify          (bool) the results should be verified with another explorer
-confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
+verify          (bool) the results should be verified with another explorer'''
 	# Generated address request
 	xpub = None
 	if type(address) is tuple:
@@ -280,14 +274,14 @@ confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 				import pycoin.key
 				import cashaddr
 			except ImportError:
-				server = pick_explorer(explorer, address_prefix=address[0], confirmed_only=confirmed_only)
+				server = pick_explorer(explorer, address_prefix=address[0])
 			else:
 				# Convert address into the right type
-				server = pick_explorer(explorer, confirmed_only=confirmed_only)
+				server = pick_explorer(explorer)
 				if address[0] not in server['prefixes']:
 					address = convert_address(address)
 		else:
-			server = pick_explorer(explorer, confirmed_only=confirmed_only)
+			server = pick_explorer(explorer)
 			# Generate the address from xpub
 			if 'q' in server['prefixes'] or 'p' in server['prefixes']:
 				address = generate_address(xpub, idx)
@@ -319,13 +313,6 @@ confirmed_only  (bool) ignore servers without a separate unconfirmed balance'''
 				balance = float(get_value(json, server['balance_key']))
 				unconfirmed = float(get_value(json, server['unconfirmed_key']))
 				confirmed = balance - unconfirmed
-			elif confirmed_only and server['confirmed_key'] is not None:
-				confirmed = float(get_value(json, server['confirmed_key']))
-				unconfirmed = 0.0
-			elif not confirmed_only and server['balance_key'] is not None:
-				balance = float(get_value(json, server['balance_key']))
-				confirmed = balance
-				unconfirmed = 0.0
 			else:
 				raise RuntimeError('Cannot figure out address balance')
 		except KeyboardInterrupt:
