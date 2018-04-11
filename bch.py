@@ -255,6 +255,9 @@ Keyword arguments:
 address         (str) bitcoin_address or tuple(str xpub, int index)
 explorer        (str) the name of a specific explorer to query
 verify          (bool) the results should be verified with another explorer'''
+	# Incompatible parameters
+	if verify and explorer is not None:
+		raise ValueError('The "verify" and "explorer" parameters are incompatible')
 	# Generated address request
 	xpub = None
 	if type(address) is tuple:
