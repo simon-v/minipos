@@ -247,103 +247,139 @@ def pick_explorer(server_name=None, address_prefix=None):
 		return server
 	raise KeyError('No servers match the requirements')
 
-def get_balance(address, explorer=None, verify=False):
-	'''Get the current balance of an address from a block explorer
-Returns tuple(confirmed_balance, unconfirmed_balance)
+class AddressInfo(object):
+	'''A representation of a block explorer's idea of a bitcoin address state
 
-Keyword arguments:
+Provided properties:
+address         (str) the address in cash format
+legacy_address  (str) the address in legacy format
+confirmed       (float) the confirmed balance of the address
+unconfirmed     (float) the unconfirmed balance of the address
+'''
+
+	def __init__(self, address, explorer=None, verify=False):
+		'''Keyword arguments:
 address         (str) bitcoin_address or tuple(str xpub, int index)
 explorer        (str) the name of a specific explorer to query
-verify          (bool) the results should be verified with another explorer'''
-	# Incompatible parameters
-	if verify and explorer is not None:
-		raise ValueError('The "verify" and "explorer" parameters are incompatible')
-	# Generated address request
-	xpub = None
-	if type(address) is tuple:
-		xpub, idx = address
-	# Strip prefix
-	elif address[0].lower() == 'b':
-		address = address.split(':')[1]
-	# Normalize case
-	if address[0] in 'QP':
-		address = address.lower()
-	# Add a temporary separator
-	explorers.append(None)
-	results = []
-	while explorers[0] is not None:
-		if xpub is None:
-			# Enforce address prefix if optional dependencies are not available
-			try:
-				import pycoin.key
-				import cashaddr
-			except ImportError:
-				server = pick_explorer(explorer, address_prefix=address[0])
-			else:
-				# Convert address into the right type
-				server = pick_explorer(explorer)
-				if address[0] not in server['prefixes']:
-					address = convert_address(address)
-		else:
-			server = pick_explorer(explorer)
-			# Generate the address from xpub
-			if 'q' in server['prefixes'] or 'p' in server['prefixes']:
-				address = generate_address(xpub, idx)
-			else:
-				address = generate_address(xpub, idx, False)
-		# Try to get balance
+verify          (bool) the results should be verified with another explorer
+'''
+		# Incompatible parameters
+		if verify and explorer is not None:
+			raise ValueError('The "verify" and "explorer" parameters are incompatible')
+		# Generated address request
+		xpub = None
+		idx = None
+		if type(address) is tuple:
+			xpub, idx = address
+		# Strip prefix
+		elif address[0].lower() == 'b':
+			address = address.split(':')[1]
+		# Normalize case
+		if address[0] in 'QP':
+			address = address.lower()
+		# Generate all address versions
+		if address[0] in 'qp':
+			self.address = address
+			self.legacy_address = None
+		elif address[0] in '13':
+			self.address = None
+			self.legacy_address = address
 		try:
-			# Get and cache the received data for possible future analysis
-			json = jsonload(server['url'].format(address=address))
-			server['last_data'] = json
-			# Conditional balance processing
-			# TODO: This is a mighty convoluted way of doing it and needs rethinking
-			if server['confirmed_key'] is not None and server['unconfirmed_key'] is not None:
-				confirmed = float(get_value(json, server['confirmed_key']))
-				unconfirmed = float(get_value(json, server['unconfirmed_key']))
-			elif server['confirmed_key'] is not None and server['balance_key'] is not None:
-				confirmed = float(get_value(json, server['confirmed_key']))
-				balance = float(get_value(json, server['balance_key']))
-				unconfirmed = balance - confirmed
-			elif server['unconfirmed_key'] is not None and server['balance_key'] is not None:
-				balance = float(get_value(json, server['balance_key']))
-				unconfirmed = float(get_value(json, server['unconfirmed_key']))
-				confirmed = balance - unconfirmed
+			import pycoin.key
+			import cashaddr
+		except ImportError:
+			pass
+		else:
+			if xpub is not None:
+				self.address = generate_address(xpub, idx)
+				self.legacy_address = generate_address(xpub, idx, False)
+			elif self.address is None:
+				self.address = convert_address(self.legacy_address)
+			elif self.legacy_address is None:
+				self.legacy_address = convert_address(self.address)
+		# Add a temporary separator
+		explorers.append(None)
+		results = []
+		# Figure out specific address type availability
+		if self.address is not None and self.legacy_address is not None:
+			prefixes = 'qp13'
+		elif self.legacy_address is None:
+			prefixes = 'qp'
+		else:
+			prefixes = '13'
+		while explorers[0] is not None:
+			# Query the next explorer
+			if prefixes == 'qp13':
+				server = pick_explorer(explorer)
 			else:
-				raise RuntimeError('Cannot figure out address balance')
-		except KeyboardInterrupt:
-			explorers.remove(None)
-			raise
-		except:
-			server['errors'] += 1
-			exception = sys.exc_info()[1]
+				server = pick_explorer(explorer, address_prefix=prefixes[0])
+			# Try to get balance
 			try:
-				server['last_error'] = str(exception.reason)
-			except AttributeError:
-				server['last_error'] = str(exception)
-			if server['errors'] > MAX_ERRORS:
-				print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
-			continue
-		# Convert balances to native units
-		if server['unit_satoshi']:
-			confirmed /= 100000000
-			unconfirmed /= 100000000
-		if server['errors'] > 0:
-			server['errors'] -= 1
-		if verify:
-			if (confirmed, unconfirmed) not in results:
-				results.append((confirmed, unconfirmed))
+				# Get and cache the received data for possible future analysis
+				if 'q' in server['prefixes']:
+					json = jsonload(server['url'].format(address=self.address))
+				else:
+					json = jsonload(server['url'].format(address=self.legacy_address))
+				server['last_data'] = json
+				# Conditional balance processing
+				# TODO: This is a mighty convoluted way of doing it and needs rethinking
+				if server['confirmed_key'] is not None and server['unconfirmed_key'] is not None:
+					confirmed = float(get_value(json, server['confirmed_key']))
+					unconfirmed = float(get_value(json, server['unconfirmed_key']))
+				elif server['confirmed_key'] is not None and server['balance_key'] is not None:
+					confirmed = float(get_value(json, server['confirmed_key']))
+					balance = float(get_value(json, server['balance_key']))
+					unconfirmed = balance - confirmed
+				elif server['unconfirmed_key'] is not None and server['balance_key'] is not None:
+					balance = float(get_value(json, server['balance_key']))
+					unconfirmed = float(get_value(json, server['unconfirmed_key']))
+					confirmed = balance - unconfirmed
+				else:
+					raise RuntimeError('Cannot figure out address balance')
+			except KeyboardInterrupt:
+				explorers.remove(None)
+				raise
+			except:
+				server['errors'] += 1
+				exception = sys.exc_info()[1]
+				try:
+					server['last_error'] = str(exception.reason)
+				except AttributeError:
+					server['last_error'] = str(exception)
+				if server['errors'] > MAX_ERRORS:
+					print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
 				continue
-		explorers.remove(None)
-		return confirmed, unconfirmed
-	# If the end of the server list was reached without a single success, assume a network error
-	explorers.remove(None)
-	if results == []:
-		for server in explorers:
+			# Convert balances to native units
+			if server['unit_satoshi']:
+				confirmed /= 100000000
+				unconfirmed /= 100000000
 			if server['errors'] > 0:
 				server['errors'] -= 1
-		raise ConnectionError('Connection error')
-	return(results[-1])
+			data = (confirmed, unconfirmed)
+			if verify:
+				if data not in results:
+					results.append(data)
+					continue
+			results.append(data)
+			break
+		# If the end of the server list was reached without a single success, assume a network error
+		explorers.remove(None)
+		if results == []:
+			for server in explorers:
+				if server['errors'] > 0:
+					server['errors'] -= 1
+			raise ConnectionError('Connection error')
+		# Populate instance attributes
+		self.confirmed, self.unconfirmed = results[-1]
+
+def get_balance(address, explorer=None, verify=False):
+	'''Get the current balance of an address from a block explorer
+Takes the same arguments as AddressInfo()
+Returns tuple(confirmed_balance, unconfirmed_balance)
+'''
+	addr = AddressInfo(address, explorer, verify)
+	return addr.confirmed, addr.unconfirmed
+
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
