@@ -200,10 +200,12 @@ def get_value(json_object, key_path):
 		try:
 			json_object = json_object[k]
 		except KeyError:
-			raise KeyError('Key "{k}" from "{key_path}" not found in JSON'.format(k=k, key_path=key_path))
-		except TypeError:
 			if not error:
-				return 0
+				return False
+			raise KeyError('Key "{k}" from "{key_path}" not found in JSON'.format(k=k, key_path=key_path))
+		except (TypeError, IndexError):
+			if not error:
+				return False
 			raise
 	return json_object
 
@@ -341,7 +343,7 @@ verify          (bool) the results should be verified with another explorer
 					txid = get_value(server['last_data'], server['last_tx_key'])
 				except (KeyError, IndexError):
 					txid = None
-				if txid is 0: # TODO
+				if not txid:
 					txid = None
 			except KeyboardInterrupt:
 				explorers.remove(None)
