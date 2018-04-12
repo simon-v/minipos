@@ -336,6 +336,13 @@ verify          (bool) the results should be verified with another explorer
 					confirmed = balance - unconfirmed
 				else:
 					raise RuntimeError('Cannot figure out address balance')
+				# Get the last txid
+				try:
+					txid = get_value(server['last_data'], server['last_tx_key'])
+				except (KeyError, IndexError):
+					txid = None
+				if txid is 0: # TODO
+					txid = None
 			except KeyboardInterrupt:
 				explorers.remove(None)
 				raise
@@ -355,7 +362,7 @@ verify          (bool) the results should be verified with another explorer
 				unconfirmed /= 100000000
 			if server['errors'] > 0:
 				server['errors'] -= 1
-			data = (confirmed, unconfirmed)
+			data = (confirmed, unconfirmed, txid)
 			if verify:
 				if data not in results:
 					results.append(data)
@@ -370,7 +377,7 @@ verify          (bool) the results should be verified with another explorer
 					server['errors'] -= 1
 			raise ConnectionError('Connection error')
 		# Populate instance attributes
-		self.confirmed, self.unconfirmed = results[-1]
+		self.confirmed, self.unconfirmed, self.last_txid = results[-1]
 
 def get_balance(address, explorer=None, verify=False):
 	'''Get the current balance of an address from a block explorer
@@ -380,6 +387,13 @@ Returns tuple(confirmed_balance, unconfirmed_balance)
 	addr = AddressInfo(address, explorer, verify)
 	return addr.confirmed, addr.unconfirmed
 
+def get_last_txid(address, explorer=None, verify=False):
+	'''Get the last tx associated with an address
+Takes the same arguments as AddressInfo()
+Returns str(txid)
+'''
+	addr = AddressInfo(address, explorer, verify)
+	return addr.last_txid
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
