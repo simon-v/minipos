@@ -195,8 +195,12 @@ def jsonload(url):
 
 def get_value(json_object, key_path):
 	'''Get the value at the end of a dot-separated key path'''
-	# Workaround for explorers that return "null" for unused addresses
-	error = bool(json_object['err_no']) if 'err_no' in json_object else False
+	# Make sure the explorer did not return an error
+	if 'err_no' in json_object:
+		if json_object['err_no'] == 1:
+			raise urllib.error.HTTPError(None, 404, 'Resource Not Found', None, None)
+		elif json_object['err_no'] == 2:
+			raise urllib.error.HTTPError(None, 400, 'Parameter Error', None, None)
 	for k in key_path.split('.'):
 		# Process integer indices
 		try:
@@ -206,14 +210,9 @@ def get_value(json_object, key_path):
 		# Expand the key
 		try:
 			json_object = json_object[k]
-		except KeyError:
-			if not error:
-				return False
-			raise KeyError('Key "{k}" from "{key_path}" not found in JSON'.format(k=k, key_path=key_path))
 		except (TypeError, IndexError):
-			if not error:
-				return False
-			raise
+			# The key rightfully doesn't exist
+			return False
 	return json_object
 
 def get_price(currency, exchange=exchanges[0]['name']):
