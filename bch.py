@@ -7,6 +7,7 @@ import urllib.request
 import json
 import random
 import sys
+import datetime
 #optional import pycoin.key
 #optional import cashaddr # Local library file
 
@@ -402,6 +403,78 @@ Returns str(txid)
 '''
 	addr = AddressInfo(address, explorer, verify)
 	return addr.last_txid
+
+class TxInfo(object):
+	'''A representation of a block explorer's idea of a bitcoin transaction
+
+Provided properties:
+time         (datetime) the time this transaction was first seen or mined
+outputs      (dict) a mapping of receiving addresses to receiving values
+double_spend (bool) whether or not this transaction has a competing transaction
+fee          (float) the transaction fee
+'''
+
+	def __init__(self, txid, explorer=None):
+		'''Keyword arguments:
+
+txid         (str) the txid to look for
+explorer     (str) the name of a specific explorer to query
+'''
+		# Add a temporary separator
+		explorers.append(None)
+		#tx_size = 10
+		while explorers[0] is not None:
+			# Query the next explorer
+			server = pick_explorer(explorer)
+			try:
+				# Get and cache the received data for possible future analysis
+				json = jsonload(server['tx_url'].format(txid=txid))
+				server['last_data'] = json
+				# Figure out if the tx is a double spend
+				if 'tx_double_spend_key' in server:
+					self.double_spend = get_value(json, server['tx_double_spend_key'])
+				elif 'tx_inputs_key' in server:
+					self.double_spend = False
+					for i, __ in enumerate(get_value(json, server['tx_inputs_key'])):
+						#tx_size += 148
+						if get_value(json, '.'.join([server['tx_inputs_key'], str(i), server['tx_in_double_spend_key']])) is not None:
+							self.double_spend = True
+				# Assemble list of output values
+				self.outputs = {}
+				for i, __ in enumerate(get_value(json, server['tx_outputs_key'])):
+					#tx_size += 34
+					addr = get_value(json, '.'.join([server['tx_outputs_key'], str(i), server['tx_out_address_key']]))
+					value = float(get_value(json, '.'.join([server['tx_outputs_key'], str(i), server['tx_out_value_key']])))
+					if server['unit_satoshi']:
+						value /= 100000000
+					self.outputs[addr] = value
+				# Figure out the tx size and fee
+				self.fee = float(get_value(json, server['tx_fee_key']))
+				#self.size = tx_size
+				self.size = get_value(json, server['tx_size_key'])
+				if server['unit_satoshi']:
+					self.fee /= 100000000
+				self.fee_per_byte = self.fee / self.size * 100000000
+				self.time = datetime.datetime.fromtimestamp(get_value(json, server['tx_time_key']))
+				break
+			except KeyboardInterrupt:
+				explorers.remove(None)
+				raise
+			except:
+				exception = sys.exc_info()[1]
+				if isinstance(exception, urllib.error.HTTPError) and exception.code == 404:
+					continue
+				server['errors'] += 1
+				try:
+					server['last_error'] = str(exception.reason)
+				except AttributeError:
+					server['last_error'] = str(exception)
+				if server['errors'] > MAX_ERRORS:
+					print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
+				continue
+		explorers.remove(None)
+		if self.__dict__ == {}:
+			raise ConnectionError('No results from any known block explorer')
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
