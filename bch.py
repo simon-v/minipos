@@ -384,7 +384,7 @@ verify          (bool) the results should be verified with another explorer
 			for server in explorers:
 				if server['errors'] > 0:
 					server['errors'] -= 1
-			raise ConnectionError('Connection error')
+			raise ConnectionError('No results from any known block explorer')
 		# Populate instance attributes
 		self.confirmed, self.unconfirmed, self.last_txid = results[-1]
 
