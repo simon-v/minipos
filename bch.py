@@ -404,6 +404,9 @@ Returns str(txid)
 	addr = AddressInfo(address, explorer, verify)
 	return addr.last_txid
 
+class TxNotFoundError(Exception):
+	'''Raised when a requested txid is not known to any block explorer'''
+
 class TxInfo(object):
 	'''A representation of a block explorer's idea of a bitcoin transaction
 
@@ -412,6 +415,8 @@ time         (datetime) the time this transaction was first seen or mined
 outputs      (dict) a mapping of receiving addresses to receiving values
 double_spend (bool) whether or not this transaction has a competing transaction
 fee          (float) the transaction fee
+
+Will raise TxNotFoundError if the passed txid is not known to any explorer
 '''
 
 	def __init__(self, txid, explorer=None):
@@ -425,7 +430,10 @@ explorer     (str) the name of a specific explorer to query
 		#tx_size = 10
 		while explorers[0] is not None:
 			# Query the next explorer
-			server = pick_explorer(explorer)
+			try:
+				server = pick_explorer(explorer)
+			except StopIteration:
+				break
 			try:
 				# Get and cache the received data for possible future analysis
 				json = jsonload(server['tx_url'].format(txid=txid))
@@ -472,9 +480,12 @@ explorer     (str) the name of a specific explorer to query
 				if server['errors'] > MAX_ERRORS:
 					print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
 				continue
-		explorers.remove(None)
+		try:
+			explorers.remove(None)
+		except ValueError:
+			pass
 		if self.__dict__ == {}:
-			raise ConnectionError('No results from any known block explorer')
+			raise TxNotFoundError('No results from any known block explorer')
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
