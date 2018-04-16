@@ -279,7 +279,8 @@ def create_invoice(parameters):
 		tag += random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 	# Lock the address
 	lock_address(tag)
-	config['lock'][tag]['address'] = address
+	request = config['lock'][tag]
+	request['address'] = address
 	# Get the exchange rate
 	try:
 		price = bch.get_price(currency, exchange=config['price_source'])
@@ -302,12 +303,12 @@ def create_invoice(parameters):
 		unlock_address(tag)
 		return load_file('timeout.html')
 	balance += unconfirmed
-	config['lock'][tag]['amount'] = amount
-	config['lock'][tag]['fiat'] = bch.fiat(fiat)
-	config['lock'][tag]['currency'] = currency
-	config['lock'][tag]['balance'] = balance
+	request['amount'] = amount
+	request['fiat'] = bch.fiat(fiat)
+	request['currency'] = currency
+	request['balance'] = balance
 	# Display invoice
-	logger('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **config['lock'][tag]))
+	logger('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
@@ -343,9 +344,10 @@ def check_payment(parameters):
 		return '2'
 	lock_address(tag)
 	# Check address balance
-	address = config['lock'][tag]['address']
-	amount = float(config['lock'][tag]['amount'])
-	initial = float(config['lock'][tag]['balance'])
+	request = config['lock'][tag]
+	address = request['address']
+	amount = float(request['amount'])
+	initial = float(request['balance'])
 	try:
 		balance, unconfirmed = bch.get_balance(address, explorer=custom_explorer)
 	except KeyboardInterrupt:
@@ -354,11 +356,11 @@ def check_payment(parameters):
 		logger('Could not fetch balance: ' + str(sys.exc_info()[1]))
 		return '3'
 	if balance + unconfirmed >= initial + amount:
-		if 'sightings' not in config['lock'][tag]:
+		if 'sightings' not in request:
 			logger('payment {} detected'.format(tag))
-			config['lock'][tag]['sightings'] = 0
-		config['lock'][tag]['sightings'] += 1
-		if config['lock'][tag]['sightings'] >= config['sightings']:
+			request['sightings'] = 0
+		request['sightings'] += 1
+		if request['sightings'] >= config['sightings']:
 			record_payment(tag)
 			unlock_address(tag)
 			# Remove this address from future use if generated
@@ -373,17 +375,14 @@ def check_payment(parameters):
 # Write the details of the payment to a log file
 def record_payment(tag):
 	logger('payment {} received'.format(tag))
-	address = config['lock'][tag]['address']
-	fiat = config['lock'][tag]['fiat']
-	currency = config['lock'][tag]['currency']
-	amount = config['lock'][tag]['amount']
+	request = config['lock'][tag]
 	log_dir = os.path.join(data_dir, 'logs')
 	if not os.path.isdir(log_dir):
 		os.mkdir(log_dir)
 	logfile = os.path.join(log_dir, datetime.date.today().isoformat() + '.log')
 	with log_lock:
 		with open(logfile, 'a') as log:
-			log.write('{date}	{addr}	{amt}	{fiat} {cur}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), addr=address, amt=amount, fiat=fiat, cur=currency, tag=tag))
+			log.write('{date}	{address}	{amount}	{fiat} {currency}	{tag}\n'.format(date=datetime.datetime.now().isoformat(), tag=tag, **request))
 
 # Lock an address to prevent concurrent access
 def lock_address(tag):
