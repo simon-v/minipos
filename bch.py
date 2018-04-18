@@ -544,11 +544,20 @@ if __name__ == '__main__':
 	for server in exchanges:
 		support = True
 		try:
-			get_price(cur, config={'price_source': server['name']})
+			get_price(cur, exchange=server['name'])
 		except (KeyError, ValueError, urllib.error.HTTPError):
-			print('{src} does not provide {cur} exchange rate: {err}'.format(src=server['name'], cur=cur, err=sys.exc_info()[1]))
+			error = sys.exc_info()[1]
+			try:
+				error = error.reason
+			except AttributeError:
+				pass
+			if isinstance(error, KeyError):
+				error = 'Key error: ' + str(error)
+			print('{src} does not provide {cur} exchange rate: {error}'.format(src=server['name'], cur=cur, error=error))
 			support = False
 		except KeyboardInterrupt:
 			sys.exit()
+		except NameError:
+			pass
 		if support:
 			print(server['name'])
