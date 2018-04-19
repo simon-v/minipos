@@ -24,6 +24,7 @@ See the README file for more information.'''
 config = {
 	'addresses': [],
 	'lock': {},
+	'cache': [],
 }
 binary_extensions = ['png', 'jpg', 'gif']
 mime_types = {
@@ -183,7 +184,7 @@ def write_config_file():
 			lines = f.readlines()
 	# Iterate through the config
 	for key in config:
-		if key in ['addresses', 'lock']:
+		if key in ['addresses', 'lock', 'cache']:
 			continue
 		# Cast types into correct format
 		if type(config[key]) in [list, set]:
@@ -293,20 +294,19 @@ def create_invoice(parameters):
 	amount = bch.btc(fiat / price)
 	if float(amount) > 20999950:
 		raise ValueError('Requested amount is greater than logically possible')
-	# Get current balance
+	# Get current address state
 	try:
-		balance, unconfirmed = bch.get_balance(address, verify=True, explorer=custom_explorer)
+		txid = bch.get_last_txid(address, explorer=custom_explorer)
 	except KeyboardInterrupt:
 		raise
 	except:
 		print(sys.exc_info()[1])
 		unlock_address(tag)
 		return load_file('timeout.html')
-	balance += unconfirmed
+	request['txids'] = [] if txid is None else [txid]
 	request['amount'] = amount
 	request['fiat'] = bch.fiat(fiat)
 	request['currency'] = currency
-	request['balance'] = balance
 	# Display invoice
 	logger('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
@@ -318,7 +318,6 @@ def create_invoice(parameters):
 	filler = {
 		'addr': address,
 		'amt': format_amount(amount),
-		'balance': balance,
 		'qr': output,
 		'request': data,
 		'fiat': bch.fiat(fiat),
@@ -334,6 +333,11 @@ def create_invoice(parameters):
 
 # API check if a payment was received
 def check_payment(parameters):
+	# Responses:
+	# 0 - not yet received
+	# 1 - payment detected
+	# 2 - payment request timed out
+	# 3 - server connection error
 	tag = parameters['id'][0]
 	if tag not in config['lock']:
 		return '2'
@@ -343,34 +347,61 @@ def check_payment(parameters):
 		unlock_address(tag)
 		return '2'
 	lock_address(tag)
-	# Check address balance
+	# Check address state
 	request = config['lock'][tag]
 	address = request['address']
 	amount = float(request['amount'])
-	initial = float(request['balance'])
+	txids = request['txids']
 	try:
-		balance, unconfirmed = bch.get_balance(address, explorer=custom_explorer)
+		txid = bch.get_last_txid(address)
 	except KeyboardInterrupt:
 		raise
 	except:
-		logger('Could not fetch balance: ' + str(sys.exc_info()[1]))
+		logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
 		return '3'
-	if balance + unconfirmed >= initial + amount:
-		if 'sightings' not in request:
-			logger('payment {} detected'.format(tag))
-			request['sightings'] = 0
-		request['sightings'] += 1
-		if request['sightings'] >= config['sightings']:
-			record_payment(tag)
-			unlock_address(tag)
-			# Remove this address from future use if generated
-			if 'xpub' in config:
-				config['addresses'].remove(address)
-				write_config_file()
-			return '1'
-		# Try to get another sighting
-		return check_payment(parameters)
-	return '0'
+	# No new transactions
+	if txid is None:
+		return '0'
+	# Previously seen transaction
+	elif txid in request['txids']:
+		return '0'
+	elif txid in config['cache']:
+		return '0'
+	# New transaction
+	try:
+		tx = bch.TxInfo(txid, explorer=bch.explorers[-1]['name'])
+	except KeyboardInterrupt:
+		raise
+	except bch.TxNotFoundError:
+		logger('Anomalous event: tx not found on reporting explorer')
+		return '0' # TODO anomaly!
+	except:
+		logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
+		return '3'
+	# Transaction is known-old
+	if tx.time < request['ctime']:
+		logger('Ignoring old tx {}'.format(txid))
+		request['txids'].append(txid)
+		return '0'
+	elif address not in tx.outputs:
+		logger('Ignoring mis-addressed tx {}'.format(txid)) # TODO anomaly!
+		request['txids'].append(txid)
+		return '0'
+	# Wrong transaction amount
+	elif tx.outputs[address] != amount:
+		logger('Ignoring tx with wrong amount {}'.format(txid))
+		request['txids'].append(txid)
+		return '0'
+	# TODO check penetration
+	# All checks passed, record the transaction
+	record_payment(tag)
+	config['cache'].append(txid)
+	unlock_address(tag)
+	# Remove this address from future use if generated
+	if 'xpub' in config:
+		config['addresses'].remove(address)
+		write_config_file()
+	return '1'
 
 # Write the details of the payment to a log file
 def record_payment(tag):
@@ -387,7 +418,7 @@ def record_payment(tag):
 # Lock an address to prevent concurrent access
 def lock_address(tag):
 	if tag not in config['lock']:
-		config['lock'][tag] = {}
+		config['lock'][tag] = { 'ctime': datetime.datetime.now() }
 	config['lock'][tag]['time'] = datetime.datetime.now()
 
 # Free address lock
