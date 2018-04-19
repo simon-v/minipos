@@ -413,6 +413,7 @@ class TxInfo(object):
 Provided properties:
 time         (datetime) the time this transaction was first seen or mined
 outputs      (dict) a mapping of receiving addresses to receiving values
+             both address formats are provided if possible
 double_spend (bool) whether or not this transaction has a competing transaction
 fee          (float) the transaction fee
 
@@ -456,6 +457,11 @@ explorer     (str) the name of a specific explorer to query
 					if server['unit_satoshi']:
 						value /= 100000000
 					self.outputs[addr] = value
+					# Provide both address formats if possible
+					try:
+						self.outputs[convert_address(addr)] = value
+					except ImportError:
+						pass
 				# Figure out the tx size and fee
 				self.fee = float(get_value(json, server['tx_fee_key']))
 				#self.size = tx_size
