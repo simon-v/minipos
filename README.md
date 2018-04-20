@@ -41,7 +41,7 @@ In the request creation page, enter the amount you wish to charge. You can use t
 
 Have your buyer scan the resulting QR code with their Bitcoin Cash wallet and authorize the transaction. Alternatively, you can click/tap on the QR code to copy the request URI to clipboard and send it to your buyer in a text message.
 
-Wait for the transaction to be detected by the system. Press the `Confirm` button and hand the buyer his purchase.
+Wait for the transaction to be detected by the system. Press the `Finish` button and hand the buyer his purchase (in any order).
 
 To review your sales, use the built-in log browser, accessible from the triple bar button. You can view a daily, weekly, monthly and yearly summary, print it, or email it to yourself at the configured email address.
 
