@@ -493,6 +493,33 @@ explorer     (str) the name of a specific explorer to query
 		if self.__dict__ == {}:
 			raise TxNotFoundError('No results from any known block explorer')
 
+def get_tx_propagation(txid):
+	'''Estimate a transaction's propagation across the Bitcoin Cash network
+Returns a tuple consisting of:
+  * The percentage of explorers that are aware of the txid;
+  * The transaction's double spend status.'''
+	sightings = 0
+	double_spend = False
+	for server in explorers.copy():
+		try:
+			tx = TxInfo(txid, explorer=server['name'])
+		except TxNotFoundError:
+			continue
+		except KeyboardInterrupt:
+			raise
+		except:
+			exception = sys.exc_info()[1]
+			try:
+				error = exception.reason
+			except AttributeError:
+				error = exception
+			print('Could not fetch explorer data: {}'.format(error))
+			continue
+		if tx.double_spend:
+			double_spend = True
+		sightings += 1
+	return 100 * sightings / len(explorers), double_spend
+
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
 	# Optional dependencies if unused
