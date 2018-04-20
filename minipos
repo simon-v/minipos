@@ -154,8 +154,8 @@ for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key'
 	if k in config and config[k] == 'none':
 		config[k] = None
 if 'custom_unit_satoshi' in config:
-	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'] in ['1', 'yes'] else False
-config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'] in ['1', 'yes'] else False
+	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'].lower() in ['1', 'yes', 'on', 'true'] else False
+config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'].lower() in ['1', 'yes', 'on', 'true'] else False
 # Try to set up a custom block explorer
 custom_explorer = None
 try:
@@ -193,6 +193,8 @@ def write_config_file():
 			value = {1: 'sunday', 0: 'monday'}[config[key]]
 		else:
 			value = config[key]
+		if value is True or value is False:
+			value = 'yes' if value else 'no'
 		# Seek for first matching set key
 		found = False
 		for k in ['{}=', '#{}=']:
