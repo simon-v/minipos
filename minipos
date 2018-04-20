@@ -795,7 +795,7 @@ if __name__ == "__main__":
 		print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 		sys.exit(2)
 	httpd = make_server('', config['port'], minipos)
-	print('Serving minipos on port {port}...'.format(**config))
+	print('Serving minipos on port {}...'.format(config['port']))
 	try:
 		httpd.serve_forever()
 	except KeyboardInterrupt:
