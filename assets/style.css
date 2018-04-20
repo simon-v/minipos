@@ -118,6 +118,10 @@ input:active {
 	border-color: #808080 #e6e6e6 #e6e6e6 #808080;
 }
 
+input:disabled {
+	color: #bfbfbf;
+}
+
 input.text, input.text:active {
 	width: 48.75vmin;
 	text-align: center;
@@ -135,6 +139,11 @@ input.green:active {
 	border-color: #003300 #00b300 #00b300 #003300;
 }
 
+input.green:disabled {
+	color: #169c16;
+	border-color: #00b300 #003300 #003300 #00b300;
+}
+
 input.red {
 	color: white;
 	background-color: #ff0000;
@@ -145,6 +154,11 @@ input.red:active {
 	border-color: #990000 #ff8080 #ff8080 #990000;
 }
 
+input.red:disabled {
+	color: #ff8080;
+	border-color: #ff8080 #990000 #990000 #ff8080;
+}
+
 input.blue {
 	color: white;
 	background-color: #0000ff;
@@ -153,6 +167,11 @@ input.blue {
 
 input.blue:active {
 	border-color: #000099 #8080ff #8080ff #000099;
+}
+
+input.blue:disabled {
+	color: #8080ff;
+	border-color: #8080ff #000099 #000099 #8080ff;
 }
 
 input.back {
@@ -170,8 +189,9 @@ input.cyan:active {
 	border-color: #004d4d #19b3b3 #19b3b3 #004d4d;
 }
 
-input:disabled {
-	color: #bfbfbf;
+input.cyan:disabled {
+	color: #19b3b3;
+	border-color: #19b3b3 #004d4d #004d4d #19b3b3;
 }
 
 input.dark {
@@ -182,6 +202,11 @@ input.dark {
 
 input.dark:active {
 	border-color: #1a1a1a #8c8c8c #8c8c8c #1a1a1a;
+}
+
+input.dark:disabled {
+	color: #8c8c8c;
+	border-color: #8c8c8c #1a1a1a #1a1a1a #8c8c8c;
 }
 
 input#currency {
