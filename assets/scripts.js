@@ -120,7 +120,8 @@ function showConfirmButton(response) {
 	else if ( response.substring(0, 2) == "1 " ) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
-		displayPopup("Payment received.<br><a href=\"https:\/\/bch.btc.com/" + response.substring(2, response.length) + "\" target=\"_blank\"> Transaction ID</a>");
+		var txid = response.substring(2, response.length);
+		displayPopup("Payment received. Transaction ID:<br><a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
 	}
 	// Payment request timed out
 	else if ( response == 2 ) {
