@@ -440,8 +440,10 @@ def check_lock_timeout(tag):
 	return False
 
 # Parse a log file and add its contents to the table
-def read_log_file(filename, plaintext=False):
-	table = ''
+def read_log_file(filename, plaintext=False, txids=False):
+	if plaintext and txids:
+		raise RuntimeError('read_log_file: the "plaintext" and "txids" parameters are incompatible')
+	table = [] if txids else ''
 	totals = {}
 	token = 'BCH' if config['unit'] == 'native' else config['unit']
 	for currency in config['currencies']:
@@ -451,7 +453,7 @@ def read_log_file(filename, plaintext=False):
 	except:
 		if sys.exc_info()[0] not in [IOError, OSError, FileNotFoundError, PermissionError]:
 			print(sys.exc_info()[1])
-		return {}, ''
+		return totals, table
 	try:
 		for line in logfile.readlines():
 			line = line.strip().split('	')
@@ -462,7 +464,10 @@ def read_log_file(filename, plaintext=False):
 			fiat, currency = fiat.split(' ')
 			totals[currency] += float(fiat)
 			date = date.split('.')[0].replace('T', ' ')
-			if plaintext:
+			if txids:
+				if txid != '':
+					table.append(txid)
+			elif plaintext:
 				table += '{date}  {amt}  {fiat} {cur}  {tag}\n  Address: {addr}\n  TxID: {txid}\n'.format(date=date, addr=address, amt=str(amount).rjust(17 + len(token)), fiat=str(fiat).rjust(15), cur=currency, tag=tag, txid=txid)
 			else:
 				table += '''<tr class="%STYLE%">
@@ -476,7 +481,9 @@ def read_log_file(filename, plaintext=False):
 	except:
 		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
 		msg = 'The log file for {file} is corrupted!'.format(file=filename.split('/')[1].split('.')[0])
-		if plaintext:
+		if txids:
+			pass
+		elif plaintext:
 			table += msg
 		else:
 			table += '<tr class="%STYLE%"><td colspan="5" class="error">' + msg + '</td></tr>'
@@ -757,6 +764,12 @@ def minipos(environ, start_response):
 	if type(page) is bytes:
 		return [page]
 	return [bytes(page, 'UTF-8')]
+
+# Populate txid cache from recent log entries
+_today = datetime.datetime.today().strftime('logs/%Y-%m-%d.log')
+config['cache'] += read_log_file(_today, txids=True)[1]
+_yesterday = (datetime.datetime.today() - datetime.timedelta(1)).strftime('logs/%Y-%m-%d.log')
+config['cache'] += read_log_file(_yesterday, txids=True)[1]
 
 # Start the web server
 if __name__ == "__main__":
