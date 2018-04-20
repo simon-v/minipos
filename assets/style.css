@@ -19,6 +19,14 @@ a:hover {
 	text-decoration: underline;
 }
 
+a:link {
+	color: #0000EE;
+}
+
+a:visited {
+	color: #551A8B;
+}
+
 table {
 	margin: auto;
 }
@@ -51,6 +59,15 @@ tr.expand span {
 
 tr.expand span.address {
 	padding-left: 0;
+}
+
+.address {
+	display: inline-block;
+	word-break: break-all;
+}
+
+.txid {
+	word-wrap: break-word;
 }
 
 @media screen {
@@ -185,13 +202,6 @@ img {
 	image-rendering: optimizespeed;
 }
 
-.address {
-	white-space: nowrap;
-	display: inline-block;
-	width: 100%;
-	overflow-x: auto;
-}
-
 img.icon {
 	height: 3.34vmin;
 	width: auto;
@@ -210,6 +220,13 @@ img.icon {
 	background-color: #262626;
 	padding: 4vmin;
 	border-radius: 1.67vmin;
+}
+
+#popup a:link {
+	color: #9999ff;
+}
+#popup a:visited {
+	color: #cda9ef;
 }
 
 @media print {
