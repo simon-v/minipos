@@ -117,10 +117,10 @@ function showConfirmButton(response) {
 		setTimeout(checkPayment, 2000);
 	}
 	// Payment detected
-	else if ( response == 1 ) {
+	else if ( response.substring(0, 2) == "1 " ) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
-		displayPopup("Payment received.");
+		displayPopup("Payment received.<br><a href=\"https:\/\/bch.btc.com/" + response.substring(2, response.length) + "\" target=\"_blank\"> Transaction ID</a>");
 	}
 	// Payment request timed out
 	else if ( response == 2 ) {
