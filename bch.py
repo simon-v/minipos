@@ -48,6 +48,7 @@ explorers = [
 		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
 		'prefixes': '13',
 	},
@@ -67,6 +68,7 @@ explorers = [
 		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
 		'prefixes': 'qp',
 	},
@@ -86,6 +88,7 @@ explorers = [
 		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
 		'prefixes': '13',
 	},
@@ -105,6 +108,7 @@ explorers = [
 		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
 		'prefixes': 'qp',
 	},
@@ -124,6 +128,7 @@ explorers = [
 		'tx_double_spend_key': 'data.is_double_spend',
 		'tx_fee_key': 'data.fee',
 		'tx_size_key': 'data.vsize',
+		'tx_confirmations_key': 'data.confirmations',
 		'unit_satoshi': True,
 		'prefixes': '13',
 	},
@@ -143,6 +148,7 @@ explorers = [
 		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
 		'prefixes': '13',
 	},
@@ -162,6 +168,7 @@ explorers = [
 		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
 		'prefixes': '13',
 	},
@@ -419,11 +426,12 @@ class TxInfo(object):
 	'''A representation of a block explorer's idea of a bitcoin transaction
 
 Provided properties:
-time         (datetime) the time this transaction was first seen or mined
-outputs      (dict) a mapping of receiving addresses to receiving values
-             both address formats are provided if possible
-double_spend (bool) whether or not this transaction has a competing transaction
-fee          (float) the transaction fee
+time          (datetime) the time this transaction was first seen or mined
+outputs       (dict) a mapping of receiving addresses to receiving values
+              both address formats are provided if possible
+double_spend  (bool) whether or not this transaction has a competing transaction
+fee           (float) the transaction fee
+confirmations (int) the number of confirmations this transaction has
 
 Will raise TxNotFoundError if the passed txid is not known to any explorer
 '''
@@ -478,6 +486,7 @@ explorer     (str) the name of a specific explorer to query
 					self.fee /= 100000000
 				self.fee_per_byte = self.fee / self.size * 100000000
 				self.time = datetime.datetime.fromtimestamp(get_value(json, server['tx_time_key']))
+				self.confirmations = get_value(json, server['tx_confirmations_key'])
 				break
 			except KeyboardInterrupt:
 				explorers.remove(None)
