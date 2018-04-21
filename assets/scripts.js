@@ -112,28 +112,35 @@ function cycleCurrency() {
 
 // Turn cancel button into confirm button
 function showConfirmButton(response) {
+	// Split response to code and txid
+	if ( response.length > 1 ) {
+		var code = response[0];
+		var txid = response.substring(2, response.length);
+	}
+	else {
+		var code = response;
+	}
 	// Waiting for payment
-	if ( response == 0 ) {
+	if ( code == 0 ) {
 		setTimeout(checkPayment, 2000);
 	}
 	// Payment detected
-	else if ( response.substring(0, 2) == "1 " ) {
+	else if ( code == 1 ) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
-		var txid = response.substring(2, response.length);
 		displayPopup("Payment received. Transaction ID:<br><a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
 	}
 	// Payment request timed out
-	else if ( response == 2 ) {
+	else if ( code == 2 ) {
 		displayPopup("The payment request has timed out.");
 	}
 	// Server connection error
-	else if ( response == 3 ) {
+	else if ( code == 3 ) {
 		displayPopup("Server connection error", true);
 		setTimeout(checkPayment, 2000);
 	}
 	// Client connection error
-	else if ( response == 4 ) {
+	else if ( code == 4 ) {
 		displayPopup("Client connection error", true);
 		setTimeout(checkPayment, 2000);
 	}
