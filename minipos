@@ -104,10 +104,9 @@ def cast_config_type(key, _type, default):
 cast_config_type('taxrate', float, 0)
 cast_config_type('port', int, 8080)
 cast_config_type('welcome_timeout', int, 120)
-cast_config_type('sightings', int, 3)
-if config['sightings'] < 1:
-	print("Invalid 'sightings' value, falling back to 1")
-	config['sightings'] = 1
+cast_config_type('propagation', int, 60)
+if config['propagation'] < 0 or config['propagation'] > 100:
+	print("Invalid 'propagation' value, falling back to 60")
 if config['welcome_timeout'] < 0:
 	raise ValueError('"welcome_timeout" must be >= 0')
 cast_config_type('index', int, 0)
@@ -223,6 +222,10 @@ def write_config_file():
 		# Or append to the end of the config file
 		else:
 			lines.append('{}={}\n'.format(key, value))
+	# Disable removed keys
+	for i, line in enumerate(lines):
+		if line.startswith('sightings='):
+			lines[i] = '## This option has been depreciated\n#' + line
 	# Write the config file
 	try:
 		with open(os.path.join(data_dir, 'minipos.cfg'), 'w') as f:
@@ -318,7 +321,7 @@ def create_invoice(parameters):
 		print(sys.exc_info()[1])
 		unlock_address(tag)
 		return load_file('timeout.html')
-	request['txids'] = [] if txid is None else [txid]
+	request['seen_txids'] = [] if txid is None else [txid]
 	request['amount'] = amount
 	request['fiat'] = bch.fiat(fiat)
 	request['currency'] = currency
@@ -353,6 +356,8 @@ def check_payment(parameters):
 	# 1 - payment detected (with txid)
 	# 2 - payment request timed out
 	# 3 - server connection error
+	# 4 - client connection error
+	# 5 - double spend detected (with txid)
 	tag = parameters['id'][0]
 	if tag not in config['lock']:
 		return '2'
@@ -366,50 +371,74 @@ def check_payment(parameters):
 	request = config['lock'][tag]
 	address = request['address']
 	amount = float(request['amount'])
-	txids = request['txids']
-	try:
-		txid = bch.get_last_txid(address)
-	except KeyboardInterrupt:
-		raise
-	except:
-		logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
-		return '3'
-	# No new transactions
-	if txid is None:
-		return '0'
-	# Previously seen transaction
-	elif txid in request['txids']:
-		return '0'
-	elif txid in config['cache']:
-		return '0'
-	# New transaction
-	try:
-		tx = bch.TxInfo(txid, explorer=bch.explorers[-1]['name'])
-	except KeyboardInterrupt:
-		raise
-	except bch.TxNotFoundError:
-		logger('Anomalous event: tx not found on reporting explorer')
-		return '0' # TODO anomaly!
-	except:
-		logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
-		return '3'
-	# Transaction is known-old
-	if tx.time < request['ctime']:
-		logger('Ignoring old tx {}'.format(txid))
-		request['txids'].append(txid)
-		return '0'
-	elif address not in tx.outputs:
-		logger('Ignoring mis-addressed tx {}'.format(txid)) # TODO anomaly!
-		request['txids'].append(txid)
-		return '0'
-	# Wrong transaction amount
-	elif tx.outputs[address] != amount:
-		logger('Ignoring tx with wrong amount {}'.format(txid))
-		request['txids'].append(txid)
-		return '0'
-	# TODO check penetration
-	# All checks passed, record the transaction
-	request['txid'] = txid
+	# No previously detected transaction
+	if 'txid' not in request:
+		try:
+			txid = bch.get_last_txid(address)
+		except KeyboardInterrupt:
+			raise
+		except:
+			logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
+			return '3'
+		# No new transactions
+		if txid is None:
+			return '0'
+		# Previously seen transaction
+		elif txid in request['seen_txids']:
+			return '0'
+		elif txid in config['cache']:
+			return '0'
+		# New transaction
+		try:
+			tx = bch.TxInfo(txid, explorer=bch.explorers[-1]['name'])
+		except KeyboardInterrupt:
+			raise
+		except bch.TxNotFoundError:
+			logger('Anomalous event: tx not found on reporting explorer')
+			return '0' # TODO anomaly!
+		except:
+			logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
+			return '3'
+		# Transaction is known-old
+		if tx.time < request['ctime']:
+			logger('Ignoring old tx {}'.format(txid))
+			request['seen_txids'].append(txid)
+			return '0'
+		elif address not in tx.outputs:
+			logger('Ignoring mis-addressed tx {}'.format(txid)) # TODO anomaly!
+			request['seen_txids'].append(txid)
+			return '0'
+		# Wrong transaction amount
+		elif tx.outputs[address] != amount:
+			logger('Ignoring tx with wrong amount {}'.format(txid))
+			request['seen_txids'].append(txid)
+			return '0'
+		# All checks passed make note of the transaction
+		request['txid'] = txid
+		logger('payment {} detected'.format(tag))
+		# Propagation check needed, defer processing
+		if config['propagation'] > 0:
+			return '0'
+		# Double spend check
+		elif tx.double_spend:
+			return '5 ' + txid
+	# Previously detected transaction
+	else:
+		txid = request['txid']
+		try:
+			propagation, double_spend = bch.get_tx_propagation(txid, threshold=config['propagation'])
+		except KeyboardInterrupt:
+			raise
+		except:
+			logger('Could not get propagation information: ' + str(sys.exc_info()[1]))
+			return '3'
+		# Is double spend
+		if double_spend:
+			return '5 ' + txid
+		# Low propagation
+		elif propagation < config['propagation']:
+			return '0'
+	# Record the payment
 	record_payment(tag)
 	config['cache'].append(txid)
 	unlock_address(tag)

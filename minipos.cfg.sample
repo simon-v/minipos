@@ -10,11 +10,11 @@ currencies=USD
 ## preferred currency, execute the command `bch.py $YOUR_CURRENCY_CODE`
 #price_source=coinmarketcap.com
 
-## The number of times an incoming transaction should be seen on block
-## explorers to count it as received. Lower numbers increase processing speed,
+## What percentage of block explorers must be aware of the transaction to
+## consider its propagation complete? Lower numbers increade processing speed,
 ## higher numbers decrease the risk of accepting 0-confirmation transactions
-## The default of "3" provides a sensible compromise
-sightings=3
+## The default of "60" provides a sensible compromise
+propagation=60
 
 ## The sales or value added tax in your jurisdiction, that you want to be able
 ## to quickly add to the entered amount
