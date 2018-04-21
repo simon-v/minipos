@@ -101,15 +101,22 @@ def cast_config_type(key, _type, default):
 	except (KeyError, ValueError):
 		config[key] = default
 
+def clamp_config_value(_name, _min=None, _max=None, default=0):
+	if _min is not None and config[_name] < _min:
+		print('Invalid "{}" value, falling back to {}'.format(_name, default))
+		config[_name] = default
+	elif _max is not None and config[_name] > _max:
+		print('Invalid "{}" value, falling back to {}'.format(_name, default))
+		config[_name] = default
+
 cast_config_type('taxrate', float, 0)
 cast_config_type('port', int, 8080)
-cast_config_type('welcome_timeout', int, 120)
 cast_config_type('propagation', int, 60)
-if config['propagation'] < 0 or config['propagation'] > 100:
-	print("Invalid 'propagation' value, falling back to 60")
-if config['welcome_timeout'] < 0:
-	raise ValueError('"welcome_timeout" must be >= 0')
+clamp_config_value('propagation', 0, 100, 60)
+cast_config_type('welcome_timeout', int, 120)
+clamp_config_value('welcome_timeout', 0, None, 120)
 cast_config_type('index', int, 0)
+clamp_config_value('index', 0, None, 0)
 
 def split_config_key(key, default):
 	if key not in config:
@@ -149,9 +156,6 @@ for e in bch.exchanges:
 if 'price_source' not in config or config['price_source'] not in exchange_list:
 	print('Using default exchange rate source "{}"'.format(exchange_list[0]))
 	config['price_source'] = exchange_list[0]
-for k in ['custom_balance_key', 'custom_confirmed_key', 'custom_unconfirmed_key']:
-	if k in config and config[k] == 'none':
-		config[k] = None
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'].lower() in ['1', 'yes', 'on', 'true'] else False
 config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'].lower() in ['1', 'yes', 'on', 'true'] else False
@@ -178,6 +182,9 @@ try:
 		'unit_satoshi': config['custom_unit_satoshi'],
 		'prefixes': config['custom_prefixes'],
 	}
+	for key in custom_explorer:
+		if custom_explorer[key].lower() == 'none':
+			custom_explorer[key] = None
 	bch.explorers.insert(0, custom_explorer)
 	custom_explorer = custom_explorer['name']
 	print('Using custom explorer definition:', custom_explorer)
@@ -207,6 +214,8 @@ def write_config_file():
 			value = config[key]
 		if value is True or value is False:
 			value = 'yes' if value else 'no'
+		elif value is None:
+			value = 'none'
 		# Seek for first matching set key
 		found = False
 		for k in ['{}=', '#{}=']:
