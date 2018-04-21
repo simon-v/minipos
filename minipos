@@ -247,7 +247,7 @@ def write_config_file():
 		address_list.append(entry['address'])
 	try:
 		with open(os.path.join(data_dir, 'address.list'), 'w') as f:
-			for address in config['addresses']:
+			for address in address_list:
 				f.write(address + '\n')
 	except (IOError, OSError, PermissionError):
 		print('Could not write address.list: {}'.format(sys.exc_info()[1]))
