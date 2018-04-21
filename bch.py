@@ -309,11 +309,6 @@ verify          (bool) the results should be verified with another explorer
 			self.address = None
 			self.legacy_address = address
 		try:
-			import pycoin.key
-			import cashaddr
-		except ImportError:
-			pass
-		else:
 			if xpub is not None:
 				self.address = generate_address(xpub, idx)
 				self.legacy_address = generate_address(xpub, idx, False)
@@ -321,6 +316,9 @@ verify          (bool) the results should be verified with another explorer
 				self.address = convert_address(self.legacy_address)
 			elif self.legacy_address is None:
 				self.legacy_address = convert_address(self.address)
+		except ImportError:
+			if xpub is not None:
+				raise
 		# Add a temporary separator
 		explorers.append(None)
 		results = []
@@ -569,7 +567,7 @@ def validate_key(key):
 			return False
 	elif key[0] in 'qpQP':
 		try:
-			subkey = cashaddr.decode('bitcoincash:' + key.lower())
+			cashaddr.decode('bitcoincash:' + key.lower())
 		except ValueError:
 			return False
 	else:
