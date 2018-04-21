@@ -87,6 +87,7 @@ unit=native
 #custom_tx_time_key=data.created_at
 #custom_tx_fee_key=data.fee
 #custom_tx_size_key=data.size
+#custom_tx_confirmations=data.confirmations
 
 ## Set this if the explorer provides a transaction-wide double spend flag
 #custom_tx_double_spend_key=data.is_double_spend

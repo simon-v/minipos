@@ -421,23 +421,41 @@ def check_payment(parameters):
 			return '0'
 		# Double spend check
 		elif tx.double_spend:
+			request['wait_confirm'] = True
 			return '5 ' + txid
 	# Previously detected transaction
 	else:
-		txid = request['txid']
-		try:
-			propagation, double_spend = bch.get_tx_propagation(txid, threshold=config['propagation'])
-		except KeyboardInterrupt:
-			raise
-		except:
-			logger('Could not get propagation information: ' + str(sys.exc_info()[1]))
-			return '3'
-		# Is double spend
-		if double_spend:
-			return '5 ' + txid
-		# Low propagation
-		elif propagation < config['propagation']:
-			return '0'
+		# Currently waiting for confirmation
+		if 'wait_confirm' in request:
+			try:
+				tx = bch.TxInfo(txid)
+			except KeyboardInterrupt:
+				raise
+			except:
+				logger('Could not get transaction info', sys.exc_info()[1])
+				return '3'
+			if tx.confirmations == 0:
+				if tx.double_spend:
+					return '5 ' + txid
+				else:
+					return '0'
+		# Not currently waiting for confirmation
+		else:
+			txid = request['txid']
+			try:
+				propagation, double_spend = bch.get_tx_propagation(txid, threshold=config['propagation'])
+			except KeyboardInterrupt:
+				raise
+			except:
+				logger('Could not get propagation information: ' + str(sys.exc_info()[1]))
+				return '3'
+			# Is double spend
+			if double_spend:
+				request['wait_confirm'] = True
+				return '5 ' + txid
+			# Low propagation
+			elif propagation < config['propagation']:
+				return '0'
 	# Record the payment
 	record_payment(tag)
 	config['cache'].append(txid)

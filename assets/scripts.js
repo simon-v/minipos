@@ -128,7 +128,7 @@ function showConfirmButton(response) {
 	else if ( code == 1 ) {
 		document.getElementById("cancel").style.display = "none";
 		document.getElementById("finish").style.display = "inline";
-		displayPopup("Payment received. Transaction ID:<br><a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
+		displayPopup("<strong>Payment received.</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
 	}
 	// Payment request timed out
 	else if ( code == 2 ) {
@@ -143,6 +143,11 @@ function showConfirmButton(response) {
 	else if ( code == 4 ) {
 		displayPopup("Client connection error", true);
 		setTimeout(checkPayment, 2000);
+	}
+	// Double spend detected
+	else if ( code == 5 ) {
+		displayPopup("<strong class=\"error\">Double spend detected!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
+		setTimeout(checkPayment, 30000);
 	}
 }
 
