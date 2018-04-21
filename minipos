@@ -726,8 +726,9 @@ def minipos(environ, start_response):
 	page = ''
 	filler = ()
 	if 'HTTP_X_REAL_IP' in environ:
-		environ['REMOTE_ADDR'] = environ['HTTP_X_REAL_IP']
-	ip_addr = environ['REMOTE_ADDR']
+		ip_addr = environ['HTTP_X_REAL_IP']
+	else:
+		ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
 		status = '403 Not Allowed'
