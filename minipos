@@ -162,16 +162,29 @@ try:
 	custom_explorer = {
 		'name': '.'.join(config['custom_explorer_url'].split('/')[2].split('.')[-2:]),
 		'url': config['custom_explorer_url'],
+		'tx_url': config['custom_tx_url'],
 		'balance_key': config['custom_balance_key'],
 		'confirmed_key': config['custom_confirmed_key'],
 		'unconfirmed_key': config['custom_unconfirmed_key'],
+		'last_tx_key': config['custom_last_tx_key'],
+		'tx_time_key': config['custom_tx_time_key'],
+		'tx_inputs_key': config['custom_tx_inputs_key'],
+		'tx_in_double_spend_key': config['custom_tx_in_double_spend_key'],
+		'tx_outputs_key': config['custom_tx_outputs_key'],
+		'tx_out_value_key': config['custom_tx_out_value_key'],
+		'tx_out_address_key': config['custom_tx_out_address_key'],
+		'tx_double_spend_key': config['custom_tx_double_spend_key'],
+		'tx_fee_key': config['custom_tx_fee_key'],
+		'tx_size_key': config['custom_tx_size_key'],
 		'unit_satoshi': config['custom_unit_satoshi'],
-		'prefixes': config['custom_prefixes']
+		'prefixes': config['custom_prefixes'],
 	}
 	bch.explorers.insert(0, custom_explorer)
 	custom_explorer = custom_explorer['name']
-except KeyError:
-	pass
+	print('Using custom explorer definition:', custom_explorer)
+except KeyError as error:
+	if str(error) != "'custom_explorer_url'":
+		print('Missing key in custom explorer definition:', error)
 
 def write_config_file():
 	# Open the current config file

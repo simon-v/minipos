@@ -69,8 +69,10 @@ unit=native
 ## If you have your own block explorer and you wish to query it instead,
 ## uncomment and set all of the following fields
 ##
-## The URL of the block explorer, with {address} in place of the address
+## The URLs of the block explorer, with {address} in place of the address and
+## {txid} in place of the txid
 #custom_explorer_url=https://bch-chain.api.btc.com/v3/address/{address}
+#custom_tx_url=https://cashexplorer.bitcoin.com/api/tx/{txid}
 
 ## The key path in the JSON data which corresponds to the total balance,
 ## confirmed balance and unconfirmed balance, dot-separated. If the explorer
@@ -79,6 +81,24 @@ unit=native
 #custom_balance_key=data.balance
 #custom_confirmed_key=none
 #custom_unconfirmed_key=data.unconfirmed_received
+
+## The key path in the JSON data which corresponds to the transaction info
+#custom_last_tx_key=data.last_tx
+#custom_tx_time_key=data.created_at
+#custom_tx_fee_key=data.fee
+#custom_tx_size_key=data.size
+
+## Set this if the explorer provides a transaction-wide double spend flag
+#custom_tx_double_spend_key=data.is_double_spend
+
+## Set those instead if the explorer provides a per-input double spend flag
+#custom_tx_inputs_key=data.inputs
+#custom_tx_in_double_spend_key=none
+
+## The key path in the JSON that corresponds to the outputs and their children
+#custom_tx_outputs_key=data.outputs
+#custom_tx_out_value_key=value
+#custom_tx_out_address_key=addresses.0
 
 ## Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
 #custom_unit_satoshi=no

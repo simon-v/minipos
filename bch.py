@@ -45,6 +45,7 @@ explorers = [
 		'tx_outputs_key': 'vout',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
 		'unit_satoshi': False,
@@ -63,6 +64,7 @@ explorers = [
 		'tx_outputs_key': 'vout',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
 		'unit_satoshi': False,
@@ -81,6 +83,7 @@ explorers = [
 		'tx_outputs_key': 'vout',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
 		'unit_satoshi': False,
@@ -99,6 +102,7 @@ explorers = [
 		'tx_outputs_key': 'vout',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
 		'unit_satoshi': False,
@@ -112,6 +116,8 @@ explorers = [
 		'unconfirmed_key': 'data.unconfirmed_received',
 		'last_tx_key': 'data.last_tx',
 		'tx_time_key': 'data.created_at',
+		'tx_inputs_key': 'data.inputs',
+		'tx_in_double_spend_key': None,
 		'tx_outputs_key': 'data.outputs',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'addresses.0',
@@ -134,6 +140,7 @@ explorers = [
 		'tx_outputs_key': 'vout',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
 		'unit_satoshi': False,
@@ -152,6 +159,7 @@ explorers = [
 		'tx_outputs_key': 'vout',
 		'tx_out_value_key': 'value',
 		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
 		'tx_fee_key': 'fees',
 		'tx_size_key': 'size',
 		'unit_satoshi': False,
@@ -440,9 +448,9 @@ explorer     (str) the name of a specific explorer to query
 				json = jsonload(server['tx_url'].format(txid=txid))
 				server['last_data'] = json
 				# Figure out if the tx is a double spend
-				if 'tx_double_spend_key' in server:
+				if server['tx_double_spend_key'] is not None:
 					self.double_spend = get_value(json, server['tx_double_spend_key'])
-				elif 'tx_inputs_key' in server:
+				else:
 					self.double_spend = False
 					for i, __ in enumerate(get_value(json, server['tx_inputs_key'])):
 						#tx_size += 148
