@@ -501,11 +501,16 @@ explorer     (str) the name of a specific explorer to query
 		if self.__dict__ == {}:
 			raise TxNotFoundError('No results from any known block explorer')
 
-def get_tx_propagation(txid):
+def get_tx_propagation(txid, threshold=100):
 	'''Estimate a transaction's propagation across the Bitcoin Cash network
 Returns a tuple consisting of:
   * The percentage of explorers that are aware of the txid;
-  * The transaction's double spend status.'''
+  * The transaction's double spend status.
+
+Keyword arguments:
+txid        The txid to query
+threshold   A percentage at which the propagation check is considered finished
+'''
 	sightings = 0
 	double_spend = False
 	for server in explorers.copy():
@@ -526,7 +531,10 @@ Returns a tuple consisting of:
 		if tx.double_spend:
 			double_spend = True
 		sightings += 1
-	return 100 * sightings / len(explorers), double_spend
+		propagation = 100 * sightings / len(explorers)
+		if propagation >= threshold:
+			break
+	return propagation, double_spend
 
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
