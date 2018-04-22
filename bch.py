@@ -182,12 +182,14 @@ for _server in explorers:
 for _server in exchanges:
 	_server['name'] = '.'.join(_server['url'].split('/')[2].split('.')[-2:])
 
+
 def btc(amount):
 	'''Return a native bitcoin amount representation'''
 	result = ('%.8f' % amount).rstrip('0.')
 	if result == '':
 		return '0'
 	return result
+
 
 def bits(amount):
 	'''Return the amount represented in bits/cash'''
@@ -197,9 +199,11 @@ def bits(amount):
 		return bit
 	return(bit + '.' + sat)
 
+
 def fiat(amount):
 	'''Return the amount represented in a dollar/cent notation'''
 	return ('%.2f' % amount)
+
 
 def jsonload(url):
 	'''Load a web page and return the resulting JSON object'''
@@ -208,6 +212,7 @@ def jsonload(url):
 		data = str(webpage.read(), 'UTF-8')
 		data = json.loads(data)
 	return data
+
 
 def get_value(json_object, key_path):
 	'''Get the value at the end of a dot-separated key path'''
@@ -231,6 +236,7 @@ def get_value(json_object, key_path):
 			return False
 	return json_object
 
+
 def get_price(currency, exchange=exchanges[0]['name']):
 	'''Get the current Bitcoin Cash price in the desired currency'''
 	found = False
@@ -245,6 +251,7 @@ def get_price(currency, exchange=exchanges[0]['name']):
 	if rate == 0.0:
 		raise ValueError('Returned exchange rate is zero')
 	return round(rate, 2)
+
 
 def pick_explorer(server_name=None, address_prefix=None):
 	'''Advance the list of explorers until one that matches the requirements is found'''
@@ -270,6 +277,7 @@ def pick_explorer(server_name=None, address_prefix=None):
 			continue
 		return server
 	raise KeyError('No servers match the requirements')
+
 
 class AddressInfo(object):
 	'''A representation of a block explorer's idea of a bitcoin address state
@@ -401,6 +409,7 @@ verify          (bool) the results should be verified with another explorer
 		# Populate instance attributes
 		self.confirmed, self.unconfirmed, self.last_txid = results[-1]
 
+
 def get_balance(address, explorer=None, verify=False):
 	'''Get the current balance of an address from a block explorer
 Takes the same arguments as AddressInfo()
@@ -408,6 +417,7 @@ Returns tuple(confirmed_balance, unconfirmed_balance)
 '''
 	addr = AddressInfo(address, explorer, verify)
 	return addr.confirmed, addr.unconfirmed
+
 
 def get_last_txid(address, explorer=None, verify=False):
 	'''Get the last tx associated with an address
@@ -417,8 +427,10 @@ Returns str(txid)
 	addr = AddressInfo(address, explorer, verify)
 	return addr.last_txid
 
+
 class TxNotFoundError(Exception):
 	'''Raised when a requested txid is not known to any block explorer'''
+
 
 class TxInfo(object):
 	'''A representation of a block explorer's idea of a bitcoin transaction
@@ -508,6 +520,7 @@ explorer     (str) the name of a specific explorer to query
 		if self.__dict__ == {}:
 			raise TxNotFoundError('No results from any known block explorer')
 
+
 def get_tx_propagation(txid, threshold=100):
 	'''Estimate a transaction's propagation across the Bitcoin Cash network
 Returns a tuple consisting of:
@@ -543,6 +556,7 @@ threshold   A percentage at which the propagation check is considered finished
 			break
 	return propagation, double_spend
 
+
 def generate_address(xpub, idx, cash=True):
 	'''Generate a bitcoin cash or bitcoin legacy address from the extended public key at the given index'''
 	# Optional dependencies if unused
@@ -552,6 +566,7 @@ def generate_address(xpub, idx, cash=True):
 	if cash:
 		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
 	return subkey.address()
+
 
 def validate_key(key):
 	'''Check the validity of a key or an address'''
@@ -574,6 +589,7 @@ def validate_key(key):
 		return False
 	return True
 
+
 def convert_address(address):
 	'''Convert an address back and forth between cash and legacy formats'''
 	# Optional dependencies if unused
@@ -587,6 +603,7 @@ def convert_address(address):
 		return pycoin.key.Key(hash160=subkey).address()
 	else:
 		raise ValueError('Unsupported address format')
+
 
 if __name__ == '__main__':
 	print('===== Known block explorers =====')

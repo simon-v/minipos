@@ -91,7 +91,7 @@ except (IOError, OSError, FileNotFoundError, PermissionError):
 	lines = []
 for line in lines:
 	_addr = line.strip()
-	if _addr != '' and not _addr in config['addresses']:
+	if _addr != '' and _addr not in config['addresses']:
 		config['addresses'].append(_addr)
 
 # Sanitize the config file
@@ -252,9 +252,11 @@ def write_config_file():
 	except (IOError, OSError, PermissionError) as error:
 		print('Could not write address.list: {}'.format(error))
 
+
 # Simple logging wrapper
 def logger(message):
 	print('{} {}'.format(datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), message))
+
 
 # Utility wrapper function
 def load_file(filename):
@@ -266,6 +268,7 @@ def load_file(filename):
 	data = src.read()
 	src.close()
 	return data
+
 
 # Cast amount into preferred units
 def format_amount(amount):
@@ -358,6 +361,7 @@ def create_invoice(parameters):
 	page = load_file('invoice.html').format(**filler)
 	return page
 
+
 # API check if a payment was received
 def check_payment(parameters):
 	# Responses:
@@ -372,7 +376,7 @@ def check_payment(parameters):
 		return '2'
 	# Update address lock
 	if check_lock_timeout(tag):
-		logger('payment request {} timed out'.format(k))
+		logger('payment request {} timed out'.format(tag))
 		unlock_address(tag)
 		return '2'
 	lock_address(tag)
@@ -475,6 +479,7 @@ def check_payment(parameters):
 		write_config_file()
 	return '1 ' + txid
 
+
 # Write the details of the payment to a log file
 def record_payment(tag):
 	logger('payment {} received'.format(tag))
@@ -487,17 +492,22 @@ def record_payment(tag):
 		with open(logfile, 'a') as log:
 			log.write('{date}	{address}	{amount}	{fiat} {currency}	{tag}	{txid}\n'.format(date=datetime.datetime.now().isoformat(), tag=tag, **request))
 
+
 # Lock an address to prevent concurrent access
 def lock_address(tag):
 	if tag not in config['lock']:
-		config['lock'][tag] = { 'ctime': datetime.datetime.now() }
+		config['lock'][tag] = {
+			'ctime': datetime.datetime.now()
+		}
 	config['lock'][tag]['time'] = datetime.datetime.now()
+
 
 # Free address lock
 def unlock_address(tag):
 	if tag in config['lock']:
 		config['addresses'].append(config['lock'][tag]['address'])
 		del(config['lock'][tag])
+
 
 # Check address lock timeout
 def check_lock_timeout(tag):
@@ -507,6 +517,7 @@ def check_lock_timeout(tag):
 	if delta >= datetime.timedelta(seconds=60):
 		return True
 	return False
+
 
 # Parse a log file and add its contents to the table
 def read_log_file(filename, plaintext=False, txids=False):
@@ -558,6 +569,7 @@ def read_log_file(filename, plaintext=False, txids=False):
 			table += '<tr class="%STYLE%"><td colspan="5" class="error">' + msg + '</td></tr>'
 	logfile.close()
 	return totals, table
+
 
 # Display a log of recent transactions
 def show_logs(parameters, plaintext=False):
@@ -710,6 +722,7 @@ def show_logs(parameters, plaintext=False):
 			params[n] = locals()[n]
 		return page.format(**params)
 
+
 # Serve a static file or return a 404
 def serve_static_file(request):
 	status = '200 OK'
@@ -727,6 +740,7 @@ def serve_static_file(request):
 		page = load_file('error.html').format(err=status)
 		print(sys.exc_info()[1])
 	return status, headers, page
+
 
 # Main webapp function
 def minipos(environ, start_response):
@@ -834,6 +848,7 @@ def minipos(environ, start_response):
 	if type(page) is bytes:
 		return [page]
 	return [bytes(page, 'UTF-8')]
+
 
 # Populate txid cache from recent log entries
 _today = datetime.datetime.today().strftime('logs/%Y-%m-%d.log')
