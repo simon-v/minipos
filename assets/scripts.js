@@ -195,11 +195,11 @@ function sendEmail(date) {
 	}
 }
 function emailSent(response) {
-	if ( response == 1 ) {
-		displayPopup("The email was sent to the configured address.");
+	if ( response == 0 ) {
+		displayPopup("Email not configured.", true);
 	}
-	else {
-		displayPopup("There was an error sending the email.");
+	else if ( response == 1 ) {
+		displayPopup("Email sent.", true);
 	}
 }
 
