@@ -521,15 +521,19 @@ explorer     (str) the name of a specific explorer to query
 			raise TxNotFoundError('No results from any known block explorer')
 
 
-def get_tx_propagation(txid, threshold=100):
+def get_tx_propagation(txid, threshold=100, callback=None, stop_on_double_spend=False):
 	'''Estimate a transaction's propagation across the Bitcoin Cash network
 Returns a tuple consisting of:
   * The percentage of explorers that are aware of the txid;
   * The transaction's double spend status.
 
 Keyword arguments:
-txid        The txid to query
-threshold   A percentage at which the propagation check is considered finished
+txid       The txid to query
+threshold  A percentage at which the propagation check is considered finished
+callback   A function which will be called after every explorer query
+           The function will be called with the perliminary results
+stop_on_double_spend
+           The check will be aborted as soon as a double spend is detected
 '''
 	sightings = 0
 	double_spend = False
@@ -552,7 +556,11 @@ threshold   A percentage at which the propagation check is considered finished
 			double_spend = True
 		sightings += 1
 		propagation = 100 * sightings / len(explorers)
+		if callback is not None:
+			callback(propagation, double_spend)
 		if propagation >= threshold:
+			break
+		elif stop_on_double_spend:
 			break
 	return propagation, double_spend
 
