@@ -14,7 +14,7 @@ function loadHTTP(url, callback) {
 				callback(xmlhttp.responseText.trim());
 			}
 			else {
-				callback(4);
+				callback("4");
 			}
 		}
 	};
@@ -120,35 +120,36 @@ function showConfirmButton(response) {
 	else {
 		var code = response;
 	}
-	// Waiting for payment
-	if ( code == 0 ) {
-		setTimeout(checkPayment, 2000);
-	}
-	// Payment detected
-	else if ( code == 1 ) {
-		document.getElementById("cancel").style.display = "none";
-		document.getElementById("finish").style.display = "inline";
-		displayPopup("<strong>Payment received.</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
-	}
-	// Payment request timed out
-	else if ( code == 2 ) {
-		displayPopup("The payment request has timed out.");
-	}
-	// Server connection error
-	else if ( code == 3 ) {
-		displayPopup("Server connection error", true);
-		setTimeout(checkPayment, 2000);
-	}
-	// Client connection error
-	else if ( code == 4 ) {
-		displayPopup("Client connection error", true);
-		setTimeout(checkPayment, 2000);
-	}
-	// Double spend detected
-	else if ( code == 5 ) {
-		displayPopup("<strong class=\"error\">Double spend detected!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
-		setTimeout(checkPayment, 30000);
-	}
+	switch ( code ) {
+		// Waiting for payment
+		case "0":
+			setTimeout(checkPayment, 2000);
+			break;
+		// Payment detected
+		case "1":
+			document.getElementById("cancel").style.display = "none";
+			document.getElementById("finish").style.display = "inline";
+			displayPopup("<strong>Payment received.</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
+			break;
+		// Payment request timed out
+		case "2":
+			displayPopup("The payment request has timed out.");
+			break;
+		// Server connection error
+		case "3":
+			displayPopup("Server connection error", true);
+			setTimeout(checkPayment, 2000);
+			break;
+		// Client connection error
+		case "4":
+			displayPopup("Client connection error", true);
+			setTimeout(checkPayment, 2000);
+			break;
+		// Double spend detected
+		case "5":
+			displayPopup("<strong class=\"error\">Double spend detected!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
+			setTimeout(checkPayment, 30000);
+		}
 }
 
 // Display an informational popup dialog
