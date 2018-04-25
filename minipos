@@ -23,7 +23,9 @@ usage = '''Usage: minipos [DATA_DIRECTORY]
 See the README file for more information.'''
 config = {
 	'addresses': [],
-	'lock': {},
+	'lock': {
+		'@': None,
+	},
 	'cache': [],
 }
 binary_extensions = ['png', 'jpg', 'gif']
@@ -244,7 +246,8 @@ def write_config_file():
 	# Write the cached address list to address.list
 	address_list = config['addresses'].copy()
 	for entry in config['lock'].values():
-		address_list.append(entry['address'])
+		if type(entry) is dict:
+			address_list.append(entry['address'])
 	try:
 		with open(os.path.join(data_dir, 'address.list'), 'w') as f:
 			for address in address_list:
@@ -291,7 +294,7 @@ def create_invoice(parameters):
 		raise ValueError('Requested amount must be positive')
 	# Check for address lock timeouts
 	for k in list(config['lock']):
-		if check_lock_timeout(k):
+		if k != '@' and check_lock_timeout(k):
 			logger('payment request {} timed out'.format(k))
 			unlock_address(k)
 	# Use the next available address
@@ -742,8 +745,18 @@ def serve_static_file(request):
 	return status, headers, page
 
 
-def send_email(date, parameters, config):
-	sendmail.send(config, config['email'], '[MiniPOS] Transaction listing for ' + date, show_logs(parameters, plaintext=True))
+def send_email(parameters, config):
+	# Unset previous status
+	config['lock']['@'] = None
+	# Assemble message parts
+	if 'date' not in parameters:
+		date = datetime.date.today().isoformat()
+	else:
+		date = parameters['date'][0]
+	listing = show_logs(parameters, plaintext=True)
+	subject = '[MiniPOS] Transaction listing for {}'.format(date)
+	# Send and store exit status
+	config['lock']['@'] = sendmail.send(config, config['email'], subject, listing)
 
 
 # Main webapp function
@@ -779,7 +792,21 @@ def minipos(environ, start_response):
 			status = '400 Bad Request'
 			page = load_file('error.html').format(err=status)
 	elif request == 'check':
-		page = check_payment(parameters)
+		if 'id' not in parameters:
+			status = '400 Bad Request'
+			page = load_file('error.html').format(err=status)
+		else:
+			tag = parameters['id'][0]
+		# Welcome page JavaScript check
+		if tag == '0':
+			page = '2'
+		# Email sending check
+		elif tag == '@':
+			sent = config['lock']['@']
+			page = '-1' if sent is None else '1' if sent else '2'
+		# Payment received check
+		else:
+			page = check_payment(parameters)
 		headers = [('Content-type', 'text/plain')]
 	elif request == 'cancel':
 		try:
@@ -803,19 +830,15 @@ def minipos(environ, start_response):
 			page = load_file('error.html').format(err=status)
 	elif request == 'email':
 		headers = [('Content-type', 'text/plain')]
-		if 'date' not in parameters:
-			date = datetime.date.today().isoformat()
-		else:
-			date = parameters['date'][0]
 		if 'email' not in config:
 			print('Sendmail failed: Email address is not set')
 			page = '0'
 		else:
 			# Send an email in a subthread
-			subthread = threading.Thread(target=send_email, args=(date, parameters, config))
+			subthread = threading.Thread(target=send_email, args=(parameters, config))
 			subthread.setDaemon(True)
 			subthread.start()
-			page = '1'
+			page = '-1'
 	elif request == 'welcome':
 		try:
 			footer = load_file('welcome_footer.html')

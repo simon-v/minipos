@@ -186,20 +186,53 @@ function openLogs(date) {
 		window.open("logs", "_self", true);
 	}
 }
+
+// Email the contents of a log page
 function sendEmail(date) {
 	if ( date ) {
-		loadHTTP("email?date=" + date, emailSent);
+		loadHTTP("email?date=" + date, checkEmailSent);
 	}
 	else {
-		loadHTTP("email", emailSent);
+		loadHTTP("email", checkEmailSent);
 	}
 }
-function emailSent(response) {
-	if ( response == 0 ) {
-		displayPopup("Email not configured.", true);
-	}
-	else if ( response == 1 ) {
-		displayPopup("Email sent.", true);
+function emailStatus() {
+	loadHTTP("check?id=@", checkEmailSent);
+}
+function checkEmailSent(response) {
+	var button = document.getElementById("email");
+	switch ( response ) {
+		case "0":
+			displayPopup("Email not configured.", true);
+			break;
+		case "1":
+			button.value = "Email";
+			displayPopup("Email sent.", true);
+			break;
+		case "2":
+			button.value = "Email";
+			displayPopup("Email sending failed. See the server log for more information.", true);
+			break;
+		// Replace the email button with a spinner
+		case "-1":
+			switch ( button.value ) {
+				case "Email":
+				case "·····":
+					button.value = "·    ";
+					break;
+				case "·    ":
+					button.value = "··   ";
+					break;
+				case "··   ":
+					button.value = "···  ";
+					break;
+				case "···  ":
+					button.value = "···· ";
+					break;
+				case "···· ":
+					button.value = "·····";
+			}
+			setTimeout(emailStatus, 100);
 	}
 }
 
