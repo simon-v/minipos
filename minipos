@@ -761,6 +761,7 @@ def serve_static_file(request):
 	return status, headers, page
 
 
+# Send the log printout in an email
 def send_email(parameters, config):
 	# Unset previous status
 	config['lock']['@'] = None
@@ -901,29 +902,32 @@ config['cache'] += read_log_file(_today, txids=True)[1]
 _yesterday = (datetime.datetime.today() - datetime.timedelta(1)).strftime('logs/%Y-%m-%d.log')
 config['cache'] += read_log_file(_yesterday, txids=True)[1]
 
+# Make sure xpub works
+if 'xpub' in config:
+	try:
+		if not bch.validate_key(config['xpub']):
+			print('xpub is invalid, address generation unavailable')
+			del(config['xpub'])
+	except ImportError:
+		print('pycoin is not installed, address generation unavailable')
+		del(config['xpub'])
+for addr in config['addresses']:
+	if addr.startswith('xp'):
+		print('Discarding extended key from address list')
+		config['addresses'].remove(addr)
+	elif 'xpub' in config and not bch.validate_key(addr):
+		print('Discarding invalid address {}'.format(addr))
+		config['addresses'].remove(addr)
+if config['addresses'] == [] and 'xpub' not in config:
+	print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
+	sys.exit(2)
+
+# General initialization
+random.seed()
+log_lock = threading.Lock()
+
 # Start the web server
 if __name__ == "__main__":
-	random.seed()
-	log_lock = threading.Lock()
-	# Make sure xpub works
-	if 'xpub' in config:
-		try:
-			if not bch.validate_key(config['xpub']):
-				print('xpub is invalid, address generation unavailable')
-				del(config['xpub'])
-		except ImportError:
-			print('pycoin is not installed, address generation unavailable')
-			del(config['xpub'])
-	for addr in config['addresses']:
-		if addr.startswith('xp'):
-			print('Discarding extended key from address list')
-			config['addresses'].remove(addr)
-		elif 'xpub' in config and not bch.validate_key(addr):
-			print('Discarding invalid address {}'.format(addr))
-			config['addresses'].remove(addr)
-	if config['addresses'] == [] and 'xpub' not in config:
-		print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
-		sys.exit(2)
 	httpd = make_server('', config['port'], minipos)
 	print('Serving minipos on port {}...'.format(config['port']))
 	try:
