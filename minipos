@@ -15,6 +15,7 @@ import io
 import random
 import base64
 import threading
+import logging
 
 import bch # Local library file
 import sendmail # Local library file
@@ -38,6 +39,15 @@ mime_types = {
 	'gif': 'image/gif',
 	'svg': 'image/svg+xml',
 }
+
+# Set up logging
+logger = logging.getLogger()
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 # Look for the directory containing the configuration files
 lib_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir_locations = [
@@ -60,15 +70,14 @@ for data_dir in data_dir_locations:
 	except (OSError, NotADirectoryError):
 		continue
 	if os.path.isfile('minipos.cfg'):
-		print('Using {dir} as data directory'.format(dir=data_dir))
+		logging.info('Using {} as data directory'.format(data_dir))
 		break
 # Load the config file
 try:
 	with open('minipos.cfg', 'r') as f:
 		lines = f.readlines()
 except (IOError, OSError, FileNotFoundError, PermissionError) as error:
-	print('Could not open configuration file, using default settings')
-	print(error)
+	logging.warning('Could not open configuration file, using default settings ({})'.format(error))
 	lines = []
 for line in lines:
 	# Skip blank lines and comments
@@ -105,10 +114,10 @@ def cast_config_type(key, _type, default):
 
 def clamp_config_value(_name, _min=None, _max=None, default=0):
 	if _min is not None and config[_name] < _min:
-		print('Invalid "{}" value, falling back to {}'.format(_name, default))
+		logging.warning('Invalid "{}" value, falling back to {}'.format(_name, default))
 		config[_name] = default
 	elif _max is not None and config[_name] > _max:
-		print('Invalid "{}" value, falling back to {}'.format(_name, default))
+		logging.warning('Invalid "{}" value, falling back to {}'.format(_name, default))
 		config[_name] = default
 
 cast_config_type('taxrate', float, 0)
@@ -138,7 +147,7 @@ def pick_config_list(key, value_list):
 		config[key] = value_list[0]
 	else:
 		if config[key] not in value_list:
-			print("Invalid '{key}' value, falling back to '{default}'".format(key=key, default=value_list[0]))
+			logging.warning('Invalid "{}" value, falling back to "{}"'.format(key, value_list[0]))
 			config[key] = value_list[0]
 
 pick_config_list('unit', ['native', 'bits', 'cash', 'satoshi'])
@@ -150,7 +159,7 @@ if 'week_start' not in config or config['week_start'] == 'monday':
 elif config['week_start'] == 'sunday':
 	config['week_start'] = 1
 else:
-	print("Invalid 'week_start' value, falling back to 'monday'")
+	logging.warning('Invalid "week_start" value, falling back to "monday"')
 	config['week_start'] = 0
 if 'label' not in config or config['label'] == '':
 	config['label'] = 'MiniPOS'
@@ -158,7 +167,7 @@ exchange_list = []
 for e in bch.exchanges:
 	exchange_list.append(e['name'])
 if 'price_source' not in config or config['price_source'] not in exchange_list:
-	print('Using default exchange rate source "{}"'.format(exchange_list[0]))
+	logging.info('Using default exchange rate source "{}"'.format(exchange_list[0]))
 	config['price_source'] = exchange_list[0]
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'].lower() in ['1', 'yes', 'on', 'true'] else False
@@ -191,10 +200,10 @@ try:
 			custom_explorer[key] = None
 	bch.explorers.insert(0, custom_explorer)
 	custom_explorer = custom_explorer['name']
-	print('Using custom explorer definition:', custom_explorer)
+	logging.info('Using custom explorer definition: {}'.format(custom_explorer))
 except KeyError as error:
 	if str(error) != "'custom_explorer_url'":
-		print('Missing key in custom explorer definition:', error)
+		logging.warning('Missing key in custom explorer definition: {}'.format(error))
 
 def write_config_file():
 	# Open the current config file
@@ -244,7 +253,7 @@ def write_config_file():
 		with open(os.path.join(data_dir, 'minipos.cfg'), 'w') as f:
 			f.writelines(lines)
 	except (IOError, OSError, PermissionError) as error:
-		print('Could not write config file: {}'.format(error))
+		logging.error('Could not write config file: {}'.format(error))
 	# Write the cached address list to address.list
 	address_list = config['addresses'].copy()
 	for entry in config['lock'].values():
@@ -255,12 +264,7 @@ def write_config_file():
 			for address in address_list:
 				f.write(address + '\n')
 	except (IOError, OSError, PermissionError) as error:
-		print('Could not write address.list: {}'.format(error))
-
-
-# Simple logging wrapper
-def logger(message):
-	print('{} {}'.format(datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), message))
+		logging.error('Could not write address.list: {}'.format(error))
 
 
 # Utility wrapper function
@@ -297,7 +301,7 @@ def create_invoice(parameters):
 	# Check for address lock timeouts
 	for k in list(config['lock']):
 		if k != '@' and check_lock_timeout(k):
-			logger('payment request {} timed out'.format(k))
+			logging.info('payment request {} timed out'.format(k))
 			unlock_address(k)
 	# Use the next available address
 	if config['addresses'] == []:
@@ -323,7 +327,7 @@ def create_invoice(parameters):
 	except KeyboardInterrupt:
 		raise
 	except:
-		print(sys.exc_info()[1])
+		logging.error(sys.exc_info()[1])
 		return load_file('timeout.html')
 	# Calculate amount
 	amount = bch.btc(fiat / price)
@@ -335,7 +339,7 @@ def create_invoice(parameters):
 	except KeyboardInterrupt:
 		raise
 	except:
-		print(sys.exc_info()[1])
+		logging.error(sys.exc_info()[1])
 		unlock_address(tag)
 		return load_file('timeout.html')
 	request['seen_txids'] = [] if txid is None else [txid]
@@ -343,7 +347,7 @@ def create_invoice(parameters):
 	request['fiat'] = bch.fiat(fiat)
 	request['currency'] = currency
 	# Display invoice
-	logger('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
+	logging.info('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
@@ -381,7 +385,7 @@ def check_payment(parameters):
 		return '2'
 	# Update address lock
 	if check_lock_timeout(tag):
-		logger('payment request {} timed out'.format(tag))
+		logging.info('payment request {} timed out'.format(tag))
 		unlock_address(tag)
 		return '2'
 	lock_address(tag)
@@ -396,7 +400,7 @@ def check_payment(parameters):
 		except KeyboardInterrupt:
 			raise
 		except:
-			logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
+			logging.warning('Could not fetch address info: {}'.format(sys.exc_info()[1]))
 			return '3'
 		# No new transactions
 		if txid is None:
@@ -412,28 +416,28 @@ def check_payment(parameters):
 		except KeyboardInterrupt:
 			raise
 		except bch.TxNotFoundError:
-			logger('Anomalous event: tx not found on reporting explorer')
+			logging.warning('Anomalous event: tx not found on reporting explorer')
 			return '0' # TODO anomaly!
 		except:
-			logger('Could not fetch address info: ' + str(sys.exc_info()[1]))
+			logging.warning('Could not fetch address info: {}'.format(sys.exc_info()[1]))
 			return '3'
 		# Transaction is known-old
 		if tx.time < request['ctime']:
-			logger('Ignoring old tx {}'.format(txid))
+			logging.info('Ignoring old tx {}'.format(txid))
 			request['seen_txids'].append(txid)
 			return '0'
 		elif address not in tx.outputs:
-			logger('Ignoring mis-addressed tx {}'.format(txid)) # TODO anomaly!
+			logging.info('Ignoring mis-addressed tx {}'.format(txid)) # TODO anomaly!
 			request['seen_txids'].append(txid)
 			return '0'
 		# Wrong transaction amount
 		elif tx.outputs[address] != amount:
-			logger('Ignoring tx with wrong amount {}'.format(txid))
+			logging.info('Ignoring tx with wrong amount {}'.format(txid))
 			request['seen_txids'].append(txid)
 			return '0'
 		# All checks passed make note of the transaction
 		request['txid'] = txid
-		logger('payment {} detected'.format(tag))
+		logging.info('payment {} detected'.format(tag))
 		# Propagation check needed, defer processing
 		if config['propagation'] > 0:
 			return '0'
@@ -450,7 +454,7 @@ def check_payment(parameters):
 			except KeyboardInterrupt:
 				raise
 			except:
-				logger('Could not get transaction info', sys.exc_info()[1])
+				logging.warning('Could not get transaction info: {}'.format(sys.exc_info()[1]))
 				return '3'
 			if tx.confirmations == 0:
 				if tx.double_spend:
@@ -465,7 +469,7 @@ def check_payment(parameters):
 			except KeyboardInterrupt:
 				raise
 			except:
-				logger('Could not get propagation information: ' + str(sys.exc_info()[1]))
+				logging.warning('Could not get propagation information: {}'.format(sys.exc_info()[1]))
 				return '3'
 			# Is double spend
 			if double_spend:
@@ -487,7 +491,7 @@ def check_payment(parameters):
 
 # Write the details of the payment to a log file
 def record_payment(tag):
-	logger('payment {} received'.format(tag))
+	logging.info('payment {} received'.format(tag))
 	request = config['lock'][tag]
 	log_dir = os.path.join(data_dir, 'logs')
 	if not os.path.isdir(log_dir):
@@ -537,7 +541,7 @@ def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 		logfile = open(os.path.join(data_dir, filename), 'r')
 	except:
 		if sys.exc_info()[0] not in [IOError, OSError, FileNotFoundError, PermissionError]:
-			print(sys.exc_info()[1])
+			logging.warning(sys.exc_info()[1])
 		return totals, table
 	try:
 		for line in logfile.readlines():
@@ -572,7 +576,7 @@ def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 				else:
 					table += line
 	except:
-		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
+		logging.warning('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
 		msg = 'The log file for {file} is corrupted!'.format(file=filename.split('/')[1].split('.')[0])
 		if not plaintext:
 			msg = '<tr class="%STYLE%"><td colspan="5" class="error">' + msg + '</td></tr>'
@@ -757,7 +761,7 @@ def serve_static_file(request):
 		headers = [('Content-type', 'text/html; charset=UTF-8')]
 		status = '404 Not Found'
 		page = load_file('error.html').format(err=status)
-		print(sys.exc_info()[1])
+		logging.warning(sys.exc_info()[1])
 	return status, headers, page
 
 
@@ -803,9 +807,9 @@ def minipos(environ, start_response):
 			page = 'Redirecting...'
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
+				logging.error('Missing required GET argument: {}'.format(sys.exc_info()[1]))
 			else:
-				print(sys.exc_info()[1])
+				logging.error(sys.exc_info()[1])
 			status = '400 Bad Request'
 			page = load_file('error.html').format(err=status)
 	elif request == 'check':
@@ -829,26 +833,26 @@ def minipos(environ, start_response):
 		try:
 			tag = parameters['id'][0]
 			if tag:
-				logger('payment {} cancelled'.format(tag))
+				logging.info('payment {} cancelled'.format(tag))
 				unlock_address(tag)
 		except:
 			if sys.exc_info()[0] is KeyError:
-				print('Missing required GET argument: ' + str(sys.exc_info()[1]))
+				logging.error('Missing required GET argument: {}'.format(sys.exc_info()[1]))
 			else:
-				print(sys.exc_info()[1])
+				logging.error(sys.exc_info()[1])
 		status = '303 See Other\nLocation: {}'.format(config['payment_return'])
 		page = 'Redirecting...'
 	elif request == 'logs':
 		try:
 			page = show_logs(parameters)
 		except:
-			print(sys.exc_info()[1])
+			logging.error(sys.exc_info()[1])
 			status = '400 Bad Request'
 			page = load_file('error.html').format(err=status)
 	elif request == 'email':
 		headers = [('Content-type', 'text/plain')]
 		if 'email' not in config:
-			print('Sendmail failed: Email address is not set')
+			logging.error('Sendmail failed: Email address is not set')
 			page = '0'
 		else:
 			# Send an email in a subthread
@@ -906,20 +910,20 @@ config['cache'] += read_log_file(_yesterday, txids=True)[1]
 if 'xpub' in config:
 	try:
 		if not bch.validate_key(config['xpub']):
-			print('xpub is invalid, address generation unavailable')
+			logging.warning('xpub is invalid, address generation unavailable')
 			del(config['xpub'])
 	except ImportError:
-		print('pycoin is not installed, address generation unavailable')
+		logging.warning('pycoin is not installed, address generation unavailable')
 		del(config['xpub'])
 for addr in config['addresses']:
 	if addr.startswith('xp'):
-		print('Discarding extended key from address list')
+		logging.warning('Discarding extended key from address list')
 		config['addresses'].remove(addr)
 	elif 'xpub' in config and not bch.validate_key(addr):
-		print('Discarding invalid address {}'.format(addr))
+		logging.warning('Discarding invalid address {}'.format(addr))
 		config['addresses'].remove(addr)
 if config['addresses'] == [] and 'xpub' not in config:
-	print('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
+	logging.critical('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 	sys.exit(2)
 
 # General initialization
@@ -929,8 +933,8 @@ log_lock = threading.Lock()
 # Start the web server
 if __name__ == "__main__":
 	httpd = make_server('', config['port'], minipos)
-	print('Serving minipos on port {}...'.format(config['port']))
+	logging.info('Serving minipos on port {}...'.format(config['port']))
 	try:
 		httpd.serve_forever()
 	except KeyboardInterrupt:
-		print('Server stopped.')
+		logging.info('Server stopped.')
