@@ -66,6 +66,10 @@ payment_return=request
 ## Valid values are 'native', 'bits' or 'cash' and 'satoshi'
 unit=native
 
+## Whether payments should be sorted in ascending (chronological) or descending
+## (reverse chronological) order in the log viewer
+log_order=ascending
+
 ## If you have your own block explorer and you wish to query it instead,
 ## uncomment and set all of the following fields
 ##

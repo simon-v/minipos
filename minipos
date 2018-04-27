@@ -143,6 +143,7 @@ def pick_config_list(key, value_list):
 
 pick_config_list('unit', ['native', 'bits', 'cash', 'satoshi'])
 pick_config_list('payment_return', ['request', 'welcome'])
+pick_config_list('log_order', ['ascending', 'descending'])
 
 if 'week_start' not in config or config['week_start'] == 'monday':
 	config['week_start'] = 0
@@ -523,7 +524,7 @@ def check_lock_timeout(tag):
 
 
 # Parse a log file and add its contents to the table
-def read_log_file(filename, plaintext=False, txids=False):
+def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 	if plaintext and txids:
 		raise RuntimeError('read_log_file: the "plaintext" and "txids" parameters are incompatible')
 	table = [] if txids else ''
@@ -551,9 +552,13 @@ def read_log_file(filename, plaintext=False, txids=False):
 				if txid != '':
 					table.append(txid)
 			elif plaintext:
-				table += '{date}  {amt}  {fiat} {cur}  {tag}\n  Address: {addr}\n  TxID: {txid}\n'.format(date=date, addr=address, amt=str(amount).rjust(17 + len(token)), fiat=str(fiat).rjust(15), cur=currency, tag=tag, txid=txid)
+				line = '{date}  {amt}  {fiat} {cur}  {tag}\n  Address: {addr}\n  TxID: {txid}\n'.format(date=date, addr=address, amt=str(amount).rjust(17 + len(token)), fiat=str(fiat).rjust(15), cur=currency, tag=tag, txid=txid)
+				if reverse_order:
+					table = line + table
+				else:
+					table += line
 			else:
-				table += '''<tr class="%STYLE%">
+				line = '''<tr class="%STYLE%">
 <td><a id="toggle%ROW%" href="javascript:toggleRow(%ROW%);">+</a></td>
 <td>{date}</td><td>{fiat} {cur}</td><td>{tag}</td>
 </tr>
@@ -561,15 +566,22 @@ def read_log_file(filename, plaintext=False, txids=False):
 <td colspan="4"><strong>Address:</strong> <a href="https://bch.btc.com/{addr}" class="address" target="_blank"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</a><br>
 <strong>Amount:</strong> <span>{amt} {token}</span><br>
 <strong>TxID:</strong> <span class="txid"><a href="https://bch.btc.com/{txid}" target="_blank">{txid}</a></span></td></tr>\n'''.format(date=date, amt=amount, fiat=fiat, cur=currency, tag=tag, token=token, addr=address, txid=txid)
+				if reverse_order:
+					table = line + table
+				else:
+					table += line
 	except:
 		print('Log file is corrupted: {file} ({error})'.format(file=filename, error=sys.exc_info()[1]))
 		msg = 'The log file for {file} is corrupted!'.format(file=filename.split('/')[1].split('.')[0])
+		if not plaintext:
+			msg = '<tr class="%STYLE%"><td colspan="5" class="error">' + msg + '</td></tr>'
 		if txids:
 			pass
-		elif plaintext:
-			table += msg
 		else:
-			table += '<tr class="%STYLE%"><td colspan="5" class="error">' + msg + '</td></tr>'
+			if reverse_order:
+				table = msg + table
+			else:
+				table += msg
 	logfile.close()
 	return totals, table
 
@@ -669,8 +681,11 @@ def show_logs(parameters, plaintext=False):
 	summary = ''
 	totals = {}
 	# Compile transaction table and calculate date totals
+	reverse_order = config['log_order'] == 'descending'
+	if reverse_order:
+		days.reverse()
 	for _date in days:
-		_totals, _table = read_log_file(os.path.join('logs', _date + '.log'), plaintext)
+		_totals, _table = read_log_file(os.path.join('logs', _date + '.log'), plaintext=plaintext, reverse_order=reverse_order)
 		table += _table
 		for k in _totals.keys():
 			if k in totals:
