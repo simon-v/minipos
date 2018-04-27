@@ -17,8 +17,9 @@ import base64
 import threading
 import logging
 
-import bch # Local library file
-import sendmail # Local library file
+# Local library files
+import bch
+import sendmail
 
 usage = '''Usage: minipos [DATA_DIRECTORY]
 See the README file for more information.'''
