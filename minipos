@@ -151,6 +151,7 @@ elif config['week_start'] == 'sunday':
 	config['week_start'] = 1
 else:
 	print("Invalid 'week_start' value, falling back to 'monday'")
+	config['week_start'] = 0
 if 'label' not in config or config['label'] == '':
 	config['label'] = 'MiniPOS'
 exchange_list = []

@@ -46,7 +46,7 @@ allowed_ips=0.0.0.0
 #allowed_ips=192.168.0.0,192.168.1.0,192.168.2.0,192.168.10.0
 
 ## Set this to your email address if you want to enable log mailing capabilities
-email=
+#email=
 ## By default, the "sendmail" program will be used to send emails.
 ## Uncomment and set the following to use SMTP instead
 #server=
@@ -59,15 +59,16 @@ email=
 welcome_timeout=120
 
 ## Which page should MiniPOS return to after a payment is received or cancelled
-## Possible values are 'request' and 'welcome'
+## Possible values are "request" and "welcome"
 payment_return=request
 
 ## The preferred display unit for the bitcoin amounts
-## Valid values are 'native', 'bits' or 'cash' and 'satoshi'
+## Valid values are "native", "bits" or "cash" and "satoshi"
 unit=native
 
-## Whether payments should be sorted in ascending (chronological) or descending
-## (reverse chronological) order in the log viewer
+## In which order should entries be sorted in the log viewer. Possible values:
+## "ascending" -- chronological order, oldest entries first
+## "descending" -- reverse chronological order, newest entries first
 log_order=ascending
 
 ## If you have your own block explorer and you wish to query it instead,
@@ -80,7 +81,7 @@ log_order=ascending
 
 ## The key path in the JSON data which corresponds to the total balance,
 ## confirmed balance and unconfirmed balance, dot-separated. If the explorer
-## does not provide this field, set it to 'none'
+## does not provide this field, set it to "none"
 ## Examples:
 #custom_balance_key=data.balance
 #custom_confirmed_key=none
@@ -105,7 +106,7 @@ log_order=ascending
 #custom_tx_out_value_key=value
 #custom_tx_out_address_key=addresses.0
 
-## Set to 'yes' if the explorer returns the amounts in satoshi, 'no' otherwise
+## Set to "yes" if the explorer returns the amounts in satoshi, "no" otherwise
 #custom_unit_satoshi=no
 
 ## Set to the address prefixes the explorer accepts
@@ -113,7 +114,7 @@ log_order=ascending
 
 ## Add your receiving addresses here
 ## For a fixed address list:
-## Add one or more 'address=' keys with your addresses
+## Add one or more "address=" keys with your addresses
 #address=
 ## For address generation on demand:
 ## Uncomment and set the following to your extended public key
