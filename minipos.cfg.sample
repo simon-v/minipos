@@ -71,6 +71,15 @@ unit=native
 ## "descending" -- reverse chronological order, newest entries first
 log_order=ascending
 
+## Whether to use receiving address fingerprinting. If enabled, an easily
+## recognizable visual hash, derived from the MD5 hash of the receiving
+## addresses will be displayed alongside the payment request QR code to
+## indicate the receiving addresses had not been tampered with. Normally, an
+## MD5 hash would be considered cryptographically insecure due to potential
+## collisions, but in this case, the source data itself is cryptographically
+## secure in nature, so the net effect on security is minimal.
+fingerprinting=no
+
 ## If you have your own block explorer and you wish to query it instead,
 ## uncomment and set all of the following fields
 ##

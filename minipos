@@ -20,6 +20,7 @@ import logging
 # Local library files
 import bch
 import sendmail
+import tridenticon
 
 usage = '''Usage: minipos [DATA_DIRECTORY]
 See the README file for more information.'''
@@ -171,6 +172,7 @@ if 'price_source' not in config or config['price_source'] not in exchange_list:
 if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'].lower() in ['1', 'yes', 'on', 'true'] else False
 config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'].lower() in ['1', 'yes', 'on', 'true'] else False
+config['fingerprinting'] = True if 'fingerprinting' in config and config['fingerprinting'].lower() in ['1', 'yes', 'on', 'true'] else False
 # Try to set up a custom block explorer
 custom_explorer = None
 try:
@@ -363,13 +365,19 @@ def create_invoice(parameters):
 	request['amount'] = amount
 	request['fiat'] = bch.fiat(fiat)
 	request['currency'] = currency
-	# Display invoice
+	# Generate the invoice URI and QR code
 	logging.info('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
-	image = qrcode.make(data, error_correction=qrcode.constants.ERROR_CORRECT_L)
+	image = qrcode.make(data, box_size=7, error_correction=qrcode.constants.ERROR_CORRECT_L)
+	# Overlay a visual fingerprint over the QR code
+	if 'hash' in config:
+		icon = config['hash']
+		image = image.get_image().convert('RGB')
+		image.paste(icon, (image.width // 2 - icon.width // 2, image.height // 2 - icon.height // 2))
+	# Convert QR code into text data
 	output = io.BytesIO()
-	image.save(output)
+	image.save(output, format='PNG')
 	output = base64.b64encode(output.getvalue()).decode('UTF-8')
 	filler = {
 		'addr': address,
@@ -991,6 +999,18 @@ if config['addresses'] == [] and 'xpub' not in config:
 # General initialization
 random.seed()
 log_lock = threading.Lock()
+# Generate visual hash
+if config['fingerprinting']:
+	if 'xpub' in config:
+		config['hash'] = tridenticon.generate(config['xpub'], scale=7)
+	else:
+		address_list = []
+		for i, addr in enumerate(config['addresses']):
+			if type(addr) is tuple:
+				address_list.append(''.join(addr))
+			else:
+				address_list.append(addr)
+		config['hash'] = tridenticon.generate(''.join(sorted(address_list)), scale=7)
 
 # Start the web server
 if __name__ == "__main__":
