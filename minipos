@@ -254,19 +254,25 @@ def write_config_file():
 			f.writelines(lines)
 	except (IOError, OSError, PermissionError) as error:
 		logging.error('Could not write config file: {}'.format(error))
-	# Write the cached address list to address.list
+
+
+# Write cached address list to address.list
+def write_address_list():
 	address_list = []
+	# Free receiving addresses
 	for entry in config['addresses']:
 		if type(entry) is tuple:
 			address_list.append('{} {}'.format(*entry))
 		else:
 			address_list.append(entry)
+	# Locked receiving addresses
 	for entry in config['lock'].values():
 		if type(entry) is dict:
 			if 'index' in entry:
 				address_list.append('{} {}'.format(entry['address'], entry['index']))
 			else:
 				address_list.append(entry['address'])
+	# Perform the write
 	try:
 		with open(os.path.join(data_dir, 'address.list'), 'w') as f:
 			f.write('\n'.join(address_list) + '\n')
@@ -316,7 +322,7 @@ def create_invoice(parameters):
 			address = bch.generate_address(config['xpub'], config['index'])
 			config['addresses'].append((address, config['index']))
 			config['index'] += 1
-			write_config_file()
+			write_address_list()
 		else:
 			return load_file('noaddrs.html')
 	address = config['addresses'].pop(0)
@@ -496,7 +502,7 @@ def check_payment(parameters):
 	# Remove this address from future use if generated
 	if 'xpub' in config:
 		config['addresses'].remove((address, request['index']))
-		write_config_file()
+		write_address_list()
 	return '1 ' + txid
 
 
