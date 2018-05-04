@@ -256,14 +256,21 @@ def write_config_file():
 	except (IOError, OSError, PermissionError) as error:
 		logging.error('Could not write config file: {}'.format(error))
 	# Write the cached address list to address.list
-	address_list = config['addresses'].copy()
+	address_list = []
+	for entry in config['addresses']:
+		if type(entry) is tuple:
+			address_list.append('{} {}'.format(*entry))
+		else:
+			address_list.append(entry)
 	for entry in config['lock'].values():
 		if type(entry) is dict:
-			address_list.append(entry['address'])
+			if 'index' in entry:
+				address_list.append('{} {}'.format(entry['address'], entry['index']))
+			else:
+				address_list.append(entry['address'])
 	try:
 		with open(os.path.join(data_dir, 'address.list'), 'w') as f:
-			for address in address_list:
-				f.write(address + '\n')
+			f.write('\n'.join(address_list) + '\n')
 	except (IOError, OSError, PermissionError) as error:
 		logging.error('Could not write address.list: {}'.format(error))
 
@@ -308,7 +315,7 @@ def create_invoice(parameters):
 	if config['addresses'] == []:
 		if 'xpub' in config:
 			address = bch.generate_address(config['xpub'], config['index'])
-			config['addresses'].append(address)
+			config['addresses'].append((address, config['index']))
 			config['index'] += 1
 			write_config_file()
 		else:
@@ -321,7 +328,11 @@ def create_invoice(parameters):
 	# Lock the address
 	lock_address(tag)
 	request = config['lock'][tag]
-	request['address'] = address
+	if type(address) is tuple:
+		request['address'], request['index'] = address
+		address = request['address']
+	else:
+		request['address'] = address
 	# Get the exchange rate
 	try:
 		price = bch.get_price(currency, exchange=config['price_source'])
@@ -485,7 +496,7 @@ def check_payment(parameters):
 	unlock_address(tag)
 	# Remove this address from future use if generated
 	if 'xpub' in config:
-		config['addresses'].remove(address)
+		config['addresses'].remove((address, request['index']))
 		write_config_file()
 	return '1 ' + txid
 
@@ -515,7 +526,11 @@ def lock_address(tag):
 # Free address lock
 def unlock_address(tag):
 	if tag in config['lock']:
-		config['addresses'].append(config['lock'][tag]['address'])
+		request = config['lock'][tag]
+		if 'index' in request:
+			config['addresses'].append((request['address'], request['index']))
+		else:
+			config['addresses'].append(request['address'])
 		del(config['lock'][tag])
 
 
@@ -916,13 +931,51 @@ if 'xpub' in config:
 	except ImportError:
 		logging.warning('pycoin is not installed, address generation unavailable')
 		del(config['xpub'])
-for addr in config['addresses']:
-	if addr.startswith('xp'):
+# Validate addresses
+for address in config['addresses'].copy():
+	if address.startswith('xp'):
 		logging.warning('Discarding extended key from address list')
-		config['addresses'].remove(addr)
-	elif 'xpub' in config and not bch.validate_key(addr):
-		logging.warning('Discarding invalid address {}'.format(addr))
-		config['addresses'].remove(addr)
+		config['addresses'].remove(address)
+		continue
+	if 'xpub' in config:
+		try:
+			addr, idx = address.split(' ')
+		except ValueError:
+			logging.warning('Discarding address {} without derivation index'.format(address))
+			config['addresses'].remove(address)
+			continue
+		try:
+			idx = int(idx)
+		except ValueError:
+			logging.warning('Discarding address {} with invalid derivation index {}'.format(addr, idx))
+			config['addresses'].remove(address)
+			continue
+		if not bch.validate_key(addr):
+			logging.warning('Discarding invalid address {}'.format(addr))
+			config['addresses'].remove(address)
+			continue
+		if addr.startswith('qp'):
+			generated = bch.generate_address(config['xpub'], idx)
+		else:
+			generated = bch.generate_address(config['xpub'], idx, False)
+		if addr != generated:
+			logging.warning('Discarding address {} with mismatching derivation index {}'.format(addr, idx))
+			config['addresses'].remove(address)
+			continue
+		# Replace the plaintext entry with a ready-to-use tuple
+		config['addresses'][config['addresses'].index(address)] = (addr, idx)
+	else:
+		try:
+			addr, idx = address.split(' ')
+		except ValueError:
+			addr = address
+		if not bch.validate_key(addr):
+			logging.warning('Discarding invalid address {}'.format(addr))
+			config['addresses'].remove(address)
+			continue
+		if addr != address:
+			# Replace the plaintext entry with a ready-to-use tuple
+			config['addresses'][config['addresses'].index(address)] = (addr, idx)
 if config['addresses'] == [] and 'xpub' not in config:
 	logging.critical('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 	sys.exit(2)
