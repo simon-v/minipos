@@ -384,7 +384,7 @@ def create_invoice(parameters):
 		'label': config['label'],
 	}
 	filler['token'] = 'BCH' if config['unit'] == 'native' else config['unit']
-	page = load_file('invoice.html').format(**filler)
+	page = load_file('invoice.html').format_map(filler)
 	return page
 
 
@@ -764,7 +764,7 @@ def show_logs(parameters, plaintext=False):
 		_names = ['date', 'prev_date', 'tag_s', 'scope_s', 'tag_m', 'scope_m', 'tag_l', 'scope_l', 'next_date', 'header', 'summary', 'table', 'footer', 'label']
 		for n in _names:
 			params[n] = locals()[n]
-		return page.format(**params)
+		return page.format_map(params)
 
 
 # Serve a static file or return a 404
@@ -903,7 +903,7 @@ def minipos(environ, start_response):
 		}
 		filler['currency_disabled'] = 'disabled' if len(config['currencies']) == 1 else ''
 		filler['tax_disabled'] = 'disabled' if config['taxrate'] == 0 else ''
-		page = load_file('request.html').format(**filler)
+		page = load_file('request.html').format_map(filler)
 	# Redirect blank request to main page
 	elif request == '':
 		if config['welcome_timeout'] > 0:
