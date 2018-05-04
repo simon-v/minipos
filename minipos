@@ -127,8 +127,6 @@ cast_config_type('propagation', int, 60)
 clamp_config_value('propagation', 0, 100, 60)
 cast_config_type('welcome_timeout', int, 120)
 clamp_config_value('welcome_timeout', 0, None, 120)
-cast_config_type('index', int, 0)
-clamp_config_value('index', 0, None, 0)
 
 def split_config_key(key, default):
 	if key not in config:
@@ -246,9 +244,10 @@ def write_config_file():
 		else:
 			lines.append('{}={}\n'.format(key, value))
 	# Disable removed keys
-	for i, line in enumerate(lines):
-		if line.startswith('sightings='):
-			lines[i] = '## This option has been depreciated\n#' + line
+	for k in ['sightings', 'index']:
+		for i, line in enumerate(lines):
+			if line.startswith(k + '='):
+				lines[i] = '## This option has been depreciated\n#' + line
 	# Write the config file
 	try:
 		with open(os.path.join(data_dir, 'minipos.cfg'), 'w') as f:
@@ -932,6 +931,7 @@ if 'xpub' in config:
 		logging.warning('pycoin is not installed, address generation unavailable')
 		del(config['xpub'])
 # Validate addresses
+config['index'] = 0
 for address in config['addresses'].copy():
 	if address.startswith('xp'):
 		logging.warning('Discarding extended key from address list')
@@ -964,6 +964,8 @@ for address in config['addresses'].copy():
 			continue
 		# Replace the plaintext entry with a ready-to-use tuple
 		config['addresses'][config['addresses'].index(address)] = (addr, idx)
+		if idx > config['index']:
+			config['index'] = idx
 	else:
 		try:
 			addr, idx = address.split(' ')

@@ -118,6 +118,4 @@ log_order=ascending
 #address=
 ## For address generation on demand:
 ## Uncomment and set the following to your extended public key
-## The current derivation index will be updated automatically
 #xpub=
-#index=0
