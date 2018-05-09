@@ -18,9 +18,7 @@ var request_string = "id={tag}";
 <body onload="setTimeout(checkPayment, 5000)">
 <br>
 <img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}" onclick="copy()">
-<p>Please send exactly <strong>{amt} {token}</strong> (total {fiat} {cur})</p>
-<p>To the Bitcoin Cash address <strong class="address"><img class="icon" src="bitcoin-cash-icon.svg" alt="">{addr}</strong></p>
-<p><em>1 BCH = {price} {cur}</em>. Payment ID: <strong>{tag}</strong></p>
+{text}
 <div id="popup"><p id="popup_text"></p></div>
 <form method="get" name="cancel" action="cancel">
 <input type="hidden" name="id" value="{tag}">

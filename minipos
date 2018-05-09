@@ -394,6 +394,7 @@ def create_invoice(parameters):
 		'label': config['label'],
 	}
 	filler['token'] = 'BCH' if config['unit'] == 'native' else config['unit']
+	filler['text'] = load_file('invoice_text.html').format_map(filler)
 	page = load_file('invoice.html').format_map(filler)
 	return page
 
