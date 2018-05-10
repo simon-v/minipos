@@ -254,6 +254,10 @@ img.icon {
 	color: #cda9ef;
 }
 
+#begin {
+	font-weight: bold;
+}
+
 @media print {
 
 	input {
