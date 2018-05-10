@@ -23,19 +23,17 @@ Place the executable and accompanying library files in a convenient location. De
 * The same directory as the executable and the library files
 * The current directory
 
+A best-practice setup would have the library installed system-wide (e.g., to `/usr/share` or `/opt`) and the data directory per (unprivileged) user.
+
 Copy `minipos.cfg.sample` to `minipos.cfg` in your data directory and edit it to your liking.
 
-Add your extended public key (xpub), or some receiving addresses (a minimum of one, and at least as many as the number of simultaneous payments you expect to receive; So, if at no point do you expect to process more than one customer at once, then one receiving address is enough). If you use both, statically defined addresses will be used first, then generated ones.
+Add your extended public key (xpub), or some static receiving addresses to the config file. If using static receiving addresses, you will need to add at least as many as the number of simultaneous payments you expect to receive; So, if at no point do you expect to process more than one customer at once, then one receiving address is enough.
 
-If you want to add many static receiving addresses at once, you can put them in an `address.list` file, one per line.
-
-Finally, start the `minipos` executable, and take note of this computer's IP address. You will use it to connect to the MiniPOS server.
-
-A systemd service file is provided to ease this process.
+Start the `minipos` executable, either manually, or using the provided systemd service file. Take note of this computer's IP address. You will use it to connect to the MiniPOS server.
 
 ### Usage
 
-Navigate to the server's address and port from any device with a relatively modern browser.
+Navigate to the server's IP address and port from any device with a relatively modern browser.
 
 In the request creation page, enter the amount you wish to charge. You can use the percent button to apply a sales tax or crypto discount to the amount you have entered. Press the green check mark button.
 
@@ -49,9 +47,17 @@ A fully-refunding [live demo installation](https://simonvolpert.com/minipos-demo
 
 ### Customization
 
-If you would like to have a custom header and footer on your welcome and log pages, add the relevant HTML to the `welcome_footer.html`, `log_header.html` and `log_footer.html` files.
+The following template files are used to insert content to various pages:
 
-Any file placed in the data directory overrides its counterpart in the library directory. Images and other files that you want to be directly accessible to the web browser should be placed in the `assets` subdirectory.
+* `templates/welcome_footer.html` — The "welcome" page, under the "Click/tap to begin" invitation
+* `templates/log_header.html` — The log viewer, after the navigation buttons and before the summary
+* `templates/log_footer.html` — The log browser, in the bottom, after the transaction list
+* `templates/invoice_text.html` — The invoice page, the details between the QR code and the control button
+* `assets/style.css` — The main front-end stylesheet
+* `assets/logo.svg` — The Bitcoin Cash logo on the "welcome" page
+* `assets/icon.svg` — The Bitcoin Cash icon, placed before Bitcoin Cash addresses
+
+Additionally, any file placed in the `assets` directory will be served directly to the connecting browser.
 
 ### Setting up with a web server
 
