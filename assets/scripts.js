@@ -170,6 +170,26 @@ function dismissPopup() {
 	popupBox.style.animation = "initial";
 	popupBox.style.WebkitAnimation = "initial";
 }
+// Pulsate a button
+function pulsateButton(button, callback) {
+	switch ( button.value ) {
+		case "·    ":
+			button.value = "··   ";
+			break;
+		case "··   ":
+			button.value = "···  ";
+			break;
+		case "···  ":
+			button.value = "···· ";
+			break;
+		case "···· ":
+			button.value = "·····";
+			break;
+		default:
+			button.value = "·    ";
+	}
+	setTimeout(callback, 100);
+}
 
 // Check whether or not payment was made
 function checkPayment() {
@@ -202,38 +222,22 @@ function emailStatus() {
 }
 function checkEmailSent(response) {
 	var button = document.getElementById("email");
+	var defaultText = "Email";
 	switch ( response ) {
 		case "0":
 			displayPopup("Email not configured.", true);
 			break;
 		case "1":
-			button.value = "Email";
+			button.value = defaultText;
 			displayPopup("Email sent.", true);
 			break;
 		case "2":
-			button.value = "Email";
+			button.value = defaultText;
 			displayPopup("Email sending failed. See the server log for more information.", true);
 			break;
-		// Replace the email button with a spinner
+		// Waiting for response
 		case "-1":
-			switch ( button.value ) {
-				case "Email":
-				case "·····":
-					button.value = "·    ";
-					break;
-				case "·    ":
-					button.value = "··   ";
-					break;
-				case "··   ":
-					button.value = "···  ";
-					break;
-				case "···  ":
-					button.value = "···· ";
-					break;
-				case "···· ":
-					button.value = "·····";
-			}
-			setTimeout(emailStatus, 100);
+			pulsateButton(button, emailStatus);
 	}
 }
 
