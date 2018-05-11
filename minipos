@@ -986,18 +986,19 @@ for address in config['addresses'].copy():
 			logging.warning('Discarding invalid address {}'.format(addr))
 			config['addresses'].remove(address)
 			continue
-		if addr.startswith('qp'):
+		if addr[0] in 'qp':
 			generated = bch.generate_address(config['xpub'], idx)
 		else:
 			generated = bch.generate_address(config['xpub'], idx, False)
 		if addr != generated:
+			logging.debug('Generated address: {}'.format(generated))
 			logging.warning('Discarding address {} with mismatching derivation index {}'.format(addr, idx))
 			config['addresses'].remove(address)
 			continue
 		# Replace the plaintext entry with a ready-to-use tuple
 		config['addresses'][config['addresses'].index(address)] = (addr, idx)
-		if idx > config['index']:
-			config['index'] = idx
+		if idx >= config['index']:
+			config['index'] = idx + 1
 	else:
 		try:
 			addr, idx = address.split(' ')
@@ -1013,6 +1014,9 @@ for address in config['addresses'].copy():
 if config['addresses'] == [] and 'xpub' not in config:
 	logging.critical('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
 	sys.exit(2)
+logging.debug('{} receiving addresse(s) loaded'.format(len(config['addresses'])))
+if 'xpub' in config:
+	logging.debug('Current derivation index set to {}'.format(config['index']))
 
 # General initialization
 random.seed()
