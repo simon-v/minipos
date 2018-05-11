@@ -246,8 +246,8 @@ def get_price(currency, exchange=exchanges[0]['name']):
 			break
 	if not found:
 		raise KeyError('{src} is not in list of exchanges'.format(src=exchange))
-	data = jsonload(server['url'].format(cur=currency, cur_lower=currency.lower()))
-	rate = float(get_value(data, server['price_key'].format(cur=currency, cur_lower=currency.lower())))
+	data = jsonload(server['url'].format(cur=currency.upper(), cur_lower=currency.lower()))
+	rate = float(get_value(data, server['price_key'].format(cur=currency.upper(), cur_lower=currency.lower())))
 	if rate == 0.0:
 		raise ValueError('Returned exchange rate is zero')
 	return round(rate, 2)
