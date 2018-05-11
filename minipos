@@ -317,6 +317,14 @@ def format_amount(amount):
 		return amount
 
 
+# Generate a new receiving address and add it in the cache
+def generate_new_address():
+	address = bch.generate_address(config['xpub'], config['index'])
+	logging.debug('Generated new address {} with derivation index {}'.format(address, config['index']))
+	config['addresses'].append((address, config['index']))
+	config['index'] += 1
+
+
 # Create a payment request QR page
 def create_invoice(parameters):
 	if 'currency' not in parameters:
@@ -334,9 +342,7 @@ def create_invoice(parameters):
 	# Use the next available address
 	if config['addresses'] == []:
 		if 'xpub' in config:
-			address = bch.generate_address(config['xpub'], config['index'])
-			config['addresses'].append((address, config['index']))
-			config['index'] += 1
+			generate_new_address()
 			write_address_list()
 		else:
 			return load_file('noaddrs.html')
@@ -526,6 +532,10 @@ def check_payment(parameters):
 	# Remove this address from future use if generated
 	if 'xpub' in config:
 		config['addresses'].remove((address, request['index']))
+		logging.debug('Removing used address {}'.format(address))
+		# Generate a new address if on the last derivation index to keep the index saved
+		if request['index'] + 1 == config['index']:
+			generate_new_address()
 		write_address_list()
 	return '1 ' + txid
 
