@@ -590,8 +590,6 @@ def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 	table = [] if txids else ''
 	totals = {}
 	token = 'BCH' if config['unit'] == 'native' else config['unit']
-	for currency in config['currencies']:
-		totals[currency] = 0
 	try:
 		logfile = open(os.path.join(data_dir, filename), 'r')
 	except:
@@ -606,6 +604,8 @@ def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 			date, address, amount, fiat, tag, txid = line
 			amount = format_amount(amount)
 			fiat, currency = fiat.split(' ')
+			if currency not in totals:
+				totals[currency] = 0
 			totals[currency] += float(fiat)
 			date = date.split('.')[0].replace('T', ' ')
 			if txids:
