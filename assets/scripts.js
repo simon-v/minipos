@@ -33,6 +33,16 @@ function jsCheckReady(code) {
 	}
 }
 
+// Get the current style of an element
+function getStyle(element) {
+	if ( element.computedStyle ) {
+		return element.computedStyle;
+	}
+	else {
+		return getComputedStyle(element, null);
+	}
+}
+
 // Form button controls
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
@@ -193,7 +203,7 @@ function pulsateButton(button, callback) {
 
 // Check whether or not payment was made
 function checkPayment() {
-	if (document.getElementById("finish").style.display == "none") {
+	if ( getStyle(document.getElementById("finish")).display == "none" ) {
 		loadHTTP("check?" + request_string, showConfirmButton);
 	}
 }
@@ -259,7 +269,7 @@ function returnTimer() {
 function copy() {
 	var field = document.getElementById("copy");
 	// Only process if there is no current popup
-	if ( document.getElementById("popup").style.display == "none" ) {
+	if ( getStyle(document.getElementById("popup")).display == "none" ) {
 		try {
 			field.style.display = "block";
 			field.select();
@@ -276,7 +286,7 @@ function copy() {
 function toggleRow(row) {
 	var table_row = document.getElementById("row" + row),
 	toggle = document.getElementById("toggle" + row);
-	if ( ( table_row.computedStyle && table_row.computedStyle.display == "none" ) || getComputedStyle(table_row, null).display == "none" ) {
+	if ( getStyle(table_row).display == "none" ) {
 		table_row.style.display = "table-row";
 		toggle.innerHTML = "&ndash;";
 	}
@@ -284,4 +294,28 @@ function toggleRow(row) {
 		table_row.style.display = "none";
 		toggle.innerHTML = "+";
 	}
+}
+
+// Sanitize invoice page
+function sanitizeInvoice() {
+	// Unset z-index of all elements
+	var all = document.getElementsByTagName("*");
+	for ( i = 0; i < all.length; i++ ) {
+		if ( getStyle(all[i]).zIndex == 2147483647 ) {
+			all[i].style.zIndex = 0;
+		}
+	}
+	// Set QR code style
+	var qr = document.getElementById("qr");
+	qr.style.display = "inline-block";
+	qr.style.position = "relative";
+	qr.style.top = 0;
+	qr.style.bottom = 0;
+	qr.style.left = "auto";
+	qr.style.right = "auto";
+	qr.style.zIndex = 2147483647;
+	qr.removeAttribute("id");
+	// Set popup style
+	var popup = document.getElementById("popup");
+	popup.style.zIndex = 2147483647;
 }

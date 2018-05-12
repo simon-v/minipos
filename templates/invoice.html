@@ -15,7 +15,7 @@ var request_string = "id={tag}";
 </script>
 </head>
 
-<body onload="setTimeout(checkPayment, 5000)">
+<body onload="sanitizeInvoice(); setTimeout(checkPayment, 5000)">
 <br>
 <img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}" onclick="copy()">
 {text}
