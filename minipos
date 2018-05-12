@@ -92,6 +92,9 @@ for line in lines:
 	# Skip empty values
 	if value == '':
 		continue
+	elif key in ['sightings', 'index']:
+		logging.warning('The "{}" option is depreciated'.format(key))
+		continue
 	if key == 'address':
 		config['addresses'].append(value)
 	else:
