@@ -235,7 +235,7 @@ img.icon {
 
 #popup {
 	width: 80vmin;
-	position: absolute;
+	position: fixed;
 	margin: auto;
 	top: 38vmin;
 	left: 0;
