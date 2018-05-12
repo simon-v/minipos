@@ -413,7 +413,12 @@ def create_invoice(parameters):
 		'label': config['label'],
 	}
 	filler['token'] = 'BCH' if config['unit'] == 'native' else config['unit']
-	filler['text'] = load_file('invoice_text.html', override=True).format_map(filler)
+	# Load user template override
+	invoice_text = load_file('invoice_text.html', override=True)
+	if '<script' in invoice_text.lower():
+		logging.warning('Script detected in user invoice_text.html, override rejected')
+		invoice_text = load_file('invoice_text.html')
+	filler['text'] = invoice_text.format_map(filler)
 	page = load_file('invoice.html').format_map(filler)
 	return page
 
