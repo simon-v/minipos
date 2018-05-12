@@ -104,8 +104,12 @@ except (IOError, OSError, FileNotFoundError, PermissionError):
 	lines = []
 for line in lines:
 	_addr = line.strip()
-	if _addr != '' and _addr not in config['addresses']:
-		config['addresses'].append(_addr)
+	if _addr == '':
+		continue
+	elif _addr in config['addresses']:
+		logging.warning('Discarding duplicate address {}'.format(_addr))
+		continue
+	config['addresses'].append(_addr)
 
 # Sanitize the config file
 def cast_config_type(key, _type, default):
