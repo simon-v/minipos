@@ -314,7 +314,8 @@ function sanitizeInvoice() {
 	qr.style.left = "auto";
 	qr.style.right = "auto";
 	qr.style.zIndex = 2147483647;
-	qr.removeAttribute("id");
+	qr.style.width = "80vmin";
+	qr.style.height = "auto";
 	// Set popup style
 	var popup = document.getElementById("popup");
 	popup.style.zIndex = 2147483647;
