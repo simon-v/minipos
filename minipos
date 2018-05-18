@@ -145,7 +145,7 @@ def split_config_key(key, default):
 		config[key] = config[key].split(',')
 
 split_config_key('currencies', 'USD')
-split_config_key('allowed_ips', '0.0.0.0')
+split_config_key('allowed_ips', '127.0.0.1')
 # Prune meaningless values from configuration
 config['allowed_ips'] = set(config['allowed_ips'])
 if '127.0.0.1' in config['allowed_ips']:
@@ -856,7 +856,7 @@ def minipos(environ, start_response):
 		ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
 	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
-	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips'] and not request in file_whitelist:
+	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips'] and request not in file_whitelist:
 		status = '403 Not Allowed'
 		page = load_file('error.html').format(err=status)
 		start_response(status, headers)
