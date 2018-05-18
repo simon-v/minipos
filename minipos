@@ -41,6 +41,8 @@ mime_types = {
 	'gif': 'image/gif',
 	'svg': 'image/svg+xml',
 }
+# A list of files which will always be served regardless of access control settings
+file_whitelist = ['style.css', 'logo.svg', 'logo.png', 'logo.gif', 'logo.jpg', 'favicon.png', 'favicon.ico']
 
 # Set up logging
 logger = logging.getLogger()
@@ -853,12 +855,12 @@ def minipos(environ, start_response):
 	else:
 		ip_addr = environ['REMOTE_ADDR']
 	subnet = '.'.join(ip_addr.split('.')[0:3]) + '.0'
-	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips']:
+	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
+	if ip_addr != '127.0.0.1' and '0.0.0.0' not in config['allowed_ips'] and ip_addr not in config['allowed_ips'] and subnet not in config['allowed_ips'] and not request in file_whitelist:
 		status = '403 Not Allowed'
 		page = load_file('error.html').format(err=status)
 		start_response(status, headers)
 		return [bytes(page, 'UTF-8')]
-	request = environ['PATH_INFO'].lstrip('/').split('/')[-1]
 	parameters = urllib.parse.parse_qs(environ['QUERY_STRING'])
 	# Handle specific app pages
 	if request == 'invoice':
