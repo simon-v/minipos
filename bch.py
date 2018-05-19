@@ -523,7 +523,11 @@ stop_on_double_spend
 '''
 	sightings = 0
 	double_spend = False
+	num_servers = len(explorers)
 	for server in explorers.copy():
+		if 'errors' in server and server['errors'] > MAX_ERRORS:
+			num_servers -= 1
+			continue
 		try:
 			tx = TxInfo(txid, explorer=server['name'])
 		except TxNotFoundError:
@@ -541,7 +545,7 @@ stop_on_double_spend
 		if tx.double_spend:
 			double_spend = True
 		sightings += 1
-		propagation = 100 * sightings / len(explorers)
+		propagation = 100 * sightings / num_servers
 		if callback is not None:
 			callback(propagation, double_spend)
 		if propagation >= threshold:
