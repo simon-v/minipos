@@ -8,6 +8,7 @@ import json
 import random
 import sys
 import datetime
+import logging
 #optional import pycoin.key
 #optional import cashaddr # Local library file
 
@@ -244,6 +245,7 @@ def pick_explorer(server_name=None, address_prefix=None):
 		explorers.append(server)
 		# Populate server error count if necessary
 		if 'errors' not in server:
+			logging.debug('Adding control fields to {} definition'.format(server['name']))
 			server['errors'] = 0
 			server['last_error'] = None
 			server['last_data'] = None
@@ -252,6 +254,7 @@ def pick_explorer(server_name=None, address_prefix=None):
 			continue
 		# Filter by error rate
 		if server['errors'] > MAX_ERRORS and server['name'] != server_name:
+			logging.debug('Skipping {} based on error rates'.format(server['name']))
 			continue
 		# Filter by address prefix
 		if address_prefix is not None and address_prefix not in server['prefixes']:
@@ -327,6 +330,7 @@ verify          (bool) the results should be verified with another explorer
 			# Try to get balance
 			try:
 				# Get and cache the received data for possible future analysis
+				logging.debug('Querying {}'.format(server['name']))
 				if 'q' in server['prefixes']:
 					json = jsonload(server['url'].format(address=self.address))
 				else:
@@ -365,7 +369,7 @@ verify          (bool) the results should be verified with another explorer
 				except AttributeError:
 					server['last_error'] = str(exception)
 				if server['errors'] > MAX_ERRORS:
-					print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
+					logging.error('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
 				continue
 			# Convert balances to native units
 			if server['unit_satoshi']:
@@ -444,6 +448,7 @@ explorer     (str) the name of a specific explorer to query
 				break
 			try:
 				# Get and cache the received data for possible future analysis
+				logging.debug('Querying {}'.format(server['name']))
 				json = jsonload(server['tx_url'].format(txid=txid))
 				server['last_data'] = json
 				# Figure out if the tx is a double spend
@@ -492,7 +497,7 @@ explorer     (str) the name of a specific explorer to query
 				except AttributeError:
 					server['last_error'] = str(exception)
 				if server['errors'] > MAX_ERRORS:
-					print('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
+					logging.error('Excessive errors from {server}, disabling. Last error: {error}'.format(server=server['name'], error=server['last_error']))
 				continue
 		try:
 			explorers.remove(None)
@@ -531,7 +536,7 @@ stop_on_double_spend
 				error = exception.reason
 			except AttributeError:
 				error = exception
-			print('Could not fetch explorer data: {}'.format(error))
+			logging.error('Could not fetch explorer data: {}'.format(error))
 			continue
 		if tx.double_spend:
 			double_spend = True
