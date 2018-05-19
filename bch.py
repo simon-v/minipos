@@ -12,6 +12,7 @@ import datetime
 #optional import cashaddr # Local library file
 
 MAX_ERRORS = 10
+TIMEOUT = 5
 exchanges = [
 	{
 		'url': 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/?convert={cur}',
@@ -58,7 +59,7 @@ explorers = [
 		'balance_key': None,
 		'confirmed_key': 'balance',
 		'unconfirmed_key': 'unconfirmedBalance',
-		'last_tx_key': 'transactions.0',
+		'last_tx_key': 'transactions.-1',
 		'tx_time_key': 'time',
 		'tx_inputs_key': 'vin',
 		'tx_in_double_spend_key': 'doubleSpentTxID',
@@ -188,7 +189,7 @@ def fiat(amount):
 def jsonload(url):
 	'''Load a web page and return the resulting JSON object'''
 	request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-	with urllib.request.urlopen(request) as webpage:
+	with urllib.request.urlopen(request, timeout=TIMEOUT) as webpage:
 		data = str(webpage.read(), 'UTF-8')
 		data = json.loads(data)
 	return data
