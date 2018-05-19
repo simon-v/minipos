@@ -154,6 +154,26 @@ explorers = [
 		'unit_satoshi': False,
 		'prefixes': '13',
 	},
+	{
+		'url': 'https://rest.bitbox.earth/v1/address/details/{address}',
+		'tx_url': 'https://rest.bitbox.earth/v1/transaction/details/{txid}',
+		'balance_key': None,
+		'confirmed_key': 'balance',
+		'unconfirmed_key': 'unconfirmedBalance',
+		'last_tx_key': 'transactions.0',
+		'tx_time_key': 'time',
+		'tx_inputs_key': 'vin',
+		'tx_in_double_spend_key': 'doubleSpentTxID',
+		'tx_outputs_key': 'vout',
+		'tx_out_value_key': 'value',
+		'tx_out_address_key': 'scriptPubKey.addresses.0',
+		'tx_double_spend_key': None,
+		'tx_fee_key': 'fees',
+		'tx_size_key': 'size',
+		'tx_confirmations_key': 'confirmations',
+		'unit_satoshi': False,
+		'prefixes': 'qp13',
+	},
 ]
 
 # Initialize explorer and exchange list
@@ -461,8 +481,13 @@ ignore_errors (str) don't skip explorers disabled for excessive errors
 					self.double_spend = False
 					for i, __ in enumerate(get_value(json, server['tx_inputs_key'])):
 						#tx_size += 148
-						if get_value(json, '.'.join([server['tx_inputs_key'], str(i), server['tx_in_double_spend_key']])) is not None:
-							self.double_spend = True
+						try:
+							if get_value(json, '.'.join([server['tx_inputs_key'], str(i), server['tx_in_double_spend_key']])) is not None:
+								self.double_spend = True
+						# Workaround for explorers that don't provide empty double spend keys
+						except KeyError as k:
+							if str(k).strip('\'') != server['tx_in_double_spend_key']:
+								raise
 				# Assemble list of output values
 				self.outputs = {}
 				for i, __ in enumerate(get_value(json, server['tx_outputs_key'])):
