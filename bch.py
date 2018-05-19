@@ -235,7 +235,7 @@ def get_price(currency, exchange=exchanges[0]['name']):
 	return round(rate, 2)
 
 
-def pick_explorer(server_name=None, address_prefix=None):
+def pick_explorer(server_name=None, address_prefix=None, ignore_errors=False):
 	'''Advance the list of explorers until one that matches the requirements is found'''
 	for __ in explorers:
 		# Cycle to the next server
@@ -253,11 +253,12 @@ def pick_explorer(server_name=None, address_prefix=None):
 		if server_name is not None and server['name'] != server_name:
 			continue
 		# Filter by error rate
-		if server['errors'] > MAX_ERRORS and server['name'] != server_name:
+		if not ignore_errors and server['errors'] > MAX_ERRORS:
 			logging.debug('Skipping {} based on error rates'.format(server['name']))
 			continue
 		# Filter by address prefix
 		if address_prefix is not None and address_prefix not in server['prefixes']:
+			logging.debug('Skipping {} due to unsupported address prefix'.format(server['name']))
 			continue
 		return server
 	raise KeyError('No servers match the requirements')
@@ -273,11 +274,12 @@ confirmed       (float) the confirmed balance of the address
 unconfirmed     (float) the unconfirmed balance of the address
 '''
 
-	def __init__(self, address, explorer=None, verify=False):
+	def __init__(self, address, explorer=None, verify=False, ignore_errors=False):
 		'''Keyword arguments:
 address         (str) bitcoin_address or tuple(str xpub, int index)
 explorer        (str) the name of a specific explorer to query
 verify          (bool) the results should be verified with another explorer
+ignore_errors   (str) don't skip explorers disabled for excessive errors
 '''
 		# Incompatible parameters
 		if verify and explorer is not None:
@@ -324,9 +326,9 @@ verify          (bool) the results should be verified with another explorer
 		while explorers[0] is not None:
 			# Query the next explorer
 			if prefixes == 'qp13':
-				server = pick_explorer(explorer)
+				server = pick_explorer(explorer, ignore_errors=ignore_errors)
 			else:
-				server = pick_explorer(explorer, address_prefix=prefixes[0])
+				server = pick_explorer(explorer, address_prefix=prefixes[0], ignore_erros=ignore_errors)
 			# Try to get balance
 			try:
 				# Get and cache the received data for possible future analysis
@@ -395,21 +397,21 @@ verify          (bool) the results should be verified with another explorer
 		self.confirmed, self.unconfirmed, self.last_txid = results[-1]
 
 
-def get_balance(address, explorer=None, verify=False):
+def get_balance(address, explorer=None, verify=False, ignore_errors=False):
 	'''Get the current balance of an address from a block explorer
 Takes the same arguments as AddressInfo()
 Returns tuple(confirmed_balance, unconfirmed_balance)
 '''
-	addr = AddressInfo(address, explorer, verify)
+	addr = AddressInfo(address, explorer, verify, ignore_errors)
 	return addr.confirmed, addr.unconfirmed
 
 
-def get_last_txid(address, explorer=None, verify=False):
+def get_last_txid(address, explorer=None, verify=False, ignore_errors=False):
 	'''Get the last tx associated with an address
 Takes the same arguments as AddressInfo()
 Returns str(txid)
 '''
-	addr = AddressInfo(address, explorer, verify)
+	addr = AddressInfo(address, explorer, verify, ignore_errors)
 	return addr.last_txid
 
 
@@ -431,11 +433,12 @@ confirmations (int) the number of confirmations this transaction has
 Will raise TxNotFoundError if the passed txid is not known to any explorer
 '''
 
-	def __init__(self, txid, explorer=None):
+	def __init__(self, txid, explorer=None, ignore_errors=None):
 		'''Keyword arguments:
 
-txid         (str) the txid to look for
-explorer     (str) the name of a specific explorer to query
+txid          (str) the txid to look for
+explorer      (str) the name of a specific explorer to query
+ignore_errors (str) don't skip explorers disabled for excessive errors
 '''
 		# Add a temporary separator
 		explorers.append(None)
@@ -443,7 +446,7 @@ explorer     (str) the name of a specific explorer to query
 		while explorers[0] is not None:
 			# Query the next explorer
 			try:
-				server = pick_explorer(explorer)
+				server = pick_explorer(explorer, ignore_errors=ignore_errors)
 			except StopIteration:
 				break
 			try:
@@ -507,7 +510,7 @@ explorer     (str) the name of a specific explorer to query
 			raise TxNotFoundError('No results from any known block explorer')
 
 
-def get_tx_propagation(txid, threshold=100, callback=None, stop_on_double_spend=False):
+def get_tx_propagation(txid, threshold=100, callback=None, stop_on_double_spend=False, ignore_errors=False):
 	'''Estimate a transaction's propagation across the Bitcoin Cash network
 Returns a tuple consisting of:
   * The percentage of explorers that are aware of the txid;
@@ -525,11 +528,11 @@ stop_on_double_spend
 	double_spend = False
 	num_servers = len(explorers)
 	for server in explorers.copy():
-		if 'errors' in server and server['errors'] > MAX_ERRORS:
+		if not ignore_errors and 'errors' in server and server['errors'] > MAX_ERRORS:
 			num_servers -= 1
 			continue
 		try:
-			tx = TxInfo(txid, explorer=server['name'])
+			tx = TxInfo(txid, explorer=server['name'], ignore_errors=ignore_errors)
 		except TxNotFoundError:
 			continue
 		except KeyboardInterrupt:
