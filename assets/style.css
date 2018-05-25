@@ -114,6 +114,14 @@ input[type="button"], input[type="text"], input[type="submit"], input[type="rese
 	-webkit-border-radius: 1.67vmin;
 }
 
+input[type="checkbox"], input[type="radio"] {
+	width: 2.5vmin;
+	height: 2.5vmin;
+	margin-right: 1vmin;
+	vertical-align: middle;
+	-webkit-appearance: checkbox,radio;
+}
+
 input:active {
 	border-color: #808080 #e6e6e6 #e6e6e6 #808080;
 }
