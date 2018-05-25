@@ -1025,9 +1025,6 @@ for address in config['addresses'].copy():
 		if addr != address:
 			# Replace the plaintext entry with a ready-to-use tuple
 			config['addresses'][config['addresses'].index(address)] = (addr, idx)
-if config['addresses'] == [] and 'xpub' not in config:
-	logging.critical('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
-	sys.exit(2)
 logging.debug('{} receiving addresse(s) loaded'.format(len(config['addresses'])))
 if 'xpub' in config:
 	logging.debug('Current derivation index set to {}'.format(config['index']))
@@ -1050,6 +1047,9 @@ if config['fingerprinting']:
 
 # Start the web server
 if __name__ == "__main__":
+	if config['addresses'] == [] and 'xpub' not in config:
+		logging.critical('No receiving addresses available. Please add some receiving addresses or an extended public key to your config file.')
+		sys.exit(2)
 	httpd = make_server('', config['port'], minipos)
 	logging.info('Serving minipos on port {}...'.format(config['port']))
 	try:
