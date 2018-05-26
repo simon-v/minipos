@@ -96,7 +96,8 @@ tr.expand span.address {
 	100% { opacity: 0; }
 }
 
-input[type="button"], input[type="text"], input[type="submit"], input[type="reset"] {
+input[type="button"], input[type="text"], input[type="submit"],
+input[type="reset"], input[type="number"] {
 	width: 16.67vmin;
 	height: 16.67vmin;
 	font-size: 10vmin;
