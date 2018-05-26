@@ -215,57 +215,6 @@ except KeyError as error:
 	if str(error) != "'custom_explorer_url'":
 		logging.warning('Missing key in custom explorer definition: {}'.format(error))
 
-def write_config_file():
-	# Open the current config file
-	try:
-		with open(os.path.join(data_dir, 'minipos.cfg'), 'r') as f:
-			lines = f.readlines()
-	except (IOError, FileNotFoundError):
-		# Or the config file sample
-		with open(os.path.join(lib_dir, 'minipos.cfg.sample'), 'r') as f:
-			lines = f.readlines()
-	# Iterate through the config
-	for key in config:
-		if key in ['addresses', 'lock', 'cache']:
-			continue
-		# Cast types into correct format
-		if type(config[key]) in [list, set]:
-			value = ','.join(config[key])
-		elif key == 'week_start':
-			value = {1: 'sunday', 0: 'monday'}[config[key]]
-		else:
-			value = config[key]
-		if value is True or value is False:
-			value = 'yes' if value else 'no'
-		elif value is None:
-			value = 'none'
-		# Seek for first matching set key
-		found = False
-		for k in ['{}=', '#{}=']:
-			if not found:
-				k = k.format(key)
-				for i, line in enumerate(lines):
-					if line.startswith(k):
-						found = True
-						break
-		# Replace the matching line
-		if found:
-			lines[i] = '{}={}\n'.format(key, value)
-		# Or append to the end of the config file
-		else:
-			lines.append('{}={}\n'.format(key, value))
-	# Disable removed keys
-	for k in ['sightings', 'index']:
-		for i, line in enumerate(lines):
-			if line.startswith(k + '='):
-				lines[i] = '## This option has been depreciated\n#' + line
-	# Write the config file
-	try:
-		with open(os.path.join(data_dir, 'minipos.cfg'), 'w') as f:
-			f.writelines(lines)
-	except (IOError, OSError, PermissionError) as error:
-		logging.error('Could not write config file: {}'.format(error))
-
 
 # Write cached address list to address.list
 def write_address_list():
