@@ -476,6 +476,8 @@ ignore_errors (str) don't skip explorers disabled for excessive errors
 					value = float(get_value(json, '.'.join([server['tx_outputs_key'], str(i), server['tx_out_value_key']])))
 					if server['unit_satoshi']:
 						value /= 100000000
+					if addr[0] in 'bB':
+						addr = addr.lower().split(':')[1]
 					self.outputs[addr] = value
 					# Provide both address formats if possible
 					try:
@@ -601,6 +603,8 @@ def convert_address(address):
 	# Optional dependencies if unused
 	import pycoin.key
 	import cashaddr
+	if address[0] in 'bB':
+		address = address.split(':')[1]
 	if address[0] in '13':
 		subkey = pycoin.key.Key.from_text(address)
 		return cashaddr.encode('bitcoincash', 0, subkey.hash160())
