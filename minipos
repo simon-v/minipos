@@ -299,7 +299,7 @@ def create_invoice(parameters):
 	# Check for address lock timeouts
 	for k in list(config['lock']):
 		if k != '@' and check_lock_timeout(k):
-			logging.info('payment request {} timed out'.format(k))
+			logging.info('Payment request {} timed out'.format(k))
 			unlock_address(k)
 	# Use the next available address
 	if config['addresses'] == []:
@@ -347,7 +347,7 @@ def create_invoice(parameters):
 	request['fiat'] = bch.fiat(fiat)
 	request['currency'] = currency
 	# Generate the invoice URI and QR code
-	logging.info('new invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
+	logging.info('New invoice {tag}: {amount} BCH ({fiat} {currency}) to {address}'.format(tag=tag, **request))
 	label = urllib.parse.quote('%s ID:%s' % (config['label'], tag))
 	data = 'bitcoincash:{addr}?amount={amt}&message={label}'.format(addr=address, amt=amount, label=label)
 	image = qrcode.make(data, box_size=7, error_correction=qrcode.constants.ERROR_CORRECT_L)
@@ -400,7 +400,7 @@ def check_payment(parameters):
 		return '2'
 	# Update address lock
 	if check_lock_timeout(tag):
-		logging.info('payment request {} timed out'.format(tag))
+		logging.info('Payment request {} timed out'.format(tag))
 		unlock_address(tag)
 		return '2'
 	lock_address(tag)
@@ -452,7 +452,7 @@ def check_payment(parameters):
 			return '0'
 		# All checks passed make note of the transaction
 		request['txid'] = txid
-		logging.info('payment {} detected'.format(tag))
+		logging.info('Payment {} detected'.format(tag))
 		# Double spend check
 		if tx.double_spend:
 			logging.warning('Double spend detected, waiting for confitmation')
@@ -521,7 +521,7 @@ def check_payment(parameters):
 
 # Write the details of the payment to a log file
 def record_payment(tag):
-	logging.info('payment {} received'.format(tag))
+	logging.info('Payment {} received'.format(tag))
 	request = config['lock'][tag]
 	log_dir = os.path.join(data_dir, 'logs')
 	if not os.path.isdir(log_dir):
@@ -862,7 +862,7 @@ def minipos(environ, start_response):
 		try:
 			tag = parameters['id'][0]
 			if tag:
-				logging.info('payment {} cancelled'.format(tag))
+				logging.info('Payment {} cancelled'.format(tag))
 				unlock_address(tag)
 		except:
 			if sys.exc_info()[0] is KeyError:
