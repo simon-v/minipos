@@ -560,7 +560,7 @@ stop_on_double_spend
 			callback(propagation, double_spend)
 		if propagation >= threshold:
 			break
-		elif stop_on_double_spend:
+		elif double_spend and stop_on_double_spend:
 			break
 	return propagation, double_spend
 
