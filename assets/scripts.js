@@ -159,7 +159,12 @@ function showConfirmButton(response) {
 		case "5":
 			displayPopup("<strong class=\"error\">Double spend detected!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
 			setTimeout(checkPayment, 30000);
-		}
+			break;
+		// Low fee warning
+		case "6":
+			displayPopup("<strong>Low fee transaction!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
+			setTimeout(checkPayment, 10000);
+	}
 }
 
 // Display an informational popup dialog

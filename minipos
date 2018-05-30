@@ -22,6 +22,10 @@ import bch
 import sendmail
 import tridenticon
 
+# Useful constants
+NORMAL_FEE = 1.0
+LOW_FEE = 0.5
+
 usage = '''Usage: minipos [DATA_DIRECTORY]
 See the README file for more information.'''
 config = {
@@ -390,6 +394,7 @@ def check_payment(parameters):
 	# 3 - server connection error
 	# 4 - client connection error
 	# 5 - double spend detected (with txid)
+	# 6 - low fee (with txid)
 	tag = parameters['id'][0]
 	if tag not in config['lock']:
 		return '2'
@@ -448,13 +453,22 @@ def check_payment(parameters):
 		# All checks passed make note of the transaction
 		request['txid'] = txid
 		logging.info('payment {} detected'.format(tag))
-		# Propagation check needed, defer processing
-		if config['propagation'] > 0:
-			return '0'
 		# Double spend check
-		elif tx.double_spend:
+		if tx.double_spend:
+			logging.warning('Double spend detected, waiting for confitmation')
 			request['wait_confirm'] = True
 			return '5 ' + txid
+		# Check transaction fee
+		if tx.fee_per_byte >= NORMAL_FEE:
+			logging.debug('Tx has sufficient fee ({:.3f}), skipping propagation check'.format(tx.fee_per_byte))
+		else:
+			if tx.fee_per_byte < LOW_FEE:
+				logging.debug('Tx has low fee ({:.3f})'.format(tx.fee_per_byte))
+				request['low_fee'] = True
+			# Propagation check needed, defer processing
+			if config['propagation'] > 0:
+				return '0'
+			logging.debug('Skipping propagation check by user config')
 	# Previously detected transaction
 	else:
 		# Currently waiting for confirmation
@@ -475,7 +489,7 @@ def check_payment(parameters):
 		else:
 			txid = request['txid']
 			try:
-				propagation, double_spend = bch.get_tx_propagation(txid, threshold=config['propagation'])
+				propagation, double_spend = bch.get_tx_propagation(txid, threshold=config['propagation'], stop_on_double_spend=True)
 			except KeyboardInterrupt:
 				raise
 			except:
@@ -487,6 +501,8 @@ def check_payment(parameters):
 				return '5 ' + txid
 			# Low propagation
 			elif propagation < config['propagation']:
+				if 'low_fee' in request:
+					return '6 ' + txid
 				return '0'
 	# Record the payment
 	record_payment(tag)
