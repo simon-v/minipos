@@ -108,6 +108,16 @@ function addTax() {
 	if ( field.value.substring(field.value.length - 3, field.value.length) == ".00" ) {
 		field.value = field.value.substring(0, field.value.length - 3);
 	}
+	document.getElementById("tax").disabled = true;
+	return_timer = 0;
+}
+
+// Reset tax button lock to initial state
+function resetTaxLock() {
+	var percents = document.getElementById("percents").innerHTML;
+	if ( percents != "0.0%" ) {
+		document.getElementById("tax").disabled = false;
+	}
 	return_timer = 0;
 }
 
