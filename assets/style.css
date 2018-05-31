@@ -131,6 +131,11 @@ input:disabled {
 	color: #bfbfbf;
 }
 
+input[type="button"]:disabled, input[type="submit"]:disabled,
+input[type="reset"]:disabled {
+	border-color: #e6e6e6 #808080 #808080 #e6e6e6;
+}
+
 input.text, input.text:active {
 	width: 48.75vmin;
 	text-align: center;
