@@ -97,7 +97,7 @@ tr.expand span.address {
 }
 
 input[type="button"], input[type="text"], input[type="submit"],
-input[type="reset"], input[type="number"] {
+input[type="reset"], input[type="number"], input[type="email"] {
 	width: 16.67vmin;
 	height: 16.67vmin;
 	font-size: 10vmin;
@@ -132,7 +132,7 @@ input:disabled {
 }
 
 input[type="button"]:disabled, input[type="submit"]:disabled,
-input[type="reset"]:disabled {
+input[type="reset"]:disabled, input[type="email"]:disabled {
 	border-color: #e6e6e6 #808080 #808080 #e6e6e6;
 }
 
