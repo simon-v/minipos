@@ -534,6 +534,7 @@ stop_on_double_spend
 	sightings = 0
 	double_spend = False
 	num_servers = len(explorers)
+	propagation = 0
 	for server in explorers.copy():
 		if not ignore_errors and 'errors' in server and server['errors'] > MAX_ERRORS:
 			num_servers -= 1
