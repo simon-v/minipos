@@ -483,8 +483,7 @@ def check_payment(parameters):
 			if tx.confirmations == 0:
 				if tx.double_spend:
 					return '5 ' + txid
-				else:
-					return '0'
+				return '0'
 		# Not currently waiting for confirmation
 		else:
 			txid = request['txid']
@@ -893,10 +892,7 @@ def minipos(environ, start_response):
 		footer = load_file('welcome_footer.html', override=True, null=True)
 		page = load_file('welcome.html').format(label=config['label'], welcome_footer=footer)
 	elif request == 'request':
-		if config['taxrate'] < 0:
-			tax = 'Discount'
-		else:
-			tax = 'Tax'
+		tax = 'Discount' if config['taxrate'] < 0 else 'Tax'
 		filler = {
 			'currencies': repr(config['currencies']),
 			'timeout': config['welcome_timeout'],
