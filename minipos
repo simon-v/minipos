@@ -793,19 +793,9 @@ def serve_static_file(request):
 	return status, headers, page
 
 
-# Send the log printout in an email
-def send_email(parameters, config):
-	# Unset previous status
-	config['lock']['@'] = None
-	# Assemble message parts
-	if 'date' not in parameters:
-		date = datetime.date.today().isoformat()
-	else:
-		date = parameters['date'][0]
-	listing = show_logs(parameters, plaintext=True)
-	subject = '[MiniPOS] Transaction listing for {}'.format(date)
-	# Send and store exit status
-	config['lock']['@'] = sendmail.send(config, config['email'], subject, listing)
+# Set the log mailing return status
+def email_sent(success):
+	config['lock']['@'] = success
 
 
 # Main webapp function
@@ -883,10 +873,17 @@ def minipos(environ, start_response):
 			logging.error('Sendmail failed: Email address is not set')
 			page = '0'
 		else:
-			# Send an email in a subthread
-			subthread = threading.Thread(target=send_email, args=(parameters, config))
-			subthread.setDaemon(True)
-			subthread.start()
+			# Unset previous status
+			config['lock']['@'] = None
+			# Assemble message parts
+			if 'date' not in parameters:
+				date = datetime.date.today().isoformat()
+			else:
+				date = parameters['date'][0]
+			listing = show_logs(parameters, plaintext=True)
+			subject = '[MiniPOS] Transaction listing for {}'.format(date)
+			# Send an email in a background thread
+			sendmail.background_send(config, config['email'], subject, listing, callback=email_sent)
 			page = '-1'
 	elif request == 'welcome':
 		footer = load_file('welcome_footer.html', override=True, null=True)
