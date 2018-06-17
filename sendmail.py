@@ -6,12 +6,14 @@
 import subprocess
 import sys
 import smtplib
+import threading
 from email.mime.text import MIMEText
 
 email_from = 'nobody <noreply@localhost.localdomain>'
 
-def send(config, to, subject, text_body, headers={}):
+def send(config, to, subject, text_body, headers={}, callback=None):
 	use_smtp = True
+	success = True
 	# Select email backend
 	for setting in ['server', 'login', 'passwd']:
 		if setting not in config or config[setting] == '':
@@ -37,13 +39,19 @@ def send(config, to, subject, text_body, headers={}):
 			sys.exit()
 		except:
 			print('SMTP failed: %s' % sys.exc_info()[1])
-			return False
+			success = False
 	else:
 		try:
 			server = subprocess.Popen(['/usr/sbin/sendmail','-i', message['To']], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 			server.communicate(bytes(message.as_string(), 'UTF-8'))
 		except:
 			print('Sendmail failed: %s' % sys.exc_info()[1])
-			return False
+			success = False
+	if callback is not None:
+		callback(success)
+	return success
 
-	return True
+
+def background_send(config, to, subject, text_body, headers={}, callback=None):
+	subthread = threading.Thread(target=send, args=(config, to, subject, text_body, headers, callback), daemon=True)
+	subthread.start()
