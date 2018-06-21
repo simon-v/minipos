@@ -55,8 +55,8 @@ explorers = [
 		'prefixes': '13',
 	},
 	{
-		'url': 'https://blockdozer.com/insight-api/addr/bitcoincash:{address}',
-		'tx_url': 'https://blockdozer.com/insight-api/tx/{txid}',
+		'url': 'https://blockdozer.com/api/addr/bitcoincash:{address}',
+		'tx_url': 'https://blockdozer.com/api/tx/{txid}',
 		'balance_key': None,
 		'confirmed_key': 'balance',
 		'unconfirmed_key': 'unconfirmedBalance',
@@ -72,7 +72,7 @@ explorers = [
 		'tx_size_key': 'size',
 		'tx_confirmations_key': 'confirmations',
 		'unit_satoshi': False,
-		'prefixes': 'qp',
+		'prefixes': 'qp13',
 	},
 	{
 		'url': 'https://bch-insight.bitpay.com/api/addr/{address}',
