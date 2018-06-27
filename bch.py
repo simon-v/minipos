@@ -55,7 +55,7 @@ explorers = [
 		'prefixes': '13',
 	},
 	{
-		'url': 'https://blockdozer.com/api/addr/bitcoincash:{address}',
+		'url': 'https://blockdozer.com/api/addr/{address}',
 		'tx_url': 'https://blockdozer.com/api/tx/{txid}',
 		'balance_key': None,
 		'confirmed_key': 'balance',
