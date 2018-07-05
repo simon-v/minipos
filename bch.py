@@ -328,7 +328,7 @@ ignore_errors   (str) don't skip explorers disabled for excessive errors
 			if prefixes == 'qp13':
 				server = pick_explorer(explorer, ignore_errors=ignore_errors)
 			else:
-				server = pick_explorer(explorer, address_prefix=prefixes[0], ignore_erros=ignore_errors)
+				server = pick_explorer(explorer, address_prefix=prefixes[0], ignore_errors=ignore_errors)
 			# Try to get balance
 			try:
 				# Get and cache the received data for possible future analysis
