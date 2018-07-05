@@ -16,7 +16,7 @@ MAX_ERRORS = 10
 TIMEOUT = 5
 exchanges = [
 	{
-		'url': 'https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/?convert={cur}',
+		'url': 'https://api.coinmarketcap.com/v2/ticker/1831/?convert={cur}',
 		'price_key': '0.price_{cur_lower}',
 	},
 	{
