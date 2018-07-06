@@ -17,7 +17,7 @@ TIMEOUT = 5
 exchanges = [
 	{
 		'url': 'https://api.coinmarketcap.com/v2/ticker/1831/?convert={cur}',
-		'price_key': '0.price_{cur_lower}',
+		'price_key': 'data.quotes.{cur}.price',
 	},
 	{
 		'url': 'https://api.coinbase.com/v2/exchange-rates?currency=BCH',
