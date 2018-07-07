@@ -167,7 +167,7 @@ for _server in exchanges:
 
 def btc(amount):
 	'''Return a native bitcoin amount representation'''
-	result = ('%.8f' % amount).rstrip('0.')
+	result = ('%.8f' % float(amount)).rstrip('0.')
 	if result == '':
 		return '0'
 	return result
@@ -175,16 +175,15 @@ def btc(amount):
 
 def bits(amount):
 	'''Return the amount represented in bits/cash'''
-	bit, sat = fiat(amount * 1000000).split('.')
-	sat = sat.rstrip('0')
-	if sat == '':
-		return bit
-	return(bit + '.' + sat)
+	amount = fiat(float(amount) * 1000000)
+	if amount.endswith('.00'):
+		amount = amount[:-3]
+	return amount
 
 
 def fiat(amount):
 	'''Return the amount represented in a dollar/cent notation'''
-	return ('%.2f' % amount)
+	return ('%.2f' % float(amount))
 
 
 def color(amount):
