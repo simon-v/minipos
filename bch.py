@@ -187,6 +187,24 @@ def fiat(amount):
 	return ('%.2f' % amount)
 
 
+def color(amount):
+	'''Return the amount as colorized HTML'''
+	# Inspired by Thomas Zander's proposal; Reference:
+	# https://twitter.com/FloweeTheHub/status/996341710027403265
+	wholes, sats = '{:.8f}'.format(float(amount)).split('.')
+	mils = sats[0:3]
+	bits = sats[3:6]
+	sats = sats[6:8]
+	whole_color = 'gray' if wholes == '0' else 'black'
+	dot_color = 'lightgray' if mils == '000' and bits == '000' and sats == '00' else 'gray'
+	mil_color = 'lightgray' if mils == '000' and bits == '000' and sats == '00' else 'green'
+	bit_color = 'lightgray' if bits == '000' and sats == '00' else 'darkgreen'
+	if sats == '00':
+		sats = '&mdash;'
+	result = '''<span style="color: {}">{}</span><span style="color: {}; padding-left: 0">.</span><span style="color: {}; padding-left: 0">{}</span><span style="color: {}; padding-left: 0.25em">{}</span><span style="color: gray; padding-left: 0.25em">{}</span>'''.format(whole_color, wholes, dot_color, mil_color, mils, bit_color, bits, sats)
+	return result
+
+
 def jsonload(url):
 	'''Load a web page and return the resulting JSON object'''
 	request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
