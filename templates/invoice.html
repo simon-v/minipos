@@ -20,12 +20,11 @@ var request_string = "id={tag}";
 <img id="qr" src="data:image/png;base64,{qr}" alt="" title="{request}" onclick="copy()">
 {text}
 <div id="popup"><p id="popup_text"></p></div>
-<form method="get" name="cancel" action="cancel">
-<input type="hidden" name="id" value="{tag}">
+<form method="get" name="cancel" action="javascript:window.location.replace('cancel?' + request_string)">
 <input type="submit" id="cancel" class="major red" onclick="document.getElementById('copy').remove()" value="&#10007; Cancel">
 <input type="text" name="copy" id="copy" value="{request}" style="display: none">
 </form>
-<form method="get" name="finish" action="{return}">
+<form method="get" name="finish" action="javascript:window.location.replace('{return}')">
 <input style="display: none;" type="submit" id="finish" class="major green" value="&#10003; Finish">
 </form>
 </body>
