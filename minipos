@@ -532,15 +532,14 @@ def record_payment(tag):
 			log.write('{date}	{address}	{amount}	{fiat} {currency}	{tag}	{txid}\n'.format(date=datetime.datetime.now().isoformat(), tag=tag, **request))
 	# Send a notification
 	if config['receive_notify'] and 'email' in config:
-		subject = '[MiniPOS] New payment received'
+		subject = '[MiniPOS] New payment received, ID: {}'.format(request['tag'])
 		_amount = format_amount(request['amount'])
 		token = 'BCH' if config['unit'] == 'native' else config['unit']
 		body = '''Date and time: {date}
 Address: {address}
 Amount: {amt} {token}
 Amount (fiat): {fiat} {currency}
-Payment ID: {tag}
-TxID: https://bch.btc.com/{txid}'''.format(date = datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), token=token, tag=tag, amt=_amount, **request)
+TxID: https://bch.btc.com/{txid}'''.format(date = datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), token=token, amt=_amount, **request)
 		sendmail.background_send(config, config['email'], subject, body)
 
 
