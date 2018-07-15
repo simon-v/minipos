@@ -186,6 +186,7 @@ if 'custom_unit_satoshi' in config:
 	config['custom_unit_satoshi'] = True if config['custom_unit_satoshi'].lower() in ['1', 'yes', 'on', 'true'] else False
 config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'].lower() in ['1', 'yes', 'on', 'true'] else False
 config['fingerprinting'] = True if 'fingerprinting' in config and config['fingerprinting'].lower() in ['1', 'yes', 'on', 'true'] else False
+config['receive_notify'] = True if 'receive_notify' in config and config['receive_notify'].lower() in ['1', 'yes', 'on', 'true'] else False
 # Try to set up a custom block explorer
 custom_explorer = None
 try:
@@ -529,6 +530,18 @@ def record_payment(tag):
 	with log_lock:
 		with open(logfile, 'a') as log:
 			log.write('{date}	{address}	{amount}	{fiat} {currency}	{tag}	{txid}\n'.format(date=datetime.datetime.now().isoformat(), tag=tag, **request))
+	# Send a notification
+	if config['receive_notify'] and 'email' in config:
+		subject = '[MiniPOS] New payment received'
+		_amount = format_amount(request['amount'])
+		token = 'BCH' if config['unit'] == 'native' else config['unit']
+		body = '''Date and time: {date}
+Address: {address}
+Amount: {amt} {token}
+Amount (fiat): {fiat} {currency}
+Payment ID: {tag}
+TxID: https://bch.btc.com/{txid}'''.format(date = datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), token=token, tag=tag, amt=_amount, **request)
+		sendmail.background_send(config, config['email'], subject, body)
 
 
 # Lock an address to prevent concurrent access

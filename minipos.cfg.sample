@@ -45,7 +45,8 @@ label=MiniPOS
 allowed_ips=
 #allowed_ips=192.168.0.0,192.168.1.0,192.168.2.0,192.168.10.0
 
-## Set this to your email address if you want to enable log mailing capabilities
+## Set this to your email address if you want to enable log mailing and email
+## notification capabilities
 #email=
 ## By default, the "sendmail" program will be used to send emails.
 ## Uncomment and set the following to use SMTP instead
@@ -79,6 +80,9 @@ log_order=ascending
 ## collisions, but in this case, the source data itself is cryptographically
 ## secure in nature, so the net effect on security is minimal.
 fingerprinting=no
+
+## Set to "yes" to have MiniPOS email you every time a payment is received
+receive_notify=no
 
 ## If you have your own block explorer and you wish to query it instead,
 ## uncomment and set all of the following fields
