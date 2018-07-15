@@ -272,12 +272,12 @@ def load_file(filename, override=False, null=False):
 
 # Cast amount into preferred units
 def format_amount(amount):
+	token = 'BCH' if config['unit'] == 'native' else config['unit']
 	if config['unit'] in ['bits', 'cash']:
-		return bch.bits(float(amount))
+		amount = bch.bits(float(amount))
 	elif config['unit'] == 'satoshi':
-		return str(int(float(amount) * 100000000))
-	else:
-		return amount
+		amount = str(int(float(amount) * 100000000))
+	return amount, token
 
 
 # Generate a new receiving address and add it in the cache
@@ -363,9 +363,11 @@ def create_invoice(parameters):
 	output = io.BytesIO()
 	image.save(output, format='PNG')
 	output = base64.b64encode(output.getvalue()).decode('UTF-8')
+	amt, token = format_amount(amount)
 	filler = {
 		'addr': address,
-		'amt': format_amount(amount),
+		'amt': amt,
+		'token': token,
 		'qr': output,
 		'request': data,
 		'fiat': bch.fiat(fiat),
@@ -375,7 +377,6 @@ def create_invoice(parameters):
 		'return': config['payment_return'],
 		'label': config['label'],
 	}
-	filler['token'] = 'BCH' if config['unit'] == 'native' else config['unit']
 	# Load user template override
 	invoice_text = load_file('invoice_text.html', override=True)
 	if '<script' in invoice_text.lower():
@@ -533,8 +534,7 @@ def record_payment(tag):
 	# Send a notification
 	if config['receive_notify'] and 'email' in config:
 		subject = '[MiniPOS] New payment received, ID: {}'.format(request['tag'])
-		_amount = format_amount(request['amount'])
-		token = 'BCH' if config['unit'] == 'native' else config['unit']
+		_amount, token = format_amount(request['amount'])
 		body = '''Date and time: {date}
 Address: {address}
 Amount: {amt} {token}
@@ -579,7 +579,6 @@ def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 		raise RuntimeError('read_log_file: the "plaintext" and "txids" parameters are incompatible')
 	table = [] if txids else ''
 	totals = {}
-	token = 'BCH' if config['unit'] == 'native' else config['unit']
 	try:
 		logfile = open(os.path.join(data_dir, filename), 'r')
 	except:
@@ -592,7 +591,7 @@ def read_log_file(filename, plaintext=False, txids=False, reverse_order=False):
 			while len(line) < 6:
 				line.append('')
 			date, address, amount, fiat, tag, txid = line
-			amount = format_amount(amount)
+			amount, token = format_amount(amount)
 			fiat, currency = fiat.split(' ')
 			if currency not in totals:
 				totals[currency] = 0
@@ -773,7 +772,7 @@ def show_logs(parameters, plaintext=False):
 	# Format and return the logs page
 	if table != '':
 		if plaintext:
-			token = 'BCH' if config['unit'] == 'native' else config['unit']
+			_, token = format_amount(0)
 			if tally:
 				table_head = '== Date ==||===== Count =====||===== Amount (fiat) ====='
 			else:
