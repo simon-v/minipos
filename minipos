@@ -632,6 +632,7 @@ def show_logs(parameters, plaintext=False):
 		date = parameters['date'][0]
 	# Process the current and calculate next and previous date
 	days = []
+	tally = False
 	# Day scope
 	if len(date) == 10:
 		d = datetime.datetime.strptime(date, '%Y-%m-%d')
@@ -690,6 +691,7 @@ def show_logs(parameters, plaintext=False):
 		while _date.month == d.month:
 			days.append(_date.isoformat())
 			_date += datetime.timedelta(1)
+		tally = True
 	# Year scope
 	elif len(date) == 4:
 		d = datetime.datetime.strptime(date, '%Y')
@@ -706,6 +708,7 @@ def show_logs(parameters, plaintext=False):
 		while _date.year == d.year:
 			days.append(_date.isoformat())
 			_date += datetime.timedelta(1)
+		tally = True
 	else:
 		raise ValueError
 	# Create a transaction table and calculate totals
@@ -724,7 +727,25 @@ def show_logs(parameters, plaintext=False):
 		days.reverse()
 	for _date in days:
 		_totals, _table = read_log_file(os.path.join('logs', _date + '.log'), plaintext=plaintext, reverse_order=reverse_order)
-		table += _table
+		if tally:
+			_amounts = []
+			for k, v in _totals.items():
+				_amounts.append('{} {}'.format(bch.fiat(v), k))
+			if plaintext:
+				_amounts = ', '.join(_amounts)
+				tx_count = _table.count('TxID:')
+			else:
+				_amounts = '<br>'.join(_amounts)
+				tx_count = _table.count('javascript:toggleRow(')
+			if tx_count > 0:
+				plural = ' ' if str(tx_count).endswith('1') else 's'
+				if plaintext:
+					chunk = '{} transaction{}'.format(tx_count, plural)
+					table += '{}  {:>17}  {}\n'.format(_date, chunk, _amounts)
+				else:
+					table += '<tr class="%STYLE%"><td><a href="logs?date={date}">{date}</a></td><td>{count} transaction{plural}</td><td>{amounts}</td></tr>\n'.format(date=_date, count=tx_count, plural=plural, amounts=_amounts)
+		else:
+			table += _table
 		for k in _totals.keys():
 			if k in totals:
 				totals[k] += _totals[k]
@@ -741,9 +762,15 @@ def show_logs(parameters, plaintext=False):
 	if table != '':
 		if plaintext:
 			token = 'BCH' if config['unit'] == 'native' else config['unit']
-			table_head = '=== Date & Time ===||=== Amount ({token}) ===||== Amount (fiat) ==||== ID =='.format(token=token)
+			if tally:
+				table_head = '== Date ==||===== Count =====||===== Amount (fiat) ====='
+			else:
+				table_head = '=== Date & Time ===||=== Amount ({token}) ===||== Amount (fiat) ==||== ID =='.format(token=token)
 		else:
-			table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th></th><th>Date and time</th><th>Amount</th><th>ID</th></tr>\n'
+			if tally:
+				table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th>Date</th><th>Count</th><th>Amount (fiat)</tr></tr>\n'
+			else:
+				table_head = '<h2>Transactions:</h2>\n<table class="listing">\n<tr><th></th><th>Date and time</th><th>Amount</th><th>ID</th></tr>\n'
 			table_foot = '</table>\n'
 	else:
 		if plaintext:
@@ -758,11 +785,16 @@ def show_logs(parameters, plaintext=False):
 		footer = load_file('log_footer.html', override=True, null=True)
 		row_count = 1
 		style = 'odd'
-		while '%ROW%' in table:
-			table = table.replace('%ROW%', str(row_count), 3)
-			table = table.replace('%STYLE%', style, 2)
-			style = 'even' if style == 'odd' else 'odd'
-			row_count += 1
+		if tally:
+			while '%STYLE%' in table:
+				table = table.replace('%STYLE%', style, 1)
+				style = 'even' if style == 'odd' else 'odd'
+		else:
+			while '%ROW%' in table:
+				table = table.replace('%ROW%', str(row_count), 3)
+				table = table.replace('%STYLE%', style, 2)
+				style = 'even' if style == 'odd' else 'odd'
+				row_count += 1
 		table = table_head + table + table_foot
 		# Pack the above variables into a filler dict
 		label = config['label']
