@@ -35,7 +35,7 @@ config = {
 	},
 	'cache': [],
 }
-binary_extensions = ['png', 'jpg', 'gif']
+binary_extensions = ['png', 'jpg', 'gif', 'ico']
 mime_types = {
 	'txt': 'text/plain',
 	'css': 'text/css',
@@ -44,6 +44,7 @@ mime_types = {
 	'jpg': 'image/jpeg',
 	'gif': 'image/gif',
 	'svg': 'image/svg+xml',
+	'ico': 'image/x-icon',
 }
 # A list of files which will always be served regardless of access control settings
 file_whitelist = ['style.css', 'logo.svg', 'logo.png', 'logo.gif', 'logo.jpg', 'favicon.png', 'favicon.ico']
