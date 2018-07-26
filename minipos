@@ -540,7 +540,7 @@ def record_payment(tag):
 Address: {address}
 Amount: {amt} {token}
 Amount (fiat): {fiat} {currency}
-TxID: https://bch.btc.com/{txid}'''.format(date = datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), token=token, amt=_amount, **request)
+TxID: https://bch.btc.com/{txid}'''.format(date=datetime.datetime.now().isoformat().split('.')[0].replace('T', ' '), token=token, amt=_amount, **request)
 		sendmail.background_send(config, config['email'], subject, body)
 
 
