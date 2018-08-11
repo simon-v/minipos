@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # tridenticon - A visual hash generator
 # Author: Simon Volpert <simon@simonvolpert.com>
-# Project page: https://github.com/simon-v/tridenticon/
+# Project page: https://simonvolpert.com/tridenticon/
 # This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information
 # Consult the README file for usage instructions and other helpful hints
 # Running with --test requires ImageMagick

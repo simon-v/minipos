@@ -86,7 +86,7 @@ MiniPOS doesn't need a web server to run, as it provides its own. It also doesn'
 
 This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information.
 
-The program's canonical project page resides at https://github.com/simon-v/minipos/
+The program's canonical project page resides at https://simonvolpert.com/minipos/
 
 I gratefully accept appreciation for my work in material form at __[bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88](bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88)__.
 
