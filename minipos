@@ -534,7 +534,7 @@ def record_payment(tag):
 			log.write('{date}	{address}	{amount}	{fiat} {currency}	{tag}	{txid}\n'.format(date=datetime.datetime.now().isoformat(), tag=tag, **request))
 	# Send a notification
 	if config['receive_notify'] and 'email' in config:
-		subject = '[MiniPOS] New payment received, ID: {}'.format(request['tag'])
+		subject = '[MiniPOS] New payment received, ID: {}'.format(tag)
 		_amount, token = format_amount(request['amount'])
 		body = '''Date and time: {date}
 Address: {address}
