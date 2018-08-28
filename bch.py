@@ -193,6 +193,7 @@ def color(amount):
 	'''Return the amount as colorized HTML'''
 	# Inspired by Thomas Zander's proposal; Reference:
 	# https://twitter.com/FloweeTheHub/status/996341710027403265
+	# Only works for white or near-white background!
 	wholes, sats = '{:.8f}'.format(float(amount)).split('.')
 	mils = sats[0:3]
 	bits = sats[3:6]
