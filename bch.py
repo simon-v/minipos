@@ -160,6 +160,9 @@ explorers = [
 random.seed()
 random.shuffle(explorers)
 for _server in explorers:
+	# Using urllib.parse here would require an instruction similar to this:
+	#     _server['name'] = '.'.join(urllib.parse.urlparse(_server['url'])[1].split('.')[-2:])
+	# Which is neither any shorter, nor simpler, AND requires an additional import to work
 	_server['name'] = '.'.join(_server['url'].split('/')[2].split('.')[-2:])
 for _server in exchanges:
 	_server['name'] = '.'.join(_server['url'].split('/')[2].split('.')[-2:])
