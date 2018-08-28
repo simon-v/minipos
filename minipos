@@ -121,12 +121,14 @@ for line in lines:
 		continue
 	config['addresses'].append(_addr)
 
-# Sanitize the config file
+
+# Utility config parsing functions
 def cast_config_type(key, _type, default):
 	try:
 		config[key] = _type(config[key])
 	except (KeyError, ValueError):
 		config[key] = default
+
 
 def clamp_config_value(_name, _min=None, _max=None, default=0):
 	if _min is not None and config[_name] < _min:
@@ -136,12 +138,6 @@ def clamp_config_value(_name, _min=None, _max=None, default=0):
 		logging.warning('Invalid "{}" value, falling back to {}'.format(_name, default))
 		config[_name] = default
 
-cast_config_type('taxrate', float, 0)
-cast_config_type('port', int, 8080)
-cast_config_type('propagation', int, 60)
-clamp_config_value('propagation', 0, 100, 60)
-cast_config_type('welcome_timeout', int, 120)
-clamp_config_value('welcome_timeout', 0, None, 120)
 
 def split_config_key(key, default):
 	if key not in config:
@@ -149,12 +145,6 @@ def split_config_key(key, default):
 	else:
 		config[key] = config[key].split(',')
 
-split_config_key('currencies', 'USD')
-split_config_key('allowed_ips', '127.0.0.1')
-# Prune meaningless values from configuration
-config['allowed_ips'] = set(config['allowed_ips'])
-if '127.0.0.1' in config['allowed_ips']:
-	config['allowed_ips'].remove('127.0.0.1')
 
 def pick_config_list(key, value_list):
 	if key not in config:
@@ -164,10 +154,19 @@ def pick_config_list(key, value_list):
 			logging.warning('Invalid "{}" value, falling back to "{}"'.format(key, value_list[0]))
 			config[key] = value_list[0]
 
+
+# Sanitize the config file
+cast_config_type('taxrate', float, 0)
+cast_config_type('port', int, 8080)
+cast_config_type('propagation', int, 60)
+clamp_config_value('propagation', 0, 100, 60)
+cast_config_type('welcome_timeout', int, 120)
+clamp_config_value('welcome_timeout', 0, None, 120)
+split_config_key('currencies', 'USD')
+split_config_key('allowed_ips', '127.0.0.1')
 pick_config_list('unit', ['native', 'bits', 'cash', 'satoshi'])
 pick_config_list('payment_return', ['request', 'welcome'])
 pick_config_list('log_order', ['ascending', 'descending'])
-
 if 'week_start' not in config or config['week_start'] == 'monday':
 	config['week_start'] = 0
 elif config['week_start'] == 'sunday':
@@ -188,6 +187,10 @@ if 'custom_unit_satoshi' in config:
 config['auto_cents'] = True if 'auto_cents' in config and config['auto_cents'].lower() in ['1', 'yes', 'on', 'true'] else False
 config['fingerprinting'] = True if 'fingerprinting' in config and config['fingerprinting'].lower() in ['1', 'yes', 'on', 'true'] else False
 config['receive_notify'] = True if 'receive_notify' in config and config['receive_notify'].lower() in ['1', 'yes', 'on', 'true'] else False
+# Prune meaningless values from configuration
+config['allowed_ips'] = set(config['allowed_ips'])
+if '127.0.0.1' in config['allowed_ips']:
+	config['allowed_ips'].remove('127.0.0.1')
 # Try to set up a custom block explorer
 custom_explorer = None
 try:
