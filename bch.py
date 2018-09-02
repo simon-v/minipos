@@ -493,7 +493,11 @@ ignore_errors (str) don't skip explorers disabled for excessive errors
 				self.outputs = {}
 				for i, __ in enumerate(get_value(json, server['tx_outputs_key'])):
 					#tx_size += 34
-					addr = get_value(json, '.'.join([server['tx_outputs_key'], str(i), server['tx_out_address_key']]))
+					try:
+						addr = get_value(json, '.'.join([server['tx_outputs_key'], str(i), server['tx_out_address_key']]))
+					except KeyError:
+						# Most likely an OP_RETURN
+						continue
 					value = float(get_value(json, '.'.join([server['tx_outputs_key'], str(i), server['tx_out_value_key']])))
 					if server['unit_satoshi']:
 						value /= 100000000
