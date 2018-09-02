@@ -358,7 +358,7 @@ ignore_errors   (str) don't skip explorers disabled for excessive errors
 					json = jsonload(server['url'].format(address=self.address))
 				else:
 					json = jsonload(server['url'].format(address=self.legacy_address))
-				server['last_data'] = json
+				server['last_data'] = self.raw_data = json
 				# Conditional balance processing
 				# TODO: This is a mighty convoluted way of doing it and needs rethinking
 				if server['confirmed_key'] is not None and server['unconfirmed_key'] is not None:
@@ -474,7 +474,7 @@ ignore_errors (str) don't skip explorers disabled for excessive errors
 				# Get and cache the received data for possible future analysis
 				logging.debug('Querying {}'.format(server['name']))
 				json = jsonload(server['tx_url'].format(txid=txid))
-				server['last_data'] = json
+				server['last_data'] = self.raw_data = json
 				# Figure out if the tx is a double spend
 				if server['tx_double_spend_key'] is not None:
 					self.double_spend = get_value(json, server['tx_double_spend_key'])
