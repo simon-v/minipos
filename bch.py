@@ -289,6 +289,7 @@ class AddressInfo(object):
 	'''A representation of a block explorer's idea of a bitcoin address state
 
 Provided properties:
+raw_data        (dict) the raw explorer JSON response
 address         (str) the address in cash format
 legacy_address  (str) the address in legacy format
 confirmed       (float) the confirmed balance of the address
@@ -444,11 +445,14 @@ class TxInfo(object):
 	'''A representation of a block explorer's idea of a bitcoin transaction
 
 Provided properties:
+raw_data      (dict) the raw explorer JSON response
 time          (datetime) the time this transaction was first seen or mined
 outputs       (dict) a mapping of receiving addresses to receiving values
               both address formats are provided if possible
 double_spend  (bool) whether or not this transaction has a competing transaction
+size          (int) the size of the transaction in bytes
 fee           (float) the transaction fee
+fee_per_byte  (float) the transaction fee per byte
 confirmations (int) the number of confirmations this transaction has
 
 Will raise TxNotFoundError if the passed txid is not known to any explorer
