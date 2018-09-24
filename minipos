@@ -1030,7 +1030,8 @@ for address in config['addresses'].copy():
 		if addr != address:
 			# Replace the plaintext entry with a ready-to-use tuple
 			config['addresses'][config['addresses'].index(address)] = (addr, idx)
-logging.debug('{} receiving addresse(s) loaded'.format(len(config['addresses'])))
+plural_addrs = 'es' if len(config['addresses']) > 1 else ''
+logging.debug('{} receiving address{} loaded'.format(len(config['addresses']), plural_addrs))
 if 'xpub' in config:
 	logging.debug('Current derivation index set to {}'.format(config['index']))
 
