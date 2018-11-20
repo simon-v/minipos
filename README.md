@@ -88,7 +88,7 @@ This program is free software, released under the Apache License, Version 2.0. S
 
 The program's canonical project page resides at https://simonvolpert.com/minipos/
 
-I gratefully accept appreciation for my work in material form at __[bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88](bitcoincash:qzm0p0arejsejvlszclvmnqqt93hd5l0vsy78acq88)__.
+I gratefully accept appreciation for my work in material form at __[bitcoincash:qp6eyd94ly2kjyg4arpwvglk4er00rwvsvddy9f5wr](bitcoincash:qp6eyd94ly2kjyg4arpwvglk4er00rwvsvddy9f5wr)__.
 
 ### Similar Projects
 
