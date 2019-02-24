@@ -83,7 +83,7 @@ for data_dir in data_dir_locations:
 		break
 # Load the config file
 try:
-	with open('minipos.cfg', 'r') as f:
+	with open('minipos.cfg', 'r', encoding='UTF-8') as f:
 		lines = f.readlines()
 except (IOError, OSError, FileNotFoundError, PermissionError) as error:
 	logging.warning('Could not open configuration file, using default settings ({})'.format(error))
@@ -253,6 +253,7 @@ def write_address_list():
 def load_file(filename, override=False, null=False):
 	extension = filename.split('.')[-1]
 	file_mode = 'rb' if extension in binary_extensions else 'r'
+	encoding = 'UTF-8' if extension not in binary_extensions else None
 	if extension == 'html':
 		directory = 'templates'
 	elif extension == 'log':
@@ -261,12 +262,12 @@ def load_file(filename, override=False, null=False):
 		directory = 'assets'
 	if override or directory == 'logs':
 		try:
-			with open(os.path.join(data_dir, directory, filename), file_mode) as src:
+			with open(os.path.join(data_dir, directory, filename), file_mode, encoding=encoding) as src:
 				return src.read()
 		except (IOError, OSError, PermissionError):
 			pass
 	try:
-		with open(os.path.join(lib_dir, directory, filename), file_mode) as src:
+		with open(os.path.join(lib_dir, directory, filename), file_mode, encoding=encoding) as src:
 			return src.read()
 	except (IOError, OSError, PermissionError):
 		if null:
