@@ -3,6 +3,8 @@
 
 MiniPOS is a simple self-hosted point-of-sale server, intended for use by small merchants and brick-and-mortar stores, that can be operated from any device with a relatively modern web browser.
 
+It was written while waiting for a sensible solution, such as the [Bitcoin.com merchant app](https://play.google.com/store/apps/details?id=com.bitcoin.merchant.app), to appear.
+
 With MiniPOS you can set up receiving Bitcoin Cash payments without exposing your funds to a third party, or even to your own cashiers at any point in the process, by simply giving it a list of Bitcoin Cash addresses to work with.
 
 ### Setup
@@ -43,8 +45,6 @@ Wait for the transaction to be detected by the system. Press the `Finish` button
 
 To review your sales, use the built-in log browser, accessible from the triple bar button. You can view a daily, weekly, monthly and yearly summary, print it, or email it to yourself at the configured email address.
 
-A fully-refunding [live demo installation](https://simonvolpert.com/minipos-demo/) with an exposed configuration file is available for demonstrative purposes.
-
 ### Customization
 
 The following template files are used to insert content to various pages:
@@ -61,7 +61,7 @@ Additionally, any file placed in the `assets` directory will be served directly 
 
 ### Setting up with a web server
 
-MiniPOS doesn't need a web server to run, as it provides its own. It also doesn't care what the URL used to access it looks like, and will happily serve its content on a bare IP address, a subdomain or a directory. However, if you wish it to be accessible on port 80, you will need to set up a reverse proxy. An example Nginx configuration, similar to the one used by the live demo installation is provided below:
+MiniPOS doesn't need a web server to run, as it provides its own. It also doesn't care what the URL used to access it looks like, and will happily serve its content on a bare IP address, a subdomain or a directory. However, if you wish it to be accessible on port 80, you will need to set up a reverse proxy. An example Nginx configuration is provided below:
 
     upstream miniposdemo {
         server 127.0.0.1:8888 max_fails=3;
@@ -87,8 +87,6 @@ MiniPOS doesn't need a web server to run, as it provides its own. It also doesn'
 This program is free software, released under the Apache License, Version 2.0. See the LICENSE file for more information.
 
 The program's canonical project page resides at https://simonvolpert.com/minipos/
-
-I gratefully accept appreciation for my work in material form at __[bitcoincash:qp6eyd94ly2kjyg4arpwvglk4er00rwvsvddy9f5wr](bitcoincash:qp6eyd94ly2kjyg4arpwvglk4er00rwvsvddy9f5wr)__.
 
 ### Similar Projects
 
